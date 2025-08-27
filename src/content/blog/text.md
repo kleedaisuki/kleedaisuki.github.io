@@ -1,5 +1,5 @@
 ---
-title: "Hello, World"
+title: "vibe coding 40 分钟完成了超酷的 stack"
 description: "第一篇试水"
 pubDate: 2025-08-27
 tags: [astro, rss]
@@ -16,7 +16,7 @@ GPT-5 到底有多强？
 
 提示词如下：
 
-```prompt 1
+```prompt
 让我们来写一个 Stack 类，用 C++ 23!
 1. 使用 template <typename... Types> 配合 std::variant 和 std::visit 解决对齐和类型安全的问题
 2. 支持标准库风格的迭代器
@@ -25,7 +25,7 @@ GPT-5 到底有多强？
 5. 使用 concept 明确地定义相关的需求，避免模板天书
 ```
 
-```prompt 2
+```prompt
 做得非常棒，我们现在进行迭代：
 1. 检查展开模板参数包的问题
 [compiler log ...]
@@ -34,7 +34,7 @@ GPT-5 到底有多强？
 4. 考虑到日常使用，应该在合适的位置设置好默认参数，并且尽可能地让模板参数能够自行推导
 ```
 
-```prompt 3
+```prompt
 别急，来修 bug！
 [compiler log ...]
 这次更新，我们迭代这几个：
@@ -43,17 +43,17 @@ GPT-5 到底有多强？
 3. 加强可行范围内的 static reflection，对基础类型和对齐可解决的小类型进行优化
 ```
 
-```prompt 4
+```prompt
 维持设计需求不变（也就是已有的设计语义约束），我们来修 Bug：
 [compiler log ...]
 ```
 
-```prompt 5
+```prompt
 嗯，我觉得很不错，你很棒！
 接下来的任务：生成一份测试代码，饱和性质地测试一遍我们的 stack；只写在 main 函数中。
 ```
 
-```prompt 6
+```prompt
 嗯，你的测试代码有问题，修复一下bug：
 [compiler log ...]
 ```
