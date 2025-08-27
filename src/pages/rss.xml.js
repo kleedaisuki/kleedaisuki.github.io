@@ -30,17 +30,11 @@ export async function GET(ctx) {
 					title: p.data.title,
 					description: p.data.description,
 					pubDate: p.data.pubDate,
-					link: `/blog/${p.id}/`,
-					content: sanitizeHtml(html),
+					// ★ 统一用 slug
+					link: `/blog/${p.slug}/`,
+					content: html,
 				}
 			})
 	)
-
-	return rss({
-		title: '@kleedaisuki',
-		description: 'notes & research',
-		site: ctx.site,
-		items,
-		// 若全站设了 trailingSlash: "never"，这里可加 trailingSlash: false
-	})
+	return rss({ title: '@kleedaisuki', description: 'notes & research', site: ctx.site, items })
 }

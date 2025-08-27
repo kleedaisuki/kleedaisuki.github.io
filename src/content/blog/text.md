@@ -2,7 +2,7 @@
 title: "vibe coding 40 分钟完成了超酷的 stack"
 description: "第一篇试水"
 pubDate: 2025-08-27
-tags: [astro, rss]
+tags: [vibe coding, data structure]
 draft: false
 ---
 

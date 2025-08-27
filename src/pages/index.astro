@@ -57,12 +57,12 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
     </Fragment>
 
     <main class="container">
-        <h1 style="margin:0 0 1rem">最新文章</h1>
+        <h1 style="margin:0 0 1rem">Latest Blogs</h1>
         {
             posts.map((p) => (
                 <article class="post">
                     <h2 class="title">
-                        <a href={`/blog/${p.id}/`}>{p.data.title}</a>
+                        <a href={`/blog/${p.slug}/`}>{p.data.title}</a>
                     </h2>
                     <div class="meta">
                         <time datetime={p.data.pubDate.toISOString()}>
