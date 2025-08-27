@@ -1,0 +1,15 @@
+---
+import 'katex/dist/katex.min.css'; 
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title><slot name="title" /></title>
+
+    <link rel="alternate" type="application/rss+xml" title="@kleedaisuki"
+          href={new URL('rss.xml', Astro.site)} />
+    <slot name="head" />
+  </head>
+  <body><slot /></body>
+</html>

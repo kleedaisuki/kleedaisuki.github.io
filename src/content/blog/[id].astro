@@ -1,0 +1,22 @@
+---
+import Base from '../../layouts/BaseLayout.astro'
+import { getCollection, render } from 'astro:content'
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({data}) => !data.draft)
+  return posts.map(p => ({ params: { id: p.id }, props: p }))
+}
+
+const post = Astro.props
+const { Content } = await render(post)   // 把 Markdown 渲染为可插入的组件
+---
+<Base>
+  <Fragment slot="head">
+    <meta name="description" content={post.data.description} />
+  </Fragment>
+
+  <article>
+    <h1>{post.data.title}</h1>
+    <Content />
+  </article>
+</Base>
