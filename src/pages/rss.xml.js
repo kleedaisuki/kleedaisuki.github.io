@@ -30,7 +30,6 @@ export async function GET(ctx) {
 					title: p.data.title,
 					description: p.data.description,
 					pubDate: p.data.pubDate,
-					// ★ 统一用 slug
 					link: `/blog/${p.slug}/`,
 					content: html,
 				}
