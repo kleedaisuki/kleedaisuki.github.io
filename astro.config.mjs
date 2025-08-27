@@ -7,7 +7,8 @@ export default defineConfig({
 	site: 'https://www.kleedaisuki.com',
 	markdown: {
 		shikiConfig: {
-			themes: { light: 'github-light', dark: 'github-dark' }
+			themes: { light: 'github-light', dark: 'github-dark' },
+			langAlias: { prompt: 'markdown' }
 		},
 		remarkPlugins: [remarkMath],
 		rehypePlugins: [rehypeKatex],
