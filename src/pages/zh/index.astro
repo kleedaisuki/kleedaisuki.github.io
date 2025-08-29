@@ -1,0 +1,11 @@
+---
+// src/pages/zh/index.astro
+import Base from "@layouts/BaseLayout.astro";
+import { t } from "@i18n/t";
+const locale = "zh";
+---
+
+<Base>
+    <h1>{t("welcome", locale)}</h1>
+    <p>这里是 Astro + GitHub Pages 的双语站点框架。</p>
+</Base>

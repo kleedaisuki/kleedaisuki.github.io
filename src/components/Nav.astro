@@ -1,0 +1,10 @@
+---
+import { t, asLocale } from "@i18n/t";
+const locale = asLocale(Astro.currentLocale);
+---
+
+<nav>
+    <a href={`/${locale}/`}>{t("home", locale)}</a>
+    <a href={`/${locale}/about/`}>{t("about", locale)}</a>
+    <a href={`/${locale}/blog/`}>{t("blog", locale)}</a>
+</nav>

@@ -1,0 +1,21 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+const raw = Astro.url.pathname.replace(/^\/(zh|en)\//, "");
+const toZH = getRelativeLocaleUrl("zh", raw);
+const toEN = getRelativeLocaleUrl("en", raw);
+---
+
+<nav aria-label="Language switcher">
+    <a
+        href={toZH}
+        hreflang="zh"
+        onclick="try{localStorage.setItem('prefLocale','zh')}catch(e){}">中文</a
+    >
+    |
+    <a
+        href={toEN}
+        hreflang="en"
+        onclick="try{localStorage.setItem('prefLocale','en')}catch(e){}"
+        >English</a
+    >
+</nav>

@@ -1,91 +1,60 @@
 ---
-import Base from "../layouts/BaseLayout.astro";
-import { getCollection } from "astro:content";
-
-const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
-    (a, b) => +new Date(b.data.pubDate) - +new Date(a.data.pubDate),
-);
+// src/pages/index.astro
+// 纯静态：用前端 0ms 跳转，记忆用户语言偏好；JS 关闭时提供无障碍链接。
 ---
 
-<Base>
-    <Fragment slot="title">@kleedaisuki · Blog</Fragment>
-    <Fragment slot="head">
-        <meta name="description" content="Notes & research by @kleedaisuki" />
-        <style>
-            .container {
-                max-width: 820px;
-                margin: 48px auto;
-                padding: 0 16px;
-            }
-            .post {
-                padding: 16px 0;
-                border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-            }
-            .title {
-                font-size: 1.1rem;
-                margin: 0;
-            }
-            .meta {
-                opacity: 0.7;
-                font-size: 0.9rem;
-                margin: 0.25rem 0;
-            }
-            .desc {
-                margin: 0.25rem 0 0;
-            }
-            .tags {
-                display: inline-flex;
-                gap: 0.25rem;
-                margin-left: 0.5rem;
-            }
-            .tag {
-                font-size: 0.75rem;
-                padding: 0.1rem 0.4rem;
-                border: 1px solid rgba(0, 0, 0, 0.12);
-                border-radius: 0.5rem;
-                opacity: 0.8;
-            }
-            @media (prefers-color-scheme: dark) {
-                .post {
-                    border-bottom-color: rgba(255, 255, 255, 0.12);
-                }
-                .tag {
-                    border-color: rgba(255, 255, 255, 0.2);
-                }
-            }
-        </style>
-    </Fragment>
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <!-- 根路径不需要被收录，避免和 /zh/、/en/ 竞争 -->
+        <meta name="robots" content="noindex" />
+        <title>Redirecting…</title>
+        <script is:inline>
+            (function () {
+                var KEY = "prefLocale";
+                var supported = { zh: 1, en: 1 };
 
-    <main class="container">
-        <h1 style="margin:0 0 1rem">Latest Blogs</h1>
-        {
-            posts.map((p) => (
-                <article class="post">
-                    <h2 class="title">
-                        <a href={`/blog/${p.slug}/`}>{p.data.title}</a>
-                    </h2>
-                    <div class="meta">
-                        <time datetime={p.data.pubDate.toISOString()}>
-                            {p.data.pubDate.toISOString().slice(0, 10)}
-                        </time>
-                        {p.data.updatedDate ? (
-                            <span>
-                                {" "}
-                                · 更新{" "}
-                                {p.data.updatedDate.toISOString().slice(0, 10)}
-                            </span>
-                        ) : null}
-                        {p.data.tags?.length ? (
-                            <span class="tags">
-                                {p.data.tags.map((t) => (
-                                    <span class="tag">{t}</span>
-                                ))}
-                            </span>
-                        ) : null}
-                    </div>
-                    <p class="desc">{p.data.description}</p>
-                </article>
-            ))
-        }
-    </main>
-</Base>
+                // 1) URL 参数强制选择（例如 /?lang=en）
+                var qp = new URLSearchParams(location.search).get("lang");
+                var fromQuery = qp && supported[qp] ? qp : null;
+
+                // 2) 记忆的偏好
+                var saved = null;
+                try {
+                    saved = localStorage.getItem(KEY);
+                } catch (e) {}
+
+                // 3) 浏览器语言猜测（仅第一次）
+                var nav =
+                    (navigator.languages && navigator.languages[0]) ||
+                    navigator.language ||
+                    "";
+                var guess = (nav + "").toLowerCase().startsWith("en")
+                    ? "en"
+                    : "zh";
+
+                var target = fromQuery || saved || guess;
+
+                // 记住选择
+                try {
+                    localStorage.setItem(KEY, target);
+                } catch (e) {}
+
+                var to = "/" + target + "/";
+                if (location.pathname !== to) location.replace(to);
+            })();
+        </script>
+        <!-- JS 被禁用时的兜底 -->
+        <noscript><meta http-equiv="refresh" content="0; url=/zh/" /></noscript>
+    </head>
+    <body>
+        <noscript>
+            <p>
+                请选择语言 / Choose your language:
+                <a href="/zh/">中文</a> |
+                <a href="/en/">English</a>
+            </p>
+        </noscript>
+    </body>
+</html>

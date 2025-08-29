@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://www.kleedaisuki.com/sitemap-index.xml

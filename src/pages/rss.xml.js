@@ -6,7 +6,6 @@ import remarkMath from 'remark-math'
 import remarkRehype from 'remark-rehype'
 import rehypeKatex from 'rehype-katex'
 import rehypeStringify from 'rehype-stringify'
-import sanitizeHtml from 'sanitize-html'
 
 async function mdToHtml(md) {
 	const file = await unified()

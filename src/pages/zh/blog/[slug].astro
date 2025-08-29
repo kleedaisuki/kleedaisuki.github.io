@@ -1,0 +1,29 @@
+---
+import Base from "@layouts/BaseLayout.astro";
+import { getCollection, render, type CollectionEntry } from "astro:content";
+
+export async function getStaticPaths() {
+  const all = await getCollection("blog", (p) => p.data.locale === "zh");
+  console.log(
+    "[build] zh posts:",
+    all.map((p) => p.data.slug),
+  );
+  return all.map((p) => ({ params: { slug: p.data.slug } }));
+}
+
+const { slug } = Astro.params as { slug?: string };
+if (!slug) throw new Error("Missing slug");
+
+const entry = (await getCollection("blog")).find(
+  (p): p is CollectionEntry<"blog"> =>
+    p.data.locale === "zh" && p.data.slug === slug,
+);
+if (!entry) throw new Error(`[zh] Post not found: ${slug}`);
+
+const { Content } = await render(entry);
+---
+
+<Base pageTitle={`${entry.data.title} | kleedaisuki`}>
+  <h1>{entry.data.title}</h1>
+  <article class="prose"><Content /></article>
+</Base>

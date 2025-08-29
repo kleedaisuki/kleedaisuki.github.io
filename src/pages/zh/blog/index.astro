@@ -1,0 +1,23 @@
+---
+// src/pages/zh/blog/index.astro
+import Base from "@layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+const posts = (await getCollection("blog"))
+    .filter((p) => p.data.locale === "zh")
+    .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+
+<Base>
+    <h1>博客</h1>
+    <ul>
+        {
+            posts.map((p) => (
+                <li>
+                    <a href={`/zh/blog/${p.data.slug}/`}>{p.data.title}</a>
+                    {p.data.description && <p>{p.data.description}</p>}
+                </li>
+            ))
+        }
+    </ul>
+</Base>

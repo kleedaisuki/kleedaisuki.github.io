@@ -1,15 +1,62 @@
 ---
-import 'katex/dist/katex.min.css'; 
+import "@styles/fonts.css";
+import Nav from "@components/Nav.astro";
+import LangSwitch from "@components/LangSwitch.astro";
+import { getAbsoluteLocaleUrl } from "astro:i18n";
+
+const strip = Astro.url.pathname.replace(/^\/(zh|en)\//, "");
+const alternates = (["zh", "en"] as const).map((loc) => ({
+  locale: loc,
+  url: getAbsoluteLocaleUrl(loc, strip),
+}));
+const canonical = new URL(
+  Astro.url.pathname,
+  Astro.site ?? "https://www.kleedaisuki.com",
+).toString();
+const { pageTitle } = Astro.props as { pageTitle?: string };
 ---
-<html lang="en">
+
+<html lang={Astro.currentLocale}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title><slot name="title" /></title>
-
-    <link rel="alternate" type="application/rss+xml" title="@kleedaisuki"
-          href={new URL('rss.xml', Astro.site)} />
-    <slot name="head" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="canonical" href={canonical} />
+    {
+      alternates.map((a) => (
+        <link rel="alternate" hreflang={a.locale} href={a.url} />
+      ))
+    }
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={getAbsoluteLocaleUrl("zh", "en")}
+    />
+    <title>{pageTitle ?? "kleedaisuki"}</title>
   </head>
-  <body><slot /></body>
+  <body>
+    <header class="container">
+      <Nav />
+      <LangSwitch />
+    </header>
+    <main class="container">
+      <slot />
+    </main>
+    <footer class="container">© {new Date().getFullYear()} kleedaisuki</footer>
+    <style>
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+      }
+      nav a {
+        margin-right: 0.75rem;
+      }
+    </style>
+  </body>
 </html>

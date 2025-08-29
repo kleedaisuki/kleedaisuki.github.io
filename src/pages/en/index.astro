@@ -1,0 +1,11 @@
+---
+// src/pages/en/index.astro
+import Base from "@layouts/BaseLayout.astro";
+import { t } from "@i18n/t";
+const locale = "en";
+---
+
+<Base>
+    <h1>{t("welcome", locale)}</h1>
+    <p>This is an Astro + GitHub Pages bilingual skeleton.</p>
+</Base>
