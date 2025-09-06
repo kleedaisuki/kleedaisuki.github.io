@@ -1,11 +1,74 @@
 ---
 // src/pages/en/index.astro
-import Base from "@layouts/BaseLayout.astro";
-import { t } from "@i18n/t";
-const locale = "en";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { useTranslations } from "@i18n/utils";
+import "@styles/home.css";
+import { getCollection } from "astro:content";
+
+const lang = "en";
+const t = useTranslations(lang);
+
+const posts = await getCollection("blog", ({ data }) => data.locale === lang);
+const sortedPosts = posts.sort(
+    (a, b) => new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf(),
+);
+const recentPosts = sortedPosts.slice(0, 3);
 ---
 
-<Base>
-    <h1>{t("welcome", locale)}</h1>
-    <p>This is an Astro + GitHub Pages bilingual skeleton.</p>
-</Base>
+<BaseLayout>
+    <section class="hero">
+        <h1 id="hero-greeting" class="hero-greeting"></h1>
+        <p id="hero-intro" class="hero-intro">{t("home.intro")}</p>
+    </section>
+
+    <h2 class="section-title">{t("home.recent_posts")}</h2>
+    <ul class="card-grid">
+        {
+            recentPosts.map((post) => (
+                <li class="card">
+                    <a href={`/${post.data.locale}/blog/${post.data.slug}/`}>
+                        <p class="post-date">
+                            {new Date(post.data.date).toLocaleDateString(lang)}
+                        </p>
+                        <h3 class="card-title">{post.data.title}</h3>
+                        <p class="card-desc">{post.data.description ?? ""}</p>
+                    </a>
+                </li>
+            ))
+        }
+    </ul>
+</BaseLayout>
+
+<script define:vars={{ greetingText: t("home.greeting") }}>
+    // 这是一个在页面加载后执行的客户端脚本
+    document.addEventListener("DOMContentLoaded", () => {
+        const greetingEl = document.getElementById("hero-greeting");
+        const introEl = document.getElementById("hero-intro");
+
+        // 如果找不到元素，就直接退出，避免报错
+        if (!greetingEl || !introEl) return;
+
+        let i = 0;
+        greetingEl.innerHTML = ""; // 先清空标题
+        const cursor = '<span class="cursor"></span>'; // 我们的光标
+
+        function typeWriter() {
+            if (i < greetingText.length) {
+                // 每次打印一个字
+                greetingEl.innerHTML =
+                    greetingText.substring(0, i + 1) + cursor;
+                i++;
+                // 设置一个随机的打字速度，模拟真人的感觉
+                setTimeout(typeWriter, Math.random() * 150 + 50);
+            } else {
+                // 打字结束，让光标留在最后
+                greetingEl.innerHTML = greetingText + cursor;
+                // 让介绍文字浮现出来
+                introEl.classList.add("visible");
+            }
+        }
+
+        // 延迟一小会儿，让页面准备好，然后开始动画
+        setTimeout(typeWriter, 500);
+    });
+</script>

@@ -1,14 +1,15 @@
 ---
-// src/pages/404.astro
+// src/components/NotFoundPage.astro
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { useTranslations } from "@i18n/utils";
+import { defaultLang } from "@i18n/ui";
 
-// 同时获取中文和英文的翻译函数
-const t_zh = useTranslations("zh");
-const t_en = useTranslations("en");
+// 这个组件现在通过 props 来接收语言，而不是自己去猜！
+const { lang = defaultLang } = Astro.props as { lang?: "zh" | "en" };
+const t = useTranslations(lang);
 ---
 
-<BaseLayout pageTitle="404 Not Found / 页面未找到">
+<BaseLayout pageTitle={t("404.title")}>
     <div class="terminal-window">
         <div class="terminal-header">
             <div class="dots">
@@ -19,29 +20,12 @@ const t_en = useTranslations("en");
             <div class="title">kleedaisuki:~</div>
         </div>
         <div class="terminal-body">
-            <p class="error">
-                {t_en("404.error")}<span class="cursor">_</span>
-            </p>
-            <p class="error">{t_zh("404.error")}</p>
-
-            <p class="message-block">{t_en("404.message")}</p>
-            <p class="message-block">{t_zh("404.message")}</p>
-
-            <p>{t_en("404.suggestion")}</p>
-            <p>{t_zh("404.suggestion")}</p>
-
-            <p class="command-block">
-                <a href="/en/" class="command">
-                    <span class="prompt">{t_en("404.command.home")}</span> ({
-                        t_en("404.link.home")
-                    })
-                </a>
-            </p>
-            <p class="command-block">
-                <a href="/zh/" class="command">
-                    <span class="prompt">{t_zh("404.command.home")}</span> ({
-                        t_zh("404.link.home")
-                    })
+            <p class="error">{t("404.error")}<span class="cursor">_</span></p>
+            <p>{t("404.message")}</p>
+            <p>{t("404.suggestion")}</p>
+            <p>
+                <a href={lang === "zh" ? "/zh/" : "/en/"} class="command">
+                    <span class="prompt">{t("404.command.home")}</span>
                 </a>
             </p>
         </div>
@@ -49,9 +33,7 @@ const t_en = useTranslations("en");
 </BaseLayout>
 
 <style>
-    /* 之前的 CSS 几乎完美，我们只微调一下
-    增加一些块间距，让双语内容呼吸感更强 
-  */
+    /* 这里的样式和之前 404.astro 里的一模一样 */
     .terminal-window {
         --header-height: 30px;
         background-color: var(--surface-color);
@@ -99,15 +81,8 @@ const t_en = useTranslations("en");
         line-height: 1.8;
     }
     .terminal-body p {
-        margin: 0 0 0.5em; /* 减小默认的段落间距 */
+        margin: 0 0 1em;
     }
-
-    /* 为消息和指令增加一些额外的顶部间距，形成分组感 */
-    .message-block,
-    .command-block {
-        margin-top: 1.5em;
-    }
-
     .prompt {
         color: var(--accent-color);
         font-weight: bold;
@@ -119,9 +94,6 @@ const t_en = useTranslations("en");
         color: var(--text-color);
         text-decoration: none;
         border-bottom: 2px solid transparent;
-        display: inline-block; /* 让背景色只包裹文字 */
-        padding: 0.2em 0.4em;
-        border-radius: var(--border-radius-small);
     }
     .command:hover {
         color: var(--accent-hover-color);

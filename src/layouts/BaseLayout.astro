@@ -1,4 +1,5 @@
 ---
+import "@styles/global.css"; // 我们把 global.css 的引用放在这里
 import "@styles/fonts.css";
 import Nav from "@components/Nav.astro";
 import LangSwitch from "@components/LangSwitch.astro";
@@ -20,7 +21,7 @@ const { pageTitle } = Astro.props as { pageTitle?: string };
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" /> <link rel="canonical" href={canonical} />
     {
       alternates.map((a) => (
         <link rel="alternate" hreflang={a.locale} href={a.url} />
@@ -34,29 +35,17 @@ const { pageTitle } = Astro.props as { pageTitle?: string };
     <title>{pageTitle ?? "kleedaisuki"}</title>
   </head>
   <body>
-    <header class="container">
-      <Nav />
-      <LangSwitch />
-    </header>
-    <main class="container">
-      <slot />
-    </main>
-    <footer class="container">© {new Date().getFullYear()} kleedaisuki</footer>
-    <style>
-      .container {
-        max-width: 960px;
-        margin: 0 auto;
-        padding: 1rem;
-      }
-      header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-      }
-      nav a {
-        margin-right: 0.75rem;
-      }
-    </style>
+    <div class="site-wrapper">
+      <header class="container">
+        <Nav />
+        <LangSwitch />
+      </header>
+      <main class="container">
+        <slot />
+      </main>
+      <footer class="container">
+        © {new Date().getFullYear()} kleedaisuki ✨
+      </footer>
+    </div>
   </body>
 </html>

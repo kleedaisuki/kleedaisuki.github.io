@@ -1,205 +1,234 @@
-/*
-  The CSS in this style tag is based off of Bear Blog's default CSS.
-  https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
-  License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
- */
+/* src/styles/global.css */
 
+/* 1. 主题与变量定义 (Theme & Variables) 🎨 */
 :root {
-	--accent: #2337ff;
-	--accent-dark: #000d8a;
-	--black: 15, 18, 25;
-	--gray: 96, 115, 159;
-	--gray-light: 229, 233, 240;
-	--gray-dark: 34, 41, 57;
-	--gray-gradient: rgba(var(--gray-light), 50%), #fff;
-	--box-shadow:
-		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%), 0 16px 32px rgba(var(--gray), 33%);
+	--bg-color: #1a1b26;
+	/* 深邃的夜空背景，有一点点偏蓝紫 */
+	--surface-color: #24283b;
+	/* 卡片和容器的背景色，稍亮一些 */
+	--text-color: #c0caf5;
+	/* 温柔的淡蓝色文本，不刺眼 */
+	--heading-color: #ffffff;
+	/* 标题用纯白，更醒目 */
+	--accent-color: #bb9af7;
+	/* 萌系的重点色！漂亮的淡紫色 */
+	--accent-hover-color: #ff9e64;
+	/* 鼠标悬停时的活力橙色 */
+	--border-color: #414868;
+	/* 边框颜色，用于分割区域 */
+	--code-bg-color: #1e202e;
+	/* 代码块的背景色 */
+	--shadow-color: rgba(0, 0, 0, 0.25);
+
+	--font-sans: "Atkinson Hyperlegible", "Noto Sans SC", sans-serif;
+	/* Atkinson 是个好字体！我们为中文也指定一个 */
+	--font-mono: "Fira Code", "Cascadia Code", monospace;
+	/* 为代码准备的漂亮等宽字体 */
+
+	--border-radius-small: 4px;
+	--border-radius-medium: 8px;
 }
 
-@font-face {
-	font-family: "Atkinson";
-	src: url("/fonts/atkinson-regular.woff") format("woff");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
+/* 2. 全局重置与基础样式 (Global Reset & Base Styles) 📜 */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	/* 更直观的盒子模型 */
 }
 
-@font-face {
-	font-family: "Atkinson";
-	src: url("/fonts/atkinson-bold.woff") format("woff");
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
+html {
+	scroll-behavior: smooth;
+	/* 平滑滚动效果 */
 }
 
 body {
-	font-family: "Atkinson", sans-serif;
 	margin: 0;
 	padding: 0;
-	text-align: left;
-	background: linear-gradient(var(--gray-gradient)) no-repeat;
-	background-size: 100% 600px;
-	word-wrap: break-word;
-	overflow-wrap: break-word;
-	color: rgb(var(--gray-dark));
-	font-size: 20px;
+	font-family: var(--font-sans);
+	background-color: var(--bg-color);
+	color: var(--text-color);
+	font-size: 15px;
 	line-height: 1.7;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* 3. 布局样式 (Layout Styles) 🏗️ */
+.site-wrapper {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	/* 确保 wrapper 至少和视口一样高 */
+}
+
+.container {
+	width: 100%;
+	max-width: 800px;
+	/* 调整了宽度，更适合阅读 */
+	margin: 0 auto;
+	padding: 1.5rem;
+}
+
+header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding-top: 2rem;
+	padding-bottom: 2rem;
+	border-bottom: 1px solid var(--border-color);
 }
 
 main {
-	width: 720px;
-	max-width: calc(100% - 2em);
-	margin: auto;
-	padding: 3em 1em;
+	flex-grow: 1;
+	/* 这是粘性页脚的关键！让 main 区域占据所有剩余空间 */
+	padding-top: 3rem;
+	padding-bottom: 3rem;
 }
 
+footer {
+	text-align: center;
+	font-size: 0.9em;
+	padding-top: 2rem;
+	padding-bottom: 2rem;
+	border-top: 1px solid var(--border-color);
+	color: var(--border-color);
+}
+
+/* 4. 文本与排版 (Typography) ✍️ */
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-	margin: 0 0 0.5rem 0;
-	color: rgb(var(--black));
-	line-height: 1.2;
-}
-
-h1 {
-	font-size: 3.052em;
-}
-
-h2 {
-	font-size: 2.441em;
-}
-
-h3 {
-	font-size: 1.953em;
-}
-
-h4 {
-	font-size: 1.563em;
-}
-
-h5 {
-	font-size: 1.25em;
-}
-
-strong,
-b {
+	margin: 2.5rem 0 1rem;
+	color: var(--heading-color);
+	line-height: 1.3;
 	font-weight: 700;
 }
 
-a {
-	color: var(--accent);
+h1 {
+	font-size: 2.8em;
 }
 
-a:hover {
-	color: var(--accent);
+h2 {
+	font-size: 2.1em;
+}
+
+h3 {
+	font-size: 1.6em;
+}
+
+h4 {
+	font-size: 1.25em;
 }
 
 p {
-	margin-bottom: 1em;
+	margin: 0 0 1.5em 0;
 }
 
-.prose p {
-	margin-bottom: 2em;
+a {
+	color: var(--accent-color);
+	text-decoration: none;
+	transition: all 0.2s ease-in-out;
 }
 
-textarea {
+a:hover,
+a:focus {
+	color: var(--accent-hover-color);
+	text-shadow: 0 0 8px var(--accent-hover-color);
+	/* 悬停时发出可爱的光晕！ */
+}
+
+/* 5. 组件样式 (Component Styles) 🧩 */
+
+/* 导航链接 */
+nav a {
+	margin-right: 1.25rem;
+	padding: 0.5rem 0;
+	position: relative;
+	font-weight: bold;
+}
+
+/* 给导航链接一个可爱的下划线动画 */
+nav a::after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
 	width: 100%;
-	font-size: 16px;
+	height: 2px;
+	background: var(--accent-hover-color);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.3s ease-out;
 }
 
-input {
-	font-size: 16px;
+nav a:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
 }
 
-table {
-	width: 100%;
+/* 代码块 */
+code {
+	font-family: var(--font-mono);
+	background-color: var(--code-bg-color);
+	padding: 0.2em 0.4em;
+	border-radius: var(--border-radius-small);
+	font-size: 0.9em;
+	color: var(--accent-hover-color);
+}
+
+pre {
+	background-color: var(--surface-color);
+	border: 1px solid var(--border-color);
+	padding: 1.5em;
+	border-radius: var(--border-radius-medium);
+	overflow-x: auto;
+	/* 代码过长时可以滚动 */
+	box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+pre>code {
+	all: unset;
+	/* 重置 pre 里的 code 样式，避免双重样式 */
+	font-family: var(--font-mono);
+	color: var(--text-color);
+}
+
+/* 引用块 */
+blockquote {
+	border-left: 4px solid var(--accent-color);
+	padding-left: 1.5em;
+	margin: 2em 0;
+	font-style: italic;
+	color: var(--text-color);
 }
 
 img {
 	max-width: 100%;
 	height: auto;
-	border-radius: 8px;
+	border-radius: var(--border-radius-medium);
+	box-shadow: 0 4px 12px var(--shadow-color);
 }
 
-code {
-	padding: 2px 5px;
-	background-color: rgb(var(--gray-light));
-	border-radius: 2px;
-}
-
-pre {
-	padding: 1.5em;
-	border-radius: 8px;
-}
-
-pre>code {
-	all: unset;
-}
-
-blockquote {
-	border-left: 4px solid var(--accent);
-	padding: 0 0 0 20px;
-	margin: 0px;
-	font-size: 1.333em;
-}
-
-hr {
-	border: none;
-	border-top: 1px solid rgb(var(--gray-light));
-}
-
-@media (max-width: 720px) {
+/* 6. 响应式设计 (Responsive Design) 📱 */
+@media (max-width: 768px) {
 	body {
-		font-size: 18px;
+		font-size: 14px;
 	}
 
-	main {
-		padding: 1em;
+	.container {
+		padding: 1rem;
 	}
-}
 
-.sr-only {
-	border: 0;
-	padding: 0;
-	margin: 0;
-	position: absolute !important;
-	height: 1px;
-	width: 1px;
-	overflow: hidden;
-	/* IE6, IE7 - a 0 height clip, off to the bottom right of the visible 1px box */
-	clip: rect(1px 1px 1px 1px);
-	/* maybe deprecated but we need to support legacy browsers */
-	clip: rect(1px, 1px, 1px, 1px);
-	/* modern browsers, clip-path works inwards from each corner */
-	clip-path: inset(50%);
-	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
-	white-space: nowrap;
-}
+	h1 {
+		font-size: 2.2em;
+	}
 
-.prose {
-	line-height: 1.75;
-	font-size: 16px;
-}
-
-.prose h1,
-.prose h2,
-.prose h3 {
-	margin: 1.5em 0 .6em;
-}
-
-.prose p,
-.prose ul,
-.prose ol,
-.prose pre,
-.prose table {
-	margin: .9em 0;
-}
-
-.prose code {
-	padding: .15em .35em;
-	background: #f6f8fa;
-	border-radius: .25rem;
+	h2 {
+		font-size: 1.8em;
+	}
 }

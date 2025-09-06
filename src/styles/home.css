@@ -1,0 +1,116 @@
+/* src/styles/home.css */
+
+/* 1. 英雄区域 (Hero Section) - 已强化！ */
+.hero {
+    /* 增加垂直内边距，给予欢迎语巨大的呼吸空间 */
+    padding: 10rem 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    /* 确保它在大多数屏幕上都能占据主要视野 */
+}
+
+.hero-greeting {
+    font-size: 3.5em;
+    /* 大！还要更大！ */
+    font-weight: 700;
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+    /* 我们将使用等宽字体，更有打字机的感觉 */
+    font-family: var(--font-mono);
+}
+
+/* 欢迎语后面的光标 */
+.hero-greeting .cursor {
+    display: inline-block;
+    width: 0.8em;
+    height: 1.1em;
+    background-color: var(--accent-hover-color);
+    margin-left: 0.2em;
+    animation: blinking-cursor 1s steps(2, start) infinite;
+}
+
+@keyframes blinking-cursor {
+    to {
+        background-color: transparent;
+    }
+}
+
+.hero-intro {
+    font-size: 1.2em;
+    max-width: 600px;
+    margin: 0 auto 3rem auto;
+    color: var(--text-color);
+    line-height: 1.8;
+    /* 初始时透明，等待欢迎语动画结束后再浮现 */
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+}
+
+/* 动画结束后，为 p 标签添加这个 class 来显示它 */
+.hero-intro.visible {
+    opacity: 1;
+}
+
+/* 2. 卡片网格布局 (Card Grid Layout) - 无需改动 */
+.section-title {
+    text-align: center;
+    font-size: 2em;
+    color: var(--heading-color);
+    margin-top: 4rem;
+    margin-bottom: 2.5rem;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 0;
+}
+
+/* 3. 卡片本身 (Card Styling) */
+.card {
+    list-style: none;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-medium);
+    padding: 2rem;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* 萌系的交互效果！*/
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px var(--shadow-color), 0 0 20px var(--accent-color);
+}
+
+.card a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.card-title {
+    font-size: 1.5em;
+    color: var(--heading-color);
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+}
+
+.card-desc {
+    font-size: 1em;
+    color: var(--text-color);
+    line-height: 1.7;
+    margin-bottom: 0;
+}
+
+/* 4. 文章列表的日期样式 */
+.post-date {
+    font-size: 0.85em;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+    font-family: var(--font-mono);
+}

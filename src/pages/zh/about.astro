@@ -1,6 +1,149 @@
 ---
 // src/pages/zh/about.astro
-import Base from "@layouts/BaseLayout.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { useTranslations } from "@i18n/utils";
+import "@styles/about.css"; // 引入档案的专属样式
+
+const lang = "zh";
+const t = useTranslations(lang);
+
+// --- GitHub 数据链启动！ ---
+const GITHUB_USERNAME = "kleedaisuki"; // ⚠️ 请在这里替换成你自己的 GitHub 用户名！
+
+let githubProfile = null;
+let githubRepos = [];
+
+try {
+    // 1. 获取用户档案信息 (头像, 粉丝数等)
+    const profileRes = await fetch(
+        `https://api.github.com/users/${GITHUB_USERNAME}`,
+    );
+    if (profileRes.ok) {
+        githubProfile = await profileRes.json();
+    }
+
+    // 2. 获取用户的公开仓库信息
+    const reposRes = await fetch(
+        `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=pushed&per_page=6`,
+    );
+    if (reposRes.ok) {
+        const allRepos = await reposRes.json();
+        // 过滤掉 Forks，只展示自己的原创项目
+        githubRepos = allRepos.filter((repo) => !repo.fork);
+    }
+} catch (error) {
+    console.error("Failed to fetch GitHub data:", error);
+    // 如果 API 请求失败，页面依然能正常构建，只是不显示 GitHub 部分
+}
+
+// 这是从你的 README 中提取的“人格矩阵”数据
+const matrixData = [
+    {
+        quote: "「代码是我最强的魔法阵，C++是契约时刻显现的银白符文。终身学习？当然是我和宇宙图lingji的共振频率～」",
+        tags: "💻 CS之海徘徊的咒式构造者 / 超自学主义者 / 有点反复debug的夜行性生物",
+    },
+    {
+        quote: "「数学是通往多重真理之门的贤者石碑，逻辑是我随身携带的四维短剑！」",
+        tags: "📐 数学信徒兼吐槽役 / ∑系咒文编织者 / ε-δ的调律师",
+    },
+    {
+        quote: "「语言是异界坐标，书本是心灵跨层传送器，阅读是精神体专属的Warp跳跃指令～」",
+        tags: "📖 白天上课偷偷看论文的阅读生命体 / 情报摄取者 / 知识系文具控",
+    },
+    {
+        quote: "「GPT-5 是我在数据海中的战术参谋，Gemini 2.5 Pro 是我脑后浮现的同步术式核心，我和它们共同执行深研多线程作战。」",
+        tags: "🤖 异常熵值制造机 / AI亲合系术师 / Prompt型意识流召唤者（暂无JP语音包适配）",
+    },
+    {
+        quote: "「学校是物理上在场，精神上断线的副本世界……而我，只想自由探索世界主线剧情！」",
+        tags: "🏫 社会性逃避中 / 学科结构破坏者 / 每日许愿“今天别点名”",
+    },
+    {
+        quote: "「ACGN预警🔔！这里是技术宅萝莉的作战本阵！次元壁？我早就用信仰穿透啦！萌即是观察恒定点，中二就是我的重力中心！」",
+        tags: "⚠️ 宇宙萌战前线指挥官 / 多宇宙界面连接器 / Moe系统β版本实验体",
+    },
+];
 ---
 
-<Base><h1>关于</h1><p>我是一名喜欢哲学与技术的唱跳科普小偶像☆～</p></Base>
+<BaseLayout pageTitle={t("about.title")}>
+    <div class="about-container">
+        {
+            githubProfile && (
+                <header class="about-header">
+                    <img
+                        src={githubProfile.avatar_url}
+                        alt="GitHub Avatar"
+                        class="profile-avatar"
+                    />
+                    <h1>{githubProfile.name || githubProfile.login}</h1>
+                    <p>{githubProfile.bio}</p>
+                </header>
+            )
+        }
+
+        <section class="personality-matrix">
+            <h2 class="section-title">{t("about.matrix_title")}</h2>
+            <div class="matrix-grid">
+                {
+                    matrixData.map(({ quote, tags }) => (
+                        <div class="trait-card">
+                            <blockquote class="trait-card-quote">
+                                {quote}
+                            </blockquote>
+                            <p class="trait-card-tags">{tags}</p>
+                        </div>
+                    ))
+                }
+            </div>
+        </section>
+
+        {
+            githubProfile && githubRepos.length > 0 && (
+                <section class="datalink-section">
+                    <h2 class="section-title">{t("about.datalink_title")}</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="count">{githubProfile.followers}</div>
+                            <div class="label">
+                                {t("about.stats_followers")}
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="count">
+                                {githubProfile.public_repos}
+                            </div>
+                            <div class="label">{t("about.stats_repos")}</div>
+                        </div>
+                    </div>
+
+                    <h3 class="section-title" style="font-size: 1.5em;">
+                        {t("about.repos_title")}
+                    </h3>
+                    <div class="repo-grid">
+                        {githubRepos.map((repo) => (
+                            <div class="repo-card">
+                                <a
+                                    href={repo.html_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <h4 class="repo-title">{repo.name}</h4>
+                                    <p class="repo-desc">{repo.description}</p>
+                                    <div class="repo-footer">
+                                        <span class="repo-lang">
+                                            {repo.language && (
+                                                <span class="lang-dot" />
+                                            )}
+                                            {repo.language}
+                                        </span>
+                                        <span>★ {repo.stargazers_count}</span>
+                                    </div>
+                                </a>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )
+        }
+    </div>
+</BaseLayout>

@@ -1,0 +1,99 @@
+/* src/styles/blog.css */
+
+/* 1. 页面头部 (无改动) */
+.blog-header {
+    text-align: center;
+    padding: 4rem 0 3rem;
+}
+
+.blog-title {
+    font-size: 3em;
+    color: var(--heading-color);
+    margin-bottom: 0.5rem;
+}
+
+.blog-description {
+    font-size: 1.1em;
+    color: var(--text-color);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* 2. 文章列表容器 (无改动) */
+.post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+    max-width: 750px;
+}
+
+/* 3. 单个文章条目 (微调) */
+.post-item {
+    padding: 2.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.post-item:first-child {
+    padding-top: 1rem;
+}
+
+/* [新增] 将所有内容包裹起来，强化垂直感 */
+.post-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.post-meta {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--text-color);
+    margin-bottom: 0.75rem;
+}
+
+.post-title {
+    font-size: 1.8em;
+    color: var(--heading-color);
+    margin: 0;
+}
+
+.post-title a {
+    text-decoration: none;
+    color: var(--accent-color);
+    background-image: linear-gradient(var(--accent-hover-color), var(--accent-hover-color));
+    background-repeat: no-repeat;
+    background-size: 0% 2px;
+    background-position: left bottom;
+    transition: background-size 0.3s ease;
+}
+
+.post-title a:hover {
+    background-size: 100% 2px;
+}
+
+.post-description {
+    font-size: 1em;
+    color: var(--text-color);
+    line-height: 1.7;
+    margin-top: 1rem;
+    margin-bottom: 0;
+}
+
+/* [新增] 标签列表的专属样式 */
+.post-tags {
+    margin-top: 1.5rem;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.tag-item {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--text-color);
+    background-color: var(--surface-color);
+    padding: 0.25em 0.75em;
+    border-radius: var(--border-radius-medium);
+    border: 1px solid var(--border-color);
+}
