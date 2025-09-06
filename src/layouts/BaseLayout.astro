@@ -21,7 +21,8 @@ const { pageTitle } = Astro.props as { pageTitle?: string };
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" /> <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonical} />
     {
       alternates.map((a) => (
         <link rel="alternate" hreflang={a.locale} href={a.url} />
@@ -44,7 +45,13 @@ const { pageTitle } = Astro.props as { pageTitle?: string };
         <slot />
       </main>
       <footer class="container">
-        © {new Date().getFullYear()} kleedaisuki ✨
+        © 2024-{new Date().getFullYear()} kleedaisuki ✨<br />
+        <a
+          href="http://creativecommons.org/licenses/by-nc-sa/4.0/"
+          rel="license"
+        >
+          CC BY-NC-SA 4.0
+        </a>
       </footer>
     </div>
   </body>
