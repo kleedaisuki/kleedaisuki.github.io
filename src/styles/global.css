@@ -90,6 +90,8 @@ body::after {
 }
 
 header.container {
+  position: sticky;
+  overflow: visible;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -100,10 +102,22 @@ header.container {
   border-radius: var(--radius-large);
   background: linear-gradient(120deg, rgba(255, 252, 247, 0.95), rgba(255, 238, 215, 0.9));
   box-shadow: 0 14px 30px var(--shadow-color);
-  position: sticky;
   top: 0.9rem;
   z-index: 20;
   backdrop-filter: blur(6px);
+}
+
+header.container::after {
+  content: "";
+  position: absolute;
+  right: 1rem;
+  top: -0.15rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--accent-gold);
+  box-shadow: -1.2rem 0.3rem 0 rgba(255, 133, 105, 0.8),
+    -0.72rem -0.42rem 0 rgba(255, 181, 94, 0.68);
 }
 
 main.container {
@@ -120,6 +134,18 @@ footer.container {
   border: 1px dashed var(--border-color);
   border-radius: var(--radius-medium);
   background: rgba(255, 250, 242, 0.8);
+  position: relative;
+  overflow: hidden;
+}
+
+footer.container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 181, 94, 0.25) 1.4px, transparent 1.5px);
+  background-size: 18px 18px;
+  opacity: 0.45;
+  pointer-events: none;
 }
 
 h1,
@@ -274,6 +300,20 @@ img {
 
 .post-body > h1 {
   margin-bottom: 1rem;
+  position: relative;
+  display: inline-block;
+}
+
+.post-body > h1::after {
+  content: "";
+  position: absolute;
+  left: 0.15rem;
+  right: 0.15rem;
+  bottom: -0.28rem;
+  height: 0.2rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-gold), var(--accent-berry));
+  opacity: 0.62;
 }
 
 .prose {
@@ -340,6 +380,10 @@ main.container > *:nth-child(3) {
     border-radius: var(--radius-medium);
     padding: 1rem;
     margin-top: 0.75rem;
+  }
+
+  header.container::after {
+    display: none;
   }
 
   main.container {

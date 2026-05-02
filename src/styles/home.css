@@ -15,6 +15,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  isolation: isolate;
 }
 
 .hero::after {
@@ -43,6 +44,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   box-shadow: 0 6px 14px rgba(165, 87, 45, 0.12);
+  z-index: 2;
 }
 
 .hero-greeting {
@@ -52,6 +54,9 @@
   letter-spacing: 0.02em;
   color: var(--accent-strong);
   text-wrap: balance;
+  text-shadow: 0 3px 0 rgba(255, 228, 199, 0.85);
+  position: relative;
+  z-index: 1;
 }
 
 .hero-greeting .cursor {
@@ -89,6 +94,28 @@
   margin: 2.5rem 0 1.2rem;
   text-align: center;
   color: var(--heading-color);
+  position: relative;
+}
+
+.section-title::before,
+.section-title::after {
+  content: "";
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-inline: 0.45rem;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.section-title::before {
+  background: var(--accent-gold);
+  box-shadow: 0 0 0 4px rgba(255, 181, 94, 0.16);
+}
+
+.section-title::after {
+  background: var(--accent-berry);
+  box-shadow: 0 0 0 4px rgba(255, 133, 105, 0.14);
 }
 
 .card-grid {
@@ -110,22 +137,16 @@
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-.card::before {
+.card::after {
   content: "";
   position: absolute;
-  top: -0.42rem;
-  left: 1.05rem;
-  width: 2.1rem;
-  height: 0.68rem;
-  border-radius: 999px;
-  background: rgba(255, 209, 140, 0.7);
-  transform: rotate(-11deg);
-}
-
-.card:nth-child(2n)::before {
-  left: auto;
-  right: 1rem;
-  transform: rotate(11deg);
+  right: 0.8rem;
+  bottom: 0.75rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 181, 94, 0.55);
+  opacity: 0.72;
 }
 
 .card:hover {
@@ -153,10 +174,20 @@
 }
 
 .card a {
+  position: relative;
   display: block;
   height: 100%;
   padding: 1.2rem 1.2rem 1.1rem;
   color: inherit;
+}
+
+.card a::after {
+  content: "";
+  position: absolute;
+  inset: 0.6rem;
+  border: 1px dashed rgba(255, 181, 94, 0.24);
+  border-radius: 14px;
+  pointer-events: none;
 }
 
 .post-date {
@@ -187,6 +218,13 @@
   .hero::before {
     top: 0.8rem;
     right: 0.8rem;
+  }
+
+  .section-title::before,
+  .section-title::after,
+  .card::after,
+  .card a::after {
+    display: none;
   }
 
   .section-title {
