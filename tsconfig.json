@@ -4,11 +4,21 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "@i18n/*": ["src/i18n/*"],
-      "@components/*": ["src/components/*"],
-      "@layouts/*": ["src/layouts/*"],
-      "@content/*": ["src/content/*"],
-      "@styles/*": ["src/styles/*"]
+      "@i18n/*": [
+        "src/i18n/*"
+      ],
+      "@components/*": [
+        "src/components/*"
+      ],
+      "@layouts/*": [
+        "src/layouts/*"
+      ],
+      "@content/*": [
+        "src/content/*"
+      ],
+      "@styles/*": [
+        "src/styles/*"
+      ]
     }
   }
 }

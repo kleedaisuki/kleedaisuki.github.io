@@ -1,8 +1,52 @@
 ---
 import { getRelativeLocaleUrl } from "astro:i18n";
-const raw = Astro.url.pathname.replace(/^\/(zh|en)\//, "");
-const toZH = getRelativeLocaleUrl("zh", raw);
-const toEN = getRelativeLocaleUrl("en", raw);
+import { getCollection, type CollectionEntry } from "astro:content";
+
+const pathname = Astro.url.pathname;
+const m = pathname.match(/^\/(zh|en)\/blog\/([^/]+)\/?$/);
+
+const raw = pathname.replace(/^\/(zh|en)\//, "");
+let toZH = getRelativeLocaleUrl("zh", raw);
+let toEN = getRelativeLocaleUrl("en", raw);
+
+if (m) {
+  const currentLocale = m[1] as "zh" | "en";
+  const currentSlug = decodeURIComponent(m[2]);
+  const allPosts = await getCollection("blog");
+
+  const findPost = (locale: "zh" | "en", slug: string) =>
+    allPosts.find(
+      (p): p is CollectionEntry<"blog"> =>
+        p.data.locale === locale && p.data.slug === slug,
+    );
+
+  const findByPair = (locale: "zh" | "en", pair: string) =>
+    allPosts.find(
+      (p): p is CollectionEntry<"blog"> =>
+        p.data.locale === locale && p.data.pair === pair,
+    );
+
+  const currentPost = findPost(currentLocale, currentSlug);
+  if (currentPost) {
+    const getTargetSlug = (targetLocale: "zh" | "en") => {
+      const pairedSlug = currentPost.data.pair;
+      if (!pairedSlug) return null;
+
+      if (findPost(targetLocale, pairedSlug)) return pairedSlug;
+
+      const reverse = findByPair(targetLocale, currentSlug);
+      if (reverse) return reverse.data.slug;
+
+      return pairedSlug;
+    };
+
+    const zhSlug = currentLocale === "zh" ? currentSlug : getTargetSlug("zh");
+    const enSlug = currentLocale === "en" ? currentSlug : getTargetSlug("en");
+
+    if (zhSlug) toZH = `/zh/blog/${encodeURIComponent(zhSlug)}/`;
+    if (enSlug) toEN = `/en/blog/${encodeURIComponent(enSlug)}/`;
+  }
+}
 ---
 
 <nav aria-label="Language switcher">
@@ -19,5 +63,3 @@ const toEN = getRelativeLocaleUrl("en", raw);
         >English</a
     >
 </nav>
-
-
