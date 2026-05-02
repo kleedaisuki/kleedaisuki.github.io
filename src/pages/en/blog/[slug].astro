@@ -24,6 +24,8 @@ const { Content } = await render(entry);
 ---
 
 <Base pageTitle={`${entry.data.title} | kleedaisuki`}>
-  <h1>{entry.data.title}</h1>
-  <article class="prose"><Content /></article>
+  <div class="post-body">
+    <h1>{entry.data.title}</h1>
+    <article class="prose"><Content /></article>
+  </div>
 </Base>

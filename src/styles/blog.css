@@ -3,6 +3,7 @@
 }
 
 .blog-header {
+  position: relative;
   text-align: center;
   padding: clamp(2.1rem, 5vw, 3.4rem) 1rem;
   border: 1px solid rgba(243, 191, 152, 0.9);
@@ -11,6 +12,31 @@
     radial-gradient(circle at 20% 20%, rgba(255, 215, 173, 0.55), transparent 45%),
     linear-gradient(160deg, rgba(255, 252, 246, 0.95), rgba(255, 237, 211, 0.88));
   box-shadow: 0 15px 28px rgba(170, 88, 42, 0.12);
+}
+
+.blog-header::before {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  width: 0.62rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--accent-gold);
+  box-shadow: 1.15rem 0.3rem 0 rgba(255, 133, 105, 0.75),
+    2rem -0.08rem 0 rgba(255, 181, 94, 0.68);
+}
+
+.blog-header::after {
+  content: "field notes";
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+  font-family: var(--font-mono);
 }
 
 .blog-title {
@@ -33,11 +59,25 @@
 }
 
 .post-item {
+  position: relative;
   border: 1px solid rgba(243, 191, 152, 0.84);
   border-radius: 18px;
   background: var(--surface-color);
   box-shadow: 0 8px 18px rgba(170, 87, 43, 0.08);
   transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.post-item::before {
+  content: "";
+  position: absolute;
+  left: -0.4rem;
+  top: 1.2rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  background: color-mix(in srgb, var(--accent-color) 75%, var(--accent-gold));
+  box-shadow: 0 5px 12px rgba(217, 77, 32, 0.22);
 }
 
 .post-item:hover {
@@ -111,5 +151,15 @@
 
   .post-content {
     padding: 0.95rem 0.95rem;
+  }
+
+  .blog-header::after {
+    top: auto;
+    right: 0.9rem;
+    bottom: 0.8rem;
+  }
+
+  .post-item::before {
+    display: none;
   }
 }

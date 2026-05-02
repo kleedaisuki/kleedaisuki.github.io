@@ -28,6 +28,23 @@
   pointer-events: none;
 }
 
+.hero::before {
+  content: "adventure log";
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(243, 191, 152, 0.95);
+  background: rgba(255, 247, 233, 0.95);
+  color: var(--accent-strong);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 6px 14px rgba(165, 87, 45, 0.12);
+}
+
 .hero-greeting {
   margin: 0;
   font-size: clamp(2rem, 5.8vw, 3.8rem);
@@ -84,6 +101,7 @@
 }
 
 .card {
+  position: relative;
   list-style: none;
   background: var(--surface-color);
   border: 1px solid rgba(243, 191, 152, 0.82);
@@ -92,10 +110,46 @@
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
+.card::before {
+  content: "";
+  position: absolute;
+  top: -0.42rem;
+  left: 1.05rem;
+  width: 2.1rem;
+  height: 0.68rem;
+  border-radius: 999px;
+  background: rgba(255, 209, 140, 0.7);
+  transform: rotate(-11deg);
+}
+
+.card:nth-child(2n)::before {
+  left: auto;
+  right: 1rem;
+  transform: rotate(11deg);
+}
+
 .card:hover {
   transform: translateY(-4px);
   border-color: var(--accent-color);
   box-shadow: 0 16px 28px rgba(170, 87, 43, 0.16);
+}
+
+.card:nth-child(3n + 1) {
+  transform: rotate(-0.45deg);
+}
+
+.card:nth-child(3n + 2) {
+  transform: rotate(0.5deg);
+}
+
+.card:nth-child(3n + 3) {
+  transform: rotate(-0.2deg);
+}
+
+.card:nth-child(3n + 1):hover,
+.card:nth-child(3n + 2):hover,
+.card:nth-child(3n + 3):hover {
+  transform: translateY(-4px) rotate(0deg);
 }
 
 .card a {
@@ -130,7 +184,19 @@
     padding: 2.6rem 1rem;
   }
 
+  .hero::before {
+    top: 0.8rem;
+    right: 0.8rem;
+  }
+
   .section-title {
     margin-top: 2rem;
+  }
+
+  .card,
+  .card:nth-child(3n + 1),
+  .card:nth-child(3n + 2),
+  .card:nth-child(3n + 3) {
+    transform: none;
   }
 }
