@@ -2,39 +2,15 @@
 // src/pages/en/about.astro
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { useTranslations } from "@i18n/utils";
+import { getGitHubAboutData } from "../../lib/github";
 import "@styles/about.css"; // 复用同一个完美的样式文件！
 
 const lang = "en";
 const t = useTranslations(lang);
 
-// --- GitHub Datalink Initialized! ---
-const GITHUB_USERNAME = "kleedaisuki"; // ⚠️ Remember to use your own GitHub username here!
-
-let githubProfile = null;
-let githubRepos = [];
-
-try {
-    // 1. Fetch user profile info (avatar, followers, etc.)
-    const profileRes = await fetch(
-        `https://api.github.com/users/${GITHUB_USERNAME}`,
-    );
-    if (profileRes.ok) {
-        githubProfile = await profileRes.json();
-    }
-
-    // 2. Fetch user's public repositories
-    const reposRes = await fetch(
-        `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=pushed&per_page=6`,
-    );
-    if (reposRes.ok) {
-        const allRepos = await reposRes.json();
-        // Filter out forked repos to only show original projects
-        githubRepos = allRepos.filter((repo) => !repo.fork);
-    }
-} catch (error) {
-    console.error("Failed to fetch GitHub data:", error);
-    // If the API call fails, the page will still build gracefully without the GitHub section.
-}
+const { profile: githubProfile, repos: githubRepos, profileUrl, username } =
+    await getGitHubAboutData();
+const hasStaticGitHubData = Boolean(githubProfile && githubRepos.length > 0);
 
 // The "Personality Matrix" data, translated to maintain the spirit!
 const matrixData = [
@@ -66,10 +42,18 @@ const matrixData = [
 ---
 
 <BaseLayout pageTitle={t("about.title")}>
-    <div class="about-container">
+    <div
+        class="about-container"
+        data-github-about-root
+        data-username={username}
+        data-profile-url={profileUrl}
+        data-has-server-data={hasStaticGitHubData ? "1" : "0"}
+        data-loading-text="Syncing data from GitHub..."
+        data-error-text="GitHub data is temporarily unavailable. Please try again later."
+    >
         {
             githubProfile && (
-                <header class="about-header">
+                <header class="about-header" data-github-header-dynamic>
                     <img
                         src={githubProfile.avatar_url}
                         alt="GitHub Avatar"
@@ -77,6 +61,30 @@ const matrixData = [
                     />
                     <h1>{githubProfile.name || githubProfile.login}</h1>
                     <p>{githubProfile.bio}</p>
+                    <a
+                        class="github-profile-link"
+                        href={profileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {t("about.github_profile")}
+                    </a>
+                </header>
+            )
+        }
+        {
+            !githubProfile && (
+                <header class="about-header" data-github-header-dynamic>
+                    <h1>@{username}</h1>
+                    <p class="github-loading">Syncing data from GitHub...</p>
+                    <a
+                        class="github-profile-link"
+                        href={profileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {t("about.github_profile")}
+                    </a>
                 </header>
             )
         }
@@ -99,13 +107,22 @@ const matrixData = [
 
         {
             githubProfile && githubRepos.length > 0 && (
-                <section class="datalink-section">
+                <section
+                    class="datalink-section"
+                    data-github-datalink-dynamic
+                >
                     <h2 class="section-title">{t("about.datalink_title")}</h2>
                     <div class="stats-grid">
                         <div class="stat-item">
                             <div class="count">{githubProfile.followers}</div>
                             <div class="label">
                                 {t("about.stats_followers")}
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="count">{githubProfile.following}</div>
+                            <div class="label">
+                                {t("about.stats_following")}
                             </div>
                         </div>
                         <div class="stat-item">
@@ -128,7 +145,10 @@ const matrixData = [
                                     rel="noopener noreferrer"
                                 >
                                     <h4 class="repo-title">{repo.name}</h4>
-                                    <p class="repo-desc">{repo.description}</p>
+                                    <p class="repo-desc">
+                                        {repo.description ||
+                                            t("about.repo_desc_fallback")}
+                                    </p>
                                     <div class="repo-footer">
                                         <span class="repo-lang">
                                             {repo.language && (
@@ -145,5 +165,143 @@ const matrixData = [
                 </section>
             )
         }
+        {
+            !hasStaticGitHubData && (
+                <section
+                    class="datalink-section"
+                    data-github-datalink-dynamic
+                >
+                    <h2 class="section-title">{t("about.datalink_title")}</h2>
+                    <p class="github-loading">Syncing data from GitHub...</p>
+                </section>
+            )
+        }
     </div>
+    <script is:inline>
+        (() => {
+            const root = document.querySelector("[data-github-about-root]");
+            if (!root) return;
+
+            const username = root.getAttribute("data-username");
+            const profileUrl = root.getAttribute("data-profile-url");
+            const hasServerData =
+                root.getAttribute("data-has-server-data") === "1";
+            const loadingText = root.getAttribute("data-loading-text") || "Loading...";
+            const errorText = root.getAttribute("data-error-text") || "Failed to load GitHub data.";
+            if (!username || !profileUrl) return;
+
+            const headerNode = root.querySelector("[data-github-header-dynamic]");
+            const datalinkNode = root.querySelector("[data-github-datalink-dynamic]");
+            if (!headerNode || !datalinkNode) return;
+
+            const setFallbackMessage = (message) => {
+                [headerNode, datalinkNode].forEach((node) => {
+                    if (!node) return;
+                    const loadingEl = node.querySelector(".github-loading");
+                    if (loadingEl) loadingEl.textContent = message;
+                });
+            };
+
+            const createEl = (tag, className, text) => {
+                const el = document.createElement(tag);
+                if (className) el.className = className;
+                if (typeof text === "string") el.textContent = text;
+                return el;
+            };
+
+            const renderHeader = (profile) => {
+                headerNode.innerHTML = "";
+
+                const avatar = createEl("img", "profile-avatar");
+                avatar.src = profile.avatar_url;
+                avatar.alt = "GitHub Avatar";
+
+                const name = createEl("h1", "", profile.name || profile.login || `@${username}`);
+                const bio = createEl("p", "", profile.bio || "");
+
+                const link = createEl("a", "github-profile-link", "Open GitHub Profile");
+                link.href = profile.html_url || profileUrl;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+
+                headerNode.append(avatar, name, bio, link);
+            };
+
+            const renderDatalink = (profile, repos) => {
+                datalinkNode.innerHTML = "";
+
+                const title = createEl("h2", "section-title", "Live Tactical Datalink (GitHub)");
+                datalinkNode.appendChild(title);
+
+                const statsGrid = createEl("div", "stats-grid");
+                const makeStat = (count, label) => {
+                    const item = createEl("div", "stat-item");
+                    item.append(createEl("div", "count", String(count)), createEl("div", "label", label));
+                    return item;
+                };
+                statsGrid.append(
+                    makeStat(profile.followers ?? 0, "Adherents (Followers)"),
+                    makeStat(profile.following ?? 0, "Alliances (Following)"),
+                    makeStat(profile.public_repos ?? 0, "Spell Repositories (Repos)"),
+                );
+                datalinkNode.appendChild(statsGrid);
+
+                const repoTitle = createEl("h3", "section-title", "Recent Spell Deployments");
+                repoTitle.style.fontSize = "1.5em";
+                datalinkNode.appendChild(repoTitle);
+
+                const repoGrid = createEl("div", "repo-grid");
+                repos.forEach((repo) => {
+                    const card = createEl("div", "repo-card");
+                    const link = createEl("a", "");
+                    link.href = repo.html_url;
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+
+                    const name = createEl("h4", "repo-title", repo.name);
+                    const desc = createEl("p", "repo-desc", repo.description || "No description provided.");
+                    const footer = createEl("div", "repo-footer");
+                    const lang = createEl("span", "repo-lang");
+                    if (repo.language) {
+                        lang.appendChild(createEl("span", "lang-dot"));
+                        lang.appendChild(document.createTextNode(repo.language));
+                    }
+                    const stars = createEl("span", "", `★ ${repo.stargazers_count ?? 0}`);
+                    footer.append(lang, stars);
+                    link.append(name, desc, footer);
+                    card.appendChild(link);
+                    repoGrid.appendChild(card);
+                });
+                datalinkNode.appendChild(repoGrid);
+            };
+
+            setFallbackMessage(loadingText);
+
+            Promise.all([
+                fetch(`https://api.github.com/users/${username}`),
+                fetch(`https://api.github.com/users/${username}/repos?sort=pushed&per_page=100`),
+            ])
+                .then(async ([profileRes, reposRes]) => {
+                    if (!profileRes.ok || !reposRes.ok) throw new Error("GitHub API error");
+                    const profile = await profileRes.json();
+                    const allRepos = await reposRes.json();
+                    const repos = allRepos
+                        .filter((repo) => !repo.fork)
+                        .sort(
+                            (a, b) =>
+                                new Date(b.pushed_at).getTime() -
+                                new Date(a.pushed_at).getTime(),
+                        )
+                        .slice(0, 6);
+
+                    renderHeader(profile);
+                    renderDatalink(profile, repos);
+                })
+                .catch(() => {
+                    if (!hasServerData) {
+                        setFallbackMessage(errorText);
+                    }
+                });
+        })();
+    </script>
 </BaseLayout>

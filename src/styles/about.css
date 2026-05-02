@@ -56,6 +56,32 @@
   animation: avatar-bob 3.2s ease-in-out infinite;
 }
 
+.github-profile-link {
+  display: inline-block;
+  margin-top: 0.7rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid rgba(230, 106, 63, 0.35);
+  border-radius: 999px;
+  background: rgba(255, 250, 242, 0.86);
+  color: var(--accent-strong);
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.github-profile-link:hover {
+  transform: translateY(-2px);
+  border-color: rgba(230, 106, 63, 0.8);
+  box-shadow: 0 7px 16px rgba(163, 83, 40, 0.16);
+}
+
+.github-loading {
+  margin: 0.4rem 0 0;
+  color: var(--text-soft);
+  font-size: 0.95rem;
+}
+
 .personality-matrix,
 .datalink-section {
   position: relative;
