@@ -24,7 +24,7 @@ export const ui = {
         "home.recent_posts": "Fresh Notes",
 
         "about.title": "About Me",
-        "about.matrix_title": "A Little About Me",
+        "about.matrix_title": "Personality Matrix",
         "about.datalink_title": "GitHub Snapshot",
         "about.github_profile": "Visit GitHub Profile",
         "about.stats_followers": "Followers",
@@ -52,7 +52,7 @@ export const ui = {
         "home.recent_posts": "最近写的东西",
 
         "about.title": "关于我",
-        "about.matrix_title": "小小自我介绍",
+        "about.matrix_title": "人格矩阵",
         "about.datalink_title": "GitHub 小看板",
         "about.github_profile": "去 GitHub 看看",
         "about.stats_followers": "关注我的人",
