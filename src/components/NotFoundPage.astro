@@ -1,116 +1,371 @@
 ---
-// src/components/NotFoundPage.astro
 import BaseLayout from "@layouts/BaseLayout.astro";
+import { defaultLang, languages } from "@i18n/ui";
 import { useTranslations } from "@i18n/utils";
-import { defaultLang } from "@i18n/ui";
 
-// 这个组件现在通过 props 来接收语言，而不是自己去猜！
-const { lang = defaultLang } = Astro.props as { lang?: "zh" | "en" };
-const t = useTranslations(lang);
+type Locale = "zh" | "en";
+type Panel = {
+    code: Locale;
+    label: string;
+    href: string;
+    translate: ReturnType<typeof useTranslations>;
+};
+
+const {
+    lang = defaultLang,
+    showBoth = false,
+} = Astro.props as { lang?: Locale; showBoth?: boolean };
+
+const zh = useTranslations("zh");
+const en = useTranslations("en");
+
+const panels: Panel[] = showBoth
+    ? [
+          { code: "zh", label: languages.zh, href: "/zh/", translate: zh },
+          { code: "en", label: languages.en, href: "/en/", translate: en },
+      ]
+    : [
+          {
+              code: lang,
+              label: languages[lang],
+              href: lang === "zh" ? "/zh/" : "/en/",
+              translate: lang === "zh" ? zh : en,
+          },
+      ];
+
+const active = panels[0].translate;
+const pageTitle = showBoth
+    ? "404 Not Found / 页面未找到"
+    : active("404.title");
+const heroTitle = showBoth
+    ? `${zh("404.title")} / ${en("404.title")}`
+    : active("404.title");
+const heroSubtitle = showBoth
+    ? "Choose a language below and hop back home."
+    : active("404.message");
 ---
 
-<BaseLayout pageTitle={t("404.title")}>
-    <div class="terminal-window">
-        <div class="terminal-header">
-            <div class="dots">
-                <span class="dot red"></span>
-                <span class="dot yellow"></span>
-                <span class="dot green"></span>
+<BaseLayout pageTitle={pageTitle}>
+    <section class="not-found-shell">
+        <div class="not-found-glow not-found-glow-left"></div>
+        <div class="not-found-glow not-found-glow-right"></div>
+
+        <div class="not-found-frame">
+            <header class="not-found-hero">
+                <p class="not-found-kicker">404</p>
+                <h1>{heroTitle}</h1>
+                <p class="not-found-subtitle">{heroSubtitle}</p>
+            </header>
+
+            <div class:list={["not-found-grid", showBoth && "is-bilingual"]}>
+                {
+                    panels.map(({ code, label, href, translate }) => (
+                        <article class="locale-card" data-locale={code}>
+                            <div class="locale-card-top">
+                                <span class="locale-badge">{label}</span>
+                                <span class="locale-command">
+                                    {translate("404.command.nav")}
+                                </span>
+                            </div>
+
+                            <div class="locale-card-main">
+                                <p class="locale-error">
+                                    {translate("404.error")}
+                                    <span class="cursor"></span>
+                                </p>
+                                <p class="locale-message">
+                                    {translate("404.message")}
+                                </p>
+                                <p class="locale-suggestion">
+                                    {translate("404.suggestion")}
+                                </p>
+                            </div>
+
+                            <footer class="locale-card-footer">
+                                <a href={href} class="locale-command-link">
+                                    <code>{translate("404.command.home")}</code>
+                                </a>
+                            </footer>
+                        </article>
+                    ))
+                }
             </div>
-            <div class="title">kleedaisuki:~</div>
         </div>
-        <div class="terminal-body">
-            <p class="error">{t("404.error")}<span class="cursor">_</span></p>
-            <p>{t("404.message")}</p>
-            <p>{t("404.suggestion")}</p>
-            <p>
-                <a href={lang === "zh" ? "/zh/" : "/en/"} class="command">
-                    <span class="prompt">{t("404.command.home")}</span>
-                </a>
-            </p>
-        </div>
-    </div>
+    </section>
 </BaseLayout>
 
 <style>
-    /* 这里的样式和之前 404.astro 里的一模一样 */
-    .terminal-window {
-        --header-height: 30px;
-        background-color: var(--surface-color);
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius-medium);
-        box-shadow: 0 8px 24px var(--shadow-color);
-        margin: 4rem auto;
-        font-family: var(--font-mono);
-        font-size: 0.9em;
+    .not-found-shell {
+        position: relative;
+        isolation: isolate;
+        min-height: 68vh;
+        display: grid;
+        place-items: center;
+        padding: clamp(1rem, 2vw, 1.75rem) 0;
     }
-    .terminal-header {
-        height: var(--header-height);
-        background-color: var(--border-color);
-        display: flex;
+
+    .not-found-glow {
+        position: absolute;
+        inset: auto;
+        width: 18rem;
+        aspect-ratio: 1;
+        border-radius: 999px;
+        filter: blur(10px);
+        opacity: 0.7;
+        z-index: -1;
+        animation: drift-glow 9s ease-in-out infinite;
+    }
+
+    .not-found-glow-left {
+        top: 4%;
+        left: -2rem;
+        background: radial-gradient(circle, rgba(255, 181, 94, 0.34), transparent 68%);
+    }
+
+    .not-found-glow-right {
+        right: -3rem;
+        bottom: 8%;
+        background: radial-gradient(circle, rgba(230, 106, 63, 0.22), transparent 70%);
+        animation-delay: -3s;
+    }
+
+    .not-found-frame {
+        position: relative;
+        overflow: hidden;
+        width: min(940px, 100%);
+        padding: clamp(1.4rem, 3vw, 2.3rem);
+        border: 1px solid rgba(243, 191, 152, 0.88);
+        border-radius: calc(var(--radius-large) + 6px);
+        background:
+            linear-gradient(155deg, rgba(255, 253, 248, 0.95), rgba(255, 241, 221, 0.92)),
+            radial-gradient(circle at top left, rgba(255, 181, 94, 0.2), transparent 38%);
+        box-shadow:
+            0 24px 56px rgba(158, 78, 37, 0.14),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .not-found-frame::before {
+        content: "404";
+        position: absolute;
+        top: 1.1rem;
+        right: clamp(1rem, 4vw, 2rem);
+        font-size: clamp(4.6rem, 15vw, 9rem);
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: 0.06em;
+        color: rgba(230, 106, 63, 0.09);
+        pointer-events: none;
+    }
+
+    .not-found-frame::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(255, 181, 94, 0.14) 1.2px, transparent 1.3px);
+        background-size: 18px 18px;
+        opacity: 0.55;
+        pointer-events: none;
+    }
+
+    .not-found-hero,
+    .not-found-grid {
+        position: relative;
+        z-index: 1;
+    }
+
+    .not-found-hero {
+        max-width: 38rem;
+        margin-bottom: 1.6rem;
+    }
+
+    .not-found-kicker {
+        display: inline-flex;
         align-items: center;
-        padding: 0 10px;
-        border-top-left-radius: var(--border-radius-medium);
-        border-top-right-radius: var(--border-radius-medium);
+        gap: 0.45rem;
+        margin-bottom: 0.55rem;
+        padding: 0.28rem 0.78rem;
+        border: 1px solid rgba(217, 77, 32, 0.16);
+        border-radius: 999px;
+        background: rgba(255, 245, 232, 0.9);
+        color: var(--accent-strong);
+        font-family: var(--font-mono);
+        font-size: 0.86rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
     }
-    .dots {
+
+    .not-found-subtitle {
+        max-width: 34rem;
+        margin: 0;
+        color: var(--text-soft);
+        font-size: 1rem;
+    }
+
+    .not-found-grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .not-found-grid.is-bilingual {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .locale-card {
+        position: relative;
+        overflow: hidden;
         display: flex;
-        gap: 6px;
+        flex-direction: column;
+        gap: 1.1rem;
+        min-height: 100%;
+        padding: 1.15rem;
+        border: 1px solid rgba(243, 191, 152, 0.92);
+        border-radius: var(--radius-medium);
+        background: linear-gradient(180deg, rgba(255, 253, 249, 0.96), rgba(255, 245, 231, 0.92));
+        box-shadow: 0 14px 32px rgba(158, 78, 37, 0.08);
     }
-    .dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
+
+    .locale-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent-gold), var(--accent-color), rgba(255, 133, 105, 0.35));
     }
-    .dot.red {
-        background-color: #ff5f56;
+
+    .locale-card-top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.7rem;
     }
-    .dot.yellow {
-        background-color: #ffbd2e;
+
+    .locale-badge,
+    .locale-command {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2rem;
+        border-radius: 999px;
+        font-size: 0.84rem;
     }
-    .dot.green {
-        background-color: #27c93f;
+
+    .locale-badge {
+        padding: 0.3rem 0.8rem;
+        background: color-mix(in srgb, var(--surface-strong) 78%, var(--accent-faint));
+        border: 1px solid rgba(243, 191, 152, 0.95);
+        color: var(--heading-color);
+        font-weight: 700;
     }
-    .title {
+
+    .locale-command {
+        padding: 0.3rem 0.7rem;
+        background: rgba(255, 248, 239, 0.86);
+        border: 1px dashed rgba(230, 106, 63, 0.28);
+        color: var(--text-soft);
+        font-family: var(--font-mono);
+    }
+
+    .locale-card-main {
+        display: grid;
+        gap: 0.7rem;
+    }
+
+    .locale-error {
+        margin: 0;
+        color: #c04a5a;
+        font-weight: 700;
+    }
+
+    .locale-message,
+    .locale-suggestion {
+        margin: 0;
         color: var(--text-color);
-        margin: 0 auto;
-        font-size: 0.8em;
     }
-    .terminal-body {
-        padding: 1.5rem;
-        line-height: 1.8;
+
+    .locale-card-footer {
+        display: flex;
+        justify-content: center;
+        margin-top: auto;
+        padding-top: 0.2rem;
     }
-    .terminal-body p {
-        margin: 0 0 1em;
-    }
-    .prompt {
-        color: var(--accent-color);
-        font-weight: bold;
-    }
-    .error {
-        color: #f7768e;
-    }
-    .command {
-        color: var(--text-color);
+
+    .locale-command-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         text-decoration: none;
-        border-bottom: 2px solid transparent;
     }
-    .command:hover {
-        color: var(--accent-hover-color);
-        background-color: var(--border-color);
+
+    .locale-command-link code {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.9rem;
+        padding: 0.55rem 1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(217, 77, 32, 0.18);
+        background: linear-gradient(135deg, rgba(255, 244, 228, 0.95), rgba(255, 234, 205, 0.98));
+        color: var(--accent-strong);
+        font-family: var(--font-mono);
+        font-size: 0.88rem;
+        font-weight: 700;
+        box-shadow: 0 12px 24px rgba(217, 77, 32, 0.12);
+        transition:
+            transform 0.22s ease,
+            box-shadow 0.22s ease,
+            background-color 0.22s ease,
+            color 0.22s ease;
     }
-    .command:hover .prompt {
-        color: var(--accent-hover-color);
+
+    .locale-command-link:hover code,
+    .locale-command-link:focus-visible code {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 28px rgba(217, 77, 32, 0.18);
+        background: linear-gradient(135deg, rgba(255, 235, 205, 1), rgba(255, 223, 185, 1));
+        color: var(--accent-strong);
     }
+
     .cursor {
         display: inline-block;
-        background-color: var(--heading-color);
+        width: 0.6ch;
+        height: 1.15em;
+        margin-left: 0.28rem;
+        vertical-align: -0.14em;
+        background: currentColor;
         animation: blinking-cursor 1s steps(2, start) infinite;
-        margin-left: 0.5em;
     }
+
     @keyframes blinking-cursor {
         to {
-            background-color: transparent;
+            opacity: 0;
+        }
+    }
+
+    @keyframes drift-glow {
+        0%,
+        100% {
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+        50% {
+            transform: translate3d(0, -10px, 0) scale(1.04);
+        }
+    }
+
+    @media (max-width: 780px) {
+        .not-found-grid.is-bilingual {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .not-found-frame {
+            padding: 1.2rem;
+        }
+
+        .not-found-frame::before {
+            font-size: clamp(4rem, 28vw, 6.4rem);
+            top: 1.35rem;
         }
     }
 </style>
