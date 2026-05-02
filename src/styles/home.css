@@ -1,116 +1,136 @@
-/* src/styles/home.css */
-
-/* 1. 英雄区域 (Hero Section) - 已强化！ */
 .hero {
-    /* 增加垂直内边距，给予欢迎语巨大的呼吸空间 */
-    padding: 10rem 0;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 60vh;
-    /* 确保它在大多数屏幕上都能占据主要视野 */
+  position: relative;
+  overflow: hidden;
+  padding: clamp(3rem, 9vw, 5.8rem) clamp(1rem, 3vw, 2.3rem);
+  min-height: min(70vh, 560px);
+  border: 1px solid rgba(243, 191, 152, 0.85);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 85% 22%, rgba(255, 193, 125, 0.45), transparent 40%),
+    radial-gradient(circle at 10% 75%, rgba(255, 227, 193, 0.7), transparent 58%),
+    linear-gradient(140deg, rgba(255, 254, 248, 0.97), rgba(255, 241, 218, 0.9));
+  box-shadow: 0 18px 36px rgba(165, 87, 45, 0.16);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto -18% -40% auto;
+  width: clamp(220px, 30vw, 340px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(230, 106, 63, 0.38), rgba(230, 106, 63, 0));
+  pointer-events: none;
 }
 
 .hero-greeting {
-    font-size: 3.5em;
-    /* 大！还要更大！ */
-    font-weight: 700;
-    color: var(--accent-color);
-    margin-bottom: 1rem;
-    /* 我们将使用等宽字体，更有打字机的感觉 */
-    font-family: var(--font-mono);
+  margin: 0;
+  font-size: clamp(2rem, 5.8vw, 3.8rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--accent-strong);
+  text-wrap: balance;
 }
 
-/* 欢迎语后面的光标 */
 .hero-greeting .cursor {
-    display: inline-block;
-    width: 0.8em;
-    height: 1.1em;
-    background-color: var(--accent-hover-color);
-    margin-left: 0.2em;
-    animation: blinking-cursor 1s steps(2, start) infinite;
+  display: inline-block;
+  width: 0.65em;
+  height: 1.05em;
+  margin-left: 0.18em;
+  border-radius: 3px;
+  background-color: var(--accent-color);
+  animation: cursor-blink 1s steps(2, start) infinite;
 }
 
-@keyframes blinking-cursor {
-    to {
-        background-color: transparent;
-    }
+@keyframes cursor-blink {
+  to {
+    background: transparent;
+  }
 }
 
 .hero-intro {
-    font-size: 1.2em;
-    max-width: 600px;
-    margin: 0 auto 3rem auto;
-    color: var(--text-color);
-    line-height: 1.8;
-    /* 初始时透明，等待欢迎语动画结束后再浮现 */
-    opacity: 0;
-    transition: opacity 0.5s ease-in;
+  max-width: 640px;
+  margin: 1.2rem 0 0;
+  font-size: clamp(1rem, 2.4vw, 1.18rem);
+  color: var(--text-soft);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
 }
 
-/* 动画结束后，为 p 标签添加这个 class 来显示它 */
 .hero-intro.visible {
-    opacity: 1;
+  opacity: 1;
+  transform: translateY(0);
 }
 
-/* 2. 卡片网格布局 (Card Grid Layout) - 无需改动 */
 .section-title {
-    text-align: center;
-    font-size: 2em;
-    color: var(--heading-color);
-    margin-top: 4rem;
-    margin-bottom: 2.5rem;
+  margin: 2.5rem 0 1.2rem;
+  text-align: center;
+  color: var(--heading-color);
 }
 
 .card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    padding: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.1rem;
 }
 
-/* 3. 卡片本身 (Card Styling) */
 .card {
-    list-style: none;
-    background-color: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-medium);
-    padding: 2rem;
-    box-shadow: 0 4px 12px var(--shadow-color);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  list-style: none;
+  background: var(--surface-color);
+  border: 1px solid rgba(243, 191, 152, 0.82);
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(170, 87, 43, 0.1);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-/* 萌系的交互效果！*/
 .card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 20px var(--shadow-color), 0 0 20px var(--accent-color);
+  transform: translateY(-4px);
+  border-color: var(--accent-color);
+  box-shadow: 0 16px 28px rgba(170, 87, 43, 0.16);
 }
 
 .card a {
-    text-decoration: none;
-    color: inherit;
+  display: block;
+  height: 100%;
+  padding: 1.2rem 1.2rem 1.1rem;
+  color: inherit;
+}
+
+.post-date {
+  margin: 0 0 0.45rem;
+  color: var(--accent-strong);
+  font-family: var(--font-mono);
+  font-size: 0.83rem;
 }
 
 .card-title {
-    font-size: 1.5em;
-    color: var(--heading-color);
-    margin-top: 0;
-    margin-bottom: 0.75rem;
+  margin: 0;
+  font-size: 1.24rem;
+  color: var(--heading-color);
 }
 
 .card-desc {
-    font-size: 1em;
-    color: var(--text-color);
-    line-height: 1.7;
-    margin-bottom: 0;
+  margin: 0.66rem 0 0;
+  color: var(--text-soft);
 }
 
-/* 4. 文章列表的日期样式 */
-.post-date {
-    font-size: 0.85em;
-    color: var(--accent-color);
-    margin-bottom: 0.5rem;
-    font-family: var(--font-mono);
+@media (max-width: 640px) {
+  .hero {
+    min-height: 52vh;
+    border-radius: 20px;
+    padding: 2.6rem 1rem;
+  }
+
+  .section-title {
+    margin-top: 2rem;
+  }
 }

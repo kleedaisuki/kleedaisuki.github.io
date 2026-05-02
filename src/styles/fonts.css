@@ -1,18 +1,26 @@
-/* Inter 的可变字体要用 @fontsource-variable/inter */
-@import "@fontsource-variable/inter/index.css";
-
-/* Noto Sans SC 没有 variable 包，用静态权重 */
 @import "@fontsource/noto-sans-sc/400.css";
 @import "@fontsource/noto-sans-sc/700.css";
 
-/* 注意可变字体的家族名通常是 "Inter Variable" */
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("/fonts/atkinson-regular.woff") format("woff");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("/fonts/atkinson-bold.woff") format("woff");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
 html[lang="zh"] body {
-  font-family: "Noto Sans SC", "Inter Variable",
-    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
-    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-family: "Noto Sans SC", "Atkinson Hyperlegible", sans-serif;
 }
 
 html[lang="en"] body {
-  font-family: "Inter Variable", "Noto Sans SC",
-    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Atkinson Hyperlegible", "Noto Sans SC", sans-serif;
 }
