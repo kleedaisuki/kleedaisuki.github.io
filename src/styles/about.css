@@ -91,6 +91,25 @@
   background: rgba(255, 251, 244, 0.86);
 }
 
+.personality-matrix {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 216, 167, 0.24), transparent 42%),
+    radial-gradient(circle at 88% 78%, rgba(255, 176, 120, 0.18), transparent 45%),
+    rgba(255, 251, 244, 0.9);
+  animation: matrix-fade-in 0.7s ease-out both;
+}
+
+.personality-matrix::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 10%, rgba(255, 214, 166, 0.18) 48%, transparent 85%);
+  transform: translateX(-140%);
+  pointer-events: none;
+  animation: matrix-scan 5.2s ease-in-out 0.6s infinite;
+}
+
 .personality-matrix::before,
 .datalink-section::before {
   content: "";
@@ -117,11 +136,26 @@
 
 .trait-card {
   position: relative;
+  overflow: hidden;
   border: 1px solid rgba(243, 191, 152, 0.85);
   border-radius: 16px;
   background: var(--surface-strong);
   padding: 1rem;
   box-shadow: 0 8px 18px rgba(163, 83, 40, 0.09);
+  transform: translateY(12px) scale(0.985);
+  opacity: 0;
+  animation: trait-enter 0.55s cubic-bezier(0.19, 0.95, 0.42, 1) forwards;
+  transition: transform 0.26s ease, box-shadow 0.26s ease, border-color 0.26s ease;
+}
+
+.trait-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(108deg, transparent 0%, rgba(255, 255, 255, 0.42) 48%, transparent 100%);
+  transform: translateX(-150%);
+  transition: transform 0.5s ease;
+  pointer-events: none;
 }
 
 .trait-card::before {
@@ -136,6 +170,23 @@
   box-shadow: 0 0 0 4px rgba(255, 181, 94, 0.12);
 }
 
+.trait-card:hover {
+  transform: translateY(-6px) rotateX(1deg);
+  border-color: rgba(230, 106, 63, 0.5);
+  box-shadow: 0 14px 26px rgba(163, 83, 40, 0.16);
+}
+
+.trait-card:hover::after {
+  transform: translateX(120%);
+}
+
+.matrix-grid .trait-card:nth-child(1) { animation-delay: 0.06s; }
+.matrix-grid .trait-card:nth-child(2) { animation-delay: 0.12s; }
+.matrix-grid .trait-card:nth-child(3) { animation-delay: 0.18s; }
+.matrix-grid .trait-card:nth-child(4) { animation-delay: 0.24s; }
+.matrix-grid .trait-card:nth-child(5) { animation-delay: 0.3s; }
+.matrix-grid .trait-card:nth-child(6) { animation-delay: 0.36s; }
+
 .trait-card-quote {
   margin: 0;
   padding: 0.6rem 0.75rem;
@@ -145,6 +196,12 @@
   color: var(--heading-color);
   font-size: 1rem;
   line-height: 1.62;
+  transition: background 0.22s ease, border-color 0.22s ease;
+}
+
+.trait-card:hover .trait-card-quote {
+  background: rgba(255, 226, 191, 0.66);
+  border-left-color: rgba(230, 106, 63, 0.9);
 }
 
 .trait-card-tags {
@@ -270,6 +327,39 @@
   }
 }
 
+@keyframes matrix-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes matrix-scan {
+  0% {
+    transform: translateX(-140%);
+  }
+
+  46% {
+    transform: translateX(140%);
+  }
+
+  100% {
+    transform: translateX(140%);
+  }
+}
+
+@keyframes trait-enter {
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
 .repo-lang .lang-dot {
   display: inline-block;
   width: 10px;
@@ -300,6 +390,25 @@
   .about-header::after,
   .personality-matrix::before,
   .datalink-section::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-avatar,
+  .personality-matrix,
+  .personality-matrix::after,
+  .trait-card {
+    animation: none !important;
+  }
+
+  .trait-card,
+  .trait-card:hover {
+    transform: none;
+    opacity: 1;
+  }
+
+  .trait-card::after {
     display: none;
   }
 }
