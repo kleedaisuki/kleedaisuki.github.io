@@ -12,31 +12,31 @@ const { profile: githubProfile, repos: githubRepos, profileUrl, username } =
     await getGitHubAboutData();
 const hasStaticGitHubData = Boolean(githubProfile && githubRepos.length > 0);
 
-// The "Personality Matrix" data, translated to maintain the spirit!
+// A small set of profile cards for the about page
 const matrixData = [
     {
-        quote: "「Code is my most powerful magic circle; C++ is the silver rune that manifests upon contract. Lifelong learning? That's merely the resonance frequency between myself and the universal Turing machine~」",
-        tags: "💻 A spell-constructor wandering the Sea of CS / An ultra-autodidact / A nocturnal creature prone to recursive debugging",
+        quote: "Coding is the most fun when a tiny idea slowly turns into something real. C++ feels like a box of sturdy little building blocks to me.",
+        tags: "Loves computers / Self-taught most of the time / Will keep poking at a bug until it behaves",
     },
     {
-        quote: "「Mathematics is the sage's monolith to the gates of multiple truths; logic is the four-dimensional dagger I carry at all times!」",
-        tags: "📐 A believer in mathematics (and a tsukkomi) / A weaver of Σ-class spells / A tuner of ε-δ",
+        quote: "Math is fun too. Following a messy trail all the way to a neat answer always makes me want to clap a little.",
+        tags: "Likes logic / Enjoys proofs / Has a soft spot for elegant formulas",
     },
     {
-        quote: "「Language is the coordinate to other worlds; books are trans-layer teleporters for the soul; reading is the Warp Jump command exclusive to the astral body~」",
-        tags: "📖 A reading lifeform who peeks at papers during daytime lectures / An info-vore / A stationery connoisseur of the knowledge-type",
+        quote: "Books and languages feel like adventure maps. Open one up, and suddenly there's a whole new place to wander into.",
+        tags: "Reads a lot / Keeps notes nearby / Sneaks in papers between classes",
     },
     {
-        quote: "「GPT-5 is my tactical advisor in the sea of data; Gemini 2.5 Pro is the synchronous formula core materializing behind my consciousness. Together, we execute deep-research multi-threaded operations.」",
-        tags: "🤖 An anomalous entropy generator / An AI-affinity mage / A prompt-based, stream-of-consciousness summoner (JP voice pack not yet compatible)",
+        quote: "I really like working with AI tools. If you explain the problem clearly and try things step by step, they often help uncover fun little surprises.",
+        tags: "Curious about new tools / Good at breaking problems down / Patient with prompts",
     },
     {
-        quote: "「School is an instanced dungeon where I am physically present but spiritually disconnected... I just want to freely explore the world's main story quest!」",
-        tags: "🏫 Currently evading social contracts / A destroyer of academic structures / Daily wish: 'Please don't call my name today'",
+        quote: "School can feel a bit slow sometimes, so I usually prefer finding my own trail and running with it.",
+        tags: "Likes self-directed learning / Not great at rigid routines / Always poking at something new",
     },
     {
-        quote: "「ACGN Alert🔔! This is the command headquarters of a tech-loli! The dimension wall? I pierced it long ago with pure faith! Moe is my observational constant; chuuni is my center of gravity!」",
-        tags: "⚠️ Front-line commander of the Universal Moe Wars / A multi-universe interface connector / Moe System β-version test subject",
+        quote: "And yes, I love ACGN too. Cute things are very good for morale, and I like letting a little of that spark sneak into my projects.",
+        tags: "Likes anime and games / Brings taste into projects / Wants things to feel both careful and lively",
     },
 ];
 ---
@@ -230,7 +230,7 @@ const matrixData = [
             const renderDatalink = (profile, repos) => {
                 datalinkNode.innerHTML = "";
 
-                const title = createEl("h2", "section-title", "Live Tactical Datalink (GitHub)");
+                const title = createEl("h2", "section-title", "GitHub Snapshot");
                 datalinkNode.appendChild(title);
 
                 const statsGrid = createEl("div", "stats-grid");
@@ -240,13 +240,13 @@ const matrixData = [
                     return item;
                 };
                 statsGrid.append(
-                    makeStat(profile.followers ?? 0, "Adherents (Followers)"),
-                    makeStat(profile.following ?? 0, "Alliances (Following)"),
-                    makeStat(profile.public_repos ?? 0, "Spell Repositories (Repos)"),
+                    makeStat(profile.followers ?? 0, "Followers"),
+                    makeStat(profile.following ?? 0, "Following"),
+                    makeStat(profile.public_repos ?? 0, "Public Repos"),
                 );
                 datalinkNode.appendChild(statsGrid);
 
-                const repoTitle = createEl("h3", "section-title", "Recent Spell Deployments");
+                const repoTitle = createEl("h3", "section-title", "Recently Tinkering With");
                 repoTitle.style.fontSize = "1.5em";
                 datalinkNode.appendChild(repoTitle);
 
