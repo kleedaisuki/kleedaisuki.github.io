@@ -5,7 +5,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 
 export default defineConfig({
-	site: 'https://www.kleedaisuki.com',
+	site: 'https://blog.moesegfault.dev',
 	trailingSlash: 'always',
 	i18n: {
 		locales: ["zh", "en"],
@@ -39,4 +39,3 @@ export default defineConfig({
 		"@content": "./src/content",
 	},
 })
-
