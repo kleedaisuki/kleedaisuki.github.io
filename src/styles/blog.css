@@ -2,6 +2,14 @@
   width: 100%;
 }
 
+/* @brief 文章框架与 BaseLayout 导航工具栏共用宽度，正文仍保持可读行长。
+ * Article chrome shares the BaseLayout toolbar width while prose keeps a readable measure.
+ */
+.post-body {
+  width: 100%;
+  max-width: var(--layout-content-width);
+}
+
 .blog-header {
   position: relative;
   isolation: isolate;
@@ -232,10 +240,6 @@
   font-family: var(--font-mono);
   font-size: 0.75rem;
   line-height: 1.45;
-}
-
-.post-body {
-  max-width: 68ch;
 }
 
 .post-breadcrumb {

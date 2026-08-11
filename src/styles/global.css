@@ -49,6 +49,9 @@
   --radius-small: 10px;
   --radius-medium: 18px;
   --radius-large: 26px;
+
+  /* @brief BaseLayout 共用内容宽度 (shared BaseLayout content width)。 */
+  --layout-content-width: 980px;
 }
 
 :root[data-theme="dark"] {
@@ -184,7 +187,7 @@ body::after {
 }
 
 .container {
-  width: min(980px, 100% - 2.2rem);
+  width: min(var(--layout-content-width), 100% - 2.2rem);
   margin: 0 auto;
 }
 
