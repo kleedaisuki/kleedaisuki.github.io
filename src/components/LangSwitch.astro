@@ -1,44 +1,59 @@
 ---
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { getCollection } from "astro:content";
-import { getPairedSlug } from "../lib/localized-blog";
+import { getPublishedAlternates } from "../lib/localized-blog";
 
 const pathname = Astro.url.pathname;
 const m = pathname.match(/^\/(zh|en)\/blog\/([^/]+)\/?$/);
 
 const raw = pathname.replace(/^\/(zh|en)\//, "");
-let toZH = getRelativeLocaleUrl("zh", raw);
-let toEN = getRelativeLocaleUrl("en", raw);
+let toZH: string | undefined = getRelativeLocaleUrl("zh", raw);
+let toEN: string | undefined = getRelativeLocaleUrl("en", raw);
 
 if (m) {
   const currentLocale = m[1] as "zh" | "en";
   const currentSlug = decodeURIComponent(m[2]);
   const allPosts = await getCollection("blog", ({ data }) => !data.draft);
-  const currentPost = allPosts.find(
-    (post) =>
-      post.data.locale === currentLocale && post.data.slug === currentSlug,
+  const publishedAlternates = getPublishedAlternates(
+    allPosts,
+    currentLocale,
+    currentSlug,
   );
-  if (currentPost) {
-    const zhSlug = getPairedSlug(allPosts, currentLocale, currentSlug, "zh");
-    const enSlug = getPairedSlug(allPosts, currentLocale, currentSlug, "en");
+  const zhAlternate = publishedAlternates.find(
+    (alternate) => alternate.locale === "zh",
+  );
+  const enAlternate = publishedAlternates.find(
+    (alternate) => alternate.locale === "en",
+  );
 
-    if (zhSlug) toZH = `/zh/blog/${encodeURIComponent(zhSlug)}/`;
-    if (enSlug) toEN = `/en/blog/${encodeURIComponent(enSlug)}/`;
-  }
+  toZH = zhAlternate
+    ? `/zh/blog/${encodeURIComponent(zhAlternate.slug)}/`
+    : undefined;
+  toEN = enAlternate
+    ? `/en/blog/${encodeURIComponent(enAlternate.slug)}/`
+    : undefined;
 }
 ---
 
 <nav class="lang-switch" aria-label="Language switcher">
-    <a
-        href={toZH}
-        hreflang="zh"
-        onclick="try{localStorage.setItem('prefLocale','zh')}catch(e){}">中文</a
-    >
-    |
-    <a
-        href={toEN}
-        hreflang="en"
-        onclick="try{localStorage.setItem('prefLocale','en')}catch(e){}"
-        >English</a
-    >
+    {
+        toZH && (
+            <a
+                href={toZH}
+                hreflang="zh"
+                onclick="try{localStorage.setItem('prefLocale','zh')}catch(e){}">中文</a
+            >
+        )
+    }
+    {toZH && toEN && <span aria-hidden="true">|</span>}
+    {
+        toEN && (
+            <a
+                href={toEN}
+                hreflang="en"
+                onclick="try{localStorage.setItem('prefLocale','en')}catch(e){}"
+                >English</a
+            >
+        )
+    }
 </nav>

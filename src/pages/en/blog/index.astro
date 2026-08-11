@@ -4,9 +4,17 @@ import BaseLayout from "@layouts/BaseLayout.astro";
 import { useTranslations } from "@i18n/utils";
 import { getCollection } from "astro:content";
 import "@styles/blog.css";
+import { createBlogJsonLd, getAbsoluteUrl } from "../../../lib/seo";
 
 const lang = "en";
 const t = useTranslations(lang);
+const archiveDescription = t("blog.description");
+const structuredData = createBlogJsonLd({
+  url: getAbsoluteUrl(`/${lang}/blog/`),
+  locale: lang,
+  name: t("blog.title"),
+  description: archiveDescription,
+});
 
 const posts = (await getCollection("blog"))
   .filter((p) => p.data.locale === lang && !p.data.draft)
@@ -15,14 +23,18 @@ const posts = (await getCollection("blog"))
   );
 ---
 
-<BaseLayout pageTitle={t("blog.title")}>
+<BaseLayout
+  pageTitle={`${t("blog.title")} | kleedaisuki`}
+  description={archiveDescription}
+  structuredData={structuredData}
+>
   <div class="blog-container">
     <header class="blog-header">
       <h1 class="blog-title">{t("blog.title")}</h1>
-      <p class="blog-description">{t("blog.description")}</p>
+      <p class="blog-description">{archiveDescription}</p>
     </header>
 
-    <main>
+    <section aria-label={t("blog.title")}>
       <ul class="post-list">
         {
           posts.map((p) => (
@@ -60,6 +72,6 @@ const posts = (await getCollection("blog"))
           ))
         }
       </ul>
-    </main>
+    </section>
   </div>
 </BaseLayout>

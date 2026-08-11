@@ -10,6 +10,12 @@ export interface LocalizedBlogPost {
   };
 }
 
+/** @brief 已发布文章的语言替代项 (published language alternate) / A published language alternate for a post. */
+export interface PublishedBlogAlternate {
+  locale: BlogLocale;
+  slug: string;
+}
+
 /**
  * @brief 获取目标语言的配对文章 slug (paired slug) / Get a target locale's paired post slug.
  * @param posts 可见文章集合 (visible posts) / Visible post collection.
@@ -44,4 +50,36 @@ export function getPairedSlug(
       post.data.locale === targetLocale && post.data.pair === currentSlug,
   );
   return reverseMatch?.data.slug ?? pairedSlug;
+}
+
+/**
+ * @brief 获取实际已发布的语言替代项 (published alternates) / Get only language alternates that are actually published.
+ * @param posts 可见文章集合 (visible posts) / Visible post collection.
+ * @param currentLocale 当前文章语言 (current locale) / Current post locale.
+ * @param currentSlug 当前文章 slug (current slug) / Current post slug.
+ * @return 仅包含存在页面的语言与 slug / Locales and slugs whose pages exist.
+ * @note 未发布的译文绝不能生成 hreflang 或语言切换链接 (language-switch link)。
+ */
+export function getPublishedAlternates(
+  posts: readonly LocalizedBlogPost[],
+  currentLocale: BlogLocale,
+  currentSlug: string,
+): PublishedBlogAlternate[] {
+  const locales: readonly BlogLocale[] = ["zh", "en"];
+
+  return locales.flatMap((targetLocale) => {
+    const targetSlug = getPairedSlug(
+      posts,
+      currentLocale,
+      currentSlug,
+      targetLocale,
+    );
+    if (!targetSlug) return [];
+
+    const isPublished = posts.some(
+      (post) =>
+        post.data.locale === targetLocale && post.data.slug === targetSlug,
+    );
+    return isPublished ? [{ locale: targetLocale, slug: targetSlug }] : [];
+  });
 }

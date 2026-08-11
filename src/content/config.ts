@@ -7,8 +7,9 @@ const blog = defineCollection({
     loader: glob({ pattern: "**/*.md", base: "./src/content/blog" }),
     schema: z.object({
         title: z.string(),
-        description: z.string().optional(),
+        description: z.string(),
         date: z.coerce.date(),              // 字符串强转为 Date
+        updated: z.coerce.date().optional(), // 仅在内容实质更新时填写
         draft: z.boolean().default(false),
         locale: z.enum(["zh", "en"]),
         slug: z.string(),                    // 允许中英不同 slug

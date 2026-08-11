@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getPairedSlug, type LocalizedBlogPost } from "./localized-blog";
+import {
+  getPairedSlug,
+  getPublishedAlternates,
+  type LocalizedBlogPost,
+} from "./localized-blog";
 
 /** @brief 构造双语文章夹具 (fixture) / Create bilingual post fixtures. */
 function post(
@@ -42,5 +46,24 @@ describe("getPairedSlug", () => {
     const posts = [post("zh", "你好", "hello")];
 
     expect(getPairedSlug(posts, "zh", "你好", "en")).toBe("hello");
+  });
+});
+
+describe("getPublishedAlternates", () => {
+  it("returns only URLs whose localized pages are published", () => {
+    const posts = [post("zh", "你好", "hello"), post("en", "hello", "你好")];
+
+    expect(getPublishedAlternates(posts, "zh", "你好")).toEqual([
+      { locale: "zh", slug: "你好" },
+      { locale: "en", slug: "hello" },
+    ]);
+  });
+
+  it("does not emit a missing translation as an hreflang target", () => {
+    const posts = [post("zh", "你好", "not-published")];
+
+    expect(getPublishedAlternates(posts, "zh", "你好")).toEqual([
+      { locale: "zh", slug: "你好" },
+    ]);
   });
 });

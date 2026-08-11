@@ -7,6 +7,8 @@ import "@styles/about.css"; // 引入档案的专属样式
 
 const lang = "zh";
 const t = useTranslations(lang);
+const aboutDescription =
+  "kleedaisuki 的个人主页，包含 GitHub 项目、编程、数学与学习笔记。";
 
 const {
   profile: githubProfile,
@@ -50,7 +52,10 @@ const matrixData = [
 ];
 ---
 
-<BaseLayout pageTitle={t("about.title")}>
+<BaseLayout
+    pageTitle={`${t("about.title")} | kleedaisuki`}
+    description={aboutDescription}
+>
     <div
         class="about-container"
         data-github-about-root

@@ -7,6 +7,8 @@ import "@styles/about.css"; // 复用同一个完美的样式文件！
 
 const lang = "en";
 const t = useTranslations(lang);
+const aboutDescription =
+  "kleedaisuki's personal page with GitHub projects and notes on programming, mathematics, and learning.";
 
 const {
   profile: githubProfile,
@@ -51,7 +53,10 @@ const matrixData = [
 ];
 ---
 
-<BaseLayout pageTitle={t("about.title")}>
+<BaseLayout
+    pageTitle={`${t("about.title")} | kleedaisuki`}
+    description={aboutDescription}
+>
     <div
         class="about-container"
         data-github-about-root

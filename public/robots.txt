@@ -1,3 +1,9 @@
+# 公开文章允许搜索、检索与浏览型 agent 抓取 / Public articles are available to search, retrieval, and browser agents.
+# 搜索 crawler 与未来的模型训练策略分开管理 / Keep the search crawler separate from any future model-training policy.
+User-agent: OAI-SearchBot
+Allow: /
+
 User-agent: *
 Allow: /
+
 Sitemap: https://blog.moesegfault.dev/sitemap-index.xml

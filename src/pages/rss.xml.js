@@ -1,43 +1,12 @@
 import rss from "@astrojs/rss";
-import { getCollection } from "astro:content";
-import { unified } from "unified";
-import remarkParse from "remark-parse";
-import remarkMath from "remark-math";
-import remarkRehype from "remark-rehype";
-import rehypeKatex from "rehype-katex";
-import rehypeStringify from "rehype-stringify";
-
-async function mdToHtml(md) {
-  const file = await unified()
-    .use(remarkParse)
-    .use(remarkMath)
-    .use(remarkRehype, { allowDangerousHtml: true })
-    .use(rehypeKatex)
-    .use(rehypeStringify, { allowDangerousHtml: true })
-    .process(md);
-  return String(file);
-}
+import { buildRssItems } from "../lib/rss";
 
 export async function GET(ctx) {
-  const posts = await getCollection("blog", ({ data }) => !data.draft);
-  const items = await Promise.all(
-    posts
-      .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-      .map(async (p) => {
-        const html = await mdToHtml(p.body);
-        return {
-          title: p.data.title,
-          description: p.data.description,
-          pubDate: p.data.date,
-          link: `/${p.data.locale}/blog/${p.data.slug}/`,
-          content: html,
-        };
-      }),
-  );
+  const items = await buildRssItems();
   return rss({
     title: "@kleedaisuki",
     description: "notes & research",
-    site: ctx.site,
+    site: new URL("/zh/", ctx.site),
     items,
   });
 }

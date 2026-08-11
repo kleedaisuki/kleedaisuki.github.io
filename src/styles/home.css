@@ -92,11 +92,14 @@
   margin: 1.2rem 0 0;
   font-size: clamp(1rem, 2.4vw, 1.18rem);
   color: var(--text-soft);
-  opacity: 0;
-  transform: translateY(8px);
   transition:
     opacity 0.45s ease,
     transform 0.45s ease;
+}
+
+.hero.is-typing .hero-intro {
+  opacity: 0;
+  transform: translateY(8px);
 }
 
 .hero-intro.visible {
