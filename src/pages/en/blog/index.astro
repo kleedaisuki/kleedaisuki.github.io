@@ -9,7 +9,7 @@ const lang = "en";
 const t = useTranslations(lang);
 
 const posts = (await getCollection("blog"))
-  .filter((p) => p.data.locale === lang)
+  .filter((p) => p.data.locale === lang && !p.data.draft)
   .sort(
     (a, b) => new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf(),
   );

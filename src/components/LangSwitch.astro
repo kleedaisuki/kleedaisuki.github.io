@@ -1,6 +1,7 @@
 ---
 import { getRelativeLocaleUrl } from "astro:i18n";
-import { getCollection, type CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
+import { getPairedSlug } from "../lib/localized-blog";
 
 const pathname = Astro.url.pathname;
 const m = pathname.match(/^\/(zh|en)\/blog\/([^/]+)\/?$/);
@@ -12,36 +13,14 @@ let toEN = getRelativeLocaleUrl("en", raw);
 if (m) {
   const currentLocale = m[1] as "zh" | "en";
   const currentSlug = decodeURIComponent(m[2]);
-  const allPosts = await getCollection("blog");
-
-  const findPost = (locale: "zh" | "en", slug: string) =>
-    allPosts.find(
-      (p): p is CollectionEntry<"blog"> =>
-        p.data.locale === locale && p.data.slug === slug,
-    );
-
-  const findByPair = (locale: "zh" | "en", pair: string) =>
-    allPosts.find(
-      (p): p is CollectionEntry<"blog"> =>
-        p.data.locale === locale && p.data.pair === pair,
-    );
-
-  const currentPost = findPost(currentLocale, currentSlug);
+  const allPosts = await getCollection("blog", ({ data }) => !data.draft);
+  const currentPost = allPosts.find(
+    (post) =>
+      post.data.locale === currentLocale && post.data.slug === currentSlug,
+  );
   if (currentPost) {
-    const getTargetSlug = (targetLocale: "zh" | "en") => {
-      const pairedSlug = currentPost.data.pair;
-      if (!pairedSlug) return null;
-
-      if (findPost(targetLocale, pairedSlug)) return pairedSlug;
-
-      const reverse = findByPair(targetLocale, currentSlug);
-      if (reverse) return reverse.data.slug;
-
-      return pairedSlug;
-    };
-
-    const zhSlug = currentLocale === "zh" ? currentSlug : getTargetSlug("zh");
-    const enSlug = currentLocale === "en" ? currentSlug : getTargetSlug("en");
+    const zhSlug = getPairedSlug(allPosts, currentLocale, currentSlug, "zh");
+    const enSlug = getPairedSlug(allPosts, currentLocale, currentSlug, "en");
 
     if (zhSlug) toZH = `/zh/blog/${encodeURIComponent(zhSlug)}/`;
     if (enSlug) toEN = `/en/blog/${encodeURIComponent(enSlug)}/`;

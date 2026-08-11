@@ -3,10 +3,9 @@ import Base from "@layouts/BaseLayout.astro";
 import { getCollection, render, type CollectionEntry } from "astro:content";
 
 export async function getStaticPaths() {
-  const all = await getCollection("blog", (p) => p.data.locale === "en");
-  console.log(
-    "[build] en posts:",
-    all.map((p) => p.data.slug),
+  const all = await getCollection(
+    "blog",
+    (p) => p.data.locale === "en" && !p.data.draft,
   );
   return all.map((p) => ({ params: { slug: p.data.slug } }));
 }
@@ -16,7 +15,7 @@ if (!slug) throw new Error("Missing slug");
 
 const entry = (await getCollection("blog")).find(
   (p): p is CollectionEntry<"blog"> =>
-    p.data.locale === "en" && p.data.slug === slug,
+    p.data.locale === "en" && !p.data.draft && p.data.slug === slug,
 );
 if (!entry) throw new Error(`[en] Post not found: ${slug}`);
 

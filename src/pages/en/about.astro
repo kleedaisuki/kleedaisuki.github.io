@@ -8,36 +8,46 @@ import "@styles/about.css"; // 复用同一个完美的样式文件！
 const lang = "en";
 const t = useTranslations(lang);
 
-const { profile: githubProfile, repos: githubRepos, profileUrl, username } =
-    await getGitHubAboutData();
+const {
+  profile: githubProfile,
+  repos: githubRepos,
+  profileUrl,
+  username,
+} = await getGitHubAboutData();
 const hasStaticGitHubData = Boolean(githubProfile && githubRepos.length > 0);
 
 // The "Personality Matrix" data, translated to maintain the spirit!
 const matrixData = [
-    {
-        quote: "「Code is my most powerful magic circle; C++ is the silver rune that manifests upon contract. Lifelong learning? That's merely the resonance frequency between myself and the universal Turing machine~」",
-        tags: "💻 A spell-constructor wandering the Sea of CS / An ultra-autodidact / A nocturnal creature prone to recursive debugging",
-    },
-    {
-        quote: "「Mathematics is the sage's monolith to the gates of multiple truths; logic is the four-dimensional dagger I carry at all times!」",
-        tags: "📐 A believer in mathematics (and a tsukkomi) / A weaver of Σ-class spells / A tuner of ε-δ",
-    },
-    {
-        quote: "「Language is the coordinate to other worlds; books are trans-layer teleporters for the soul; reading is the Warp Jump command exclusive to the astral body~」",
-        tags: "📖 A reading lifeform who peeks at papers during daytime lectures / An info-vore / A stationery connoisseur of the knowledge-type",
-    },
-    {
-        quote: "「GPT-5 is my tactical advisor in the sea of data; Gemini 2.5 Pro is the synchronous formula core materializing behind my consciousness. Together, we execute deep-research multi-threaded operations.」",
-        tags: "🤖 An anomalous entropy generator / An AI-affinity mage / A prompt-based, stream-of-consciousness summoner (JP voice pack not yet compatible)",
-    },
-    {
-        quote: "「School is an instanced dungeon where I am physically present but spiritually disconnected... I just want to freely explore the world's main story quest!」",
-        tags: "🏫 Currently evading social contracts / A destroyer of academic structures / Daily wish: 'Please don't call my name today'",
-    },
-    {
-        quote: "「ACGN Alert🔔! This is the command headquarters of a tech-loli! The dimension wall? I pierced it long ago with pure faith! Moe is my observational constant; chuuni is my center of gravity!」",
-        tags: "⚠️ Front-line commander of the Universal Moe Wars / A multi-universe interface connector / Moe System β-version test subject",
-    },
+  {
+    quote:
+      "「Code is my most powerful magic circle; C++ is the silver rune that manifests upon contract. Lifelong learning? That's merely the resonance frequency between myself and the universal Turing machine~」",
+    tags: "💻 A spell-constructor wandering the Sea of CS / An ultra-autodidact / A nocturnal creature prone to recursive debugging",
+  },
+  {
+    quote:
+      "「Mathematics is the sage's monolith to the gates of multiple truths; logic is the four-dimensional dagger I carry at all times!」",
+    tags: "📐 A believer in mathematics (and a tsukkomi) / A weaver of Σ-class spells / A tuner of ε-δ",
+  },
+  {
+    quote:
+      "「Language is the coordinate to other worlds; books are trans-layer teleporters for the soul; reading is the Warp Jump command exclusive to the astral body~」",
+    tags: "📖 A reading lifeform who peeks at papers during daytime lectures / An info-vore / A stationery connoisseur of the knowledge-type",
+  },
+  {
+    quote:
+      "「GPT-5 is my tactical advisor in the sea of data; Gemini 2.5 Pro is the synchronous formula core materializing behind my consciousness. Together, we execute deep-research multi-threaded operations.」",
+    tags: "🤖 An anomalous entropy generator / An AI-affinity mage / A prompt-based, stream-of-consciousness summoner (JP voice pack not yet compatible)",
+  },
+  {
+    quote:
+      "「School is an instanced dungeon where I am physically present but spiritually disconnected... I just want to freely explore the world's main story quest!」",
+    tags: "🏫 Currently evading social contracts / A destroyer of academic structures / Daily wish: 'Please don't call my name today'",
+  },
+  {
+    quote:
+      "「ACGN Alert🔔! This is the command headquarters of a tech-loli! The dimension wall? I pierced it long ago with pure faith! Moe is my observational constant; chuuni is my center of gravity!」",
+    tags: "⚠️ Front-line commander of the Universal Moe Wars / A multi-universe interface connector / Moe System β-version test subject",
+  },
 ];
 ---
 

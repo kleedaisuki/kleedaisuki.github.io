@@ -9,6 +9,7 @@ const blog = defineCollection({
         title: z.string(),
         description: z.string().optional(),
         date: z.coerce.date(),              // 字符串强转为 Date
+        draft: z.boolean().default(false),
         locale: z.enum(["zh", "en"]),
         slug: z.string(),                    // 允许中英不同 slug
         tags: z.array(z.string()).optional(),

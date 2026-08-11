@@ -5,44 +5,42 @@ import { useTranslations } from "@i18n/utils";
 
 type Locale = "zh" | "en";
 type Panel = {
-    code: Locale;
-    label: string;
-    href: string;
-    translate: ReturnType<typeof useTranslations>;
+  code: Locale;
+  label: string;
+  href: string;
+  translate: ReturnType<typeof useTranslations>;
 };
 
-const {
-    lang = defaultLang,
-    showBoth = false,
-} = Astro.props as { lang?: Locale; showBoth?: boolean };
+const { lang = defaultLang, showBoth = false } = Astro.props as {
+  lang?: Locale;
+  showBoth?: boolean;
+};
 
 const zh = useTranslations("zh");
 const en = useTranslations("en");
 
 const panels: Panel[] = showBoth
-    ? [
-          { code: "zh", label: languages.zh, href: "/zh/", translate: zh },
-          { code: "en", label: languages.en, href: "/en/", translate: en },
-      ]
-    : [
-          {
-              code: lang,
-              label: languages[lang],
-              href: lang === "zh" ? "/zh/" : "/en/",
-              translate: lang === "zh" ? zh : en,
-          },
-      ];
+  ? [
+      { code: "zh", label: languages.zh, href: "/zh/", translate: zh },
+      { code: "en", label: languages.en, href: "/en/", translate: en },
+    ]
+  : [
+      {
+        code: lang,
+        label: languages[lang],
+        href: lang === "zh" ? "/zh/" : "/en/",
+        translate: lang === "zh" ? zh : en,
+      },
+    ];
 
 const active = panels[0].translate;
-const pageTitle = showBoth
-    ? "404 Not Found / 页面未找到"
-    : active("404.title");
+const pageTitle = showBoth ? "404 Not Found / 页面未找到" : active("404.title");
 const heroTitle = showBoth
-    ? `${zh("404.title")} / ${en("404.title")}`
-    : active("404.title");
+  ? `${zh("404.title")} / ${en("404.title")}`
+  : active("404.title");
 const heroSubtitle = showBoth
-    ? "Choose a language below and hop back home."
-    : active("404.message");
+  ? "Choose a language below and hop back home."
+  : active("404.message");
 ---
 
 <BaseLayout pageTitle={pageTitle}>

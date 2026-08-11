@@ -3,6 +3,4 @@ export default {
   home: "Home",
   about: "About",
   blog: "Blog",
-  welcome: "Welcome to my little corner!",
-  readMore: "Keep reading"
 } as const;
