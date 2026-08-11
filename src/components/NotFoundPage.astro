@@ -35,30 +35,44 @@ const panels: Panel[] = showBoth
 
 const active = panels[0].translate;
 const pageTitle = showBoth ? "404 Not Found / 页面未找到" : active("404.title");
-const heroTitle = showBoth
-  ? `${zh("404.title")} / ${en("404.title")}`
-  : active("404.title");
+const heroTitle = active("404.title");
 const heroSubtitle = showBoth
   ? "Choose a language below and hop back home."
   : active("404.message");
 ---
 
-<BaseLayout pageTitle={pageTitle} robots="noindex,follow">
+<BaseLayout
+    pageTitle={pageTitle}
+    robots="noindex,follow"
+    showLanguageSwitch={!showBoth}
+>
     <section class="not-found-shell">
-        <div class="not-found-glow not-found-glow-left"></div>
-        <div class="not-found-glow not-found-glow-right"></div>
+        <div class="not-found-glow not-found-glow-left" aria-hidden="true"></div>
+        <div class="not-found-glow not-found-glow-right" aria-hidden="true"></div>
 
         <div class="not-found-frame">
             <header class="not-found-hero">
                 <p class="not-found-kicker">404</p>
-                <h1>{heroTitle}</h1>
-                <p class="not-found-subtitle">{heroSubtitle}</p>
+                {
+                    showBoth ? (
+                        <h1>
+                            <span lang="zh">{zh("404.title")}</span>
+                            <span aria-hidden="true"> / </span>
+                            <span lang="en">{en("404.title")}</span>
+                        </h1>
+                    ) : (
+                        <h1>{heroTitle}</h1>
+                    )
+                }
+                <p class="not-found-subtitle" lang={showBoth ? "en" : lang}>
+                    {heroSubtitle}
+                </p>
             </header>
 
             <div class:list={["not-found-grid", showBoth && "is-bilingual"]}>
                 {
                     panels.map(({ code, label, href, translate }) => (
-                        <article class="locale-card" data-locale={code}>
+                        <article class="locale-card" data-locale={code} lang={code}>
                             <div class="locale-card-top">
                                 <span class="locale-badge">{label}</span>
                                 <span class="locale-command">
@@ -69,7 +83,7 @@ const heroSubtitle = showBoth
                             <div class="locale-card-main">
                                 <p class="locale-error">
                                     {translate("404.error")}
-                                    <span class="cursor"></span>
+                                    <span class="cursor" aria-hidden="true"></span>
                                 </p>
                                 <p class="locale-message">
                                     {translate("404.message")}
@@ -80,8 +94,14 @@ const heroSubtitle = showBoth
                             </div>
 
                             <footer class="locale-card-footer">
-                                <a href={href} class="locale-command-link">
-                                    <code>{translate("404.command.home")}</code>
+                                <a
+                                    href={href}
+                                    class="locale-command-link"
+                                    aria-label={translate("404.link.home")}
+                                >
+                                    <code aria-hidden="true">
+                                        {translate("404.command.home")}
+                                    </code>
                                 </a>
                             </footer>
                         </article>
@@ -94,37 +114,53 @@ const heroSubtitle = showBoth
 
 <style>
     .not-found-shell {
+        --not-found-border: color-mix(
+            in srgb,
+            var(--border-color) 82%,
+            transparent
+        );
+        --not-found-paper: color-mix(
+            in srgb,
+            var(--surface-strong) 82%,
+            var(--surface-muted)
+        );
         position: relative;
         isolation: isolate;
-        min-height: 68vh;
+        min-height: clamp(28rem, 66vh, 42rem);
         display: grid;
         place-items: center;
-        padding: clamp(1rem, 2vw, 1.75rem) 0;
+        padding: clamp(0.6rem, 2vw, 1.75rem) 0;
     }
 
     .not-found-glow {
         position: absolute;
         inset: auto;
-        width: 18rem;
+        width: clamp(12rem, 28vw, 18rem);
         aspect-ratio: 1;
         border-radius: 999px;
-        filter: blur(10px);
-        opacity: 0.7;
+        filter: blur(5px);
+        opacity: 0.58;
         z-index: -1;
-        animation: drift-glow 9s ease-in-out infinite;
     }
 
     .not-found-glow-left {
-        top: 4%;
-        left: -2rem;
-        background: radial-gradient(circle, rgba(255, 181, 94, 0.34), transparent 68%);
+        top: 5%;
+        left: -4rem;
+        background: radial-gradient(
+            circle,
+            color-mix(in srgb, var(--accent-gold) 36%, transparent),
+            transparent 68%
+        );
     }
 
     .not-found-glow-right {
-        right: -3rem;
-        bottom: 8%;
-        background: radial-gradient(circle, rgba(230, 106, 63, 0.22), transparent 70%);
-        animation-delay: -3s;
+        right: -4rem;
+        bottom: 6%;
+        background: radial-gradient(
+            circle,
+            color-mix(in srgb, var(--accent-berry) 28%, transparent),
+            transparent 70%
+        );
     }
 
     .not-found-frame {
@@ -132,14 +168,18 @@ const heroSubtitle = showBoth
         overflow: hidden;
         width: min(940px, 100%);
         padding: clamp(1.4rem, 3vw, 2.3rem);
-        border: 1px solid rgba(243, 191, 152, 0.88);
+        border: 1px solid var(--not-found-border);
         border-radius: calc(var(--radius-large) + 6px);
         background:
-            linear-gradient(155deg, rgba(255, 253, 248, 0.95), rgba(255, 241, 221, 0.92)),
-            radial-gradient(circle at top left, rgba(255, 181, 94, 0.2), transparent 38%);
+            radial-gradient(
+                circle at top left,
+                color-mix(in srgb, var(--accent-gold) 20%, transparent),
+                transparent 35%
+            ),
+            linear-gradient(145deg, var(--not-found-paper), var(--surface-muted));
         box-shadow:
-            0 24px 56px rgba(158, 78, 37, 0.14),
-            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            var(--shadow-md),
+            inset 0 1px 0 color-mix(in srgb, var(--surface-strong) 72%, transparent);
     }
 
     .not-found-frame::before {
@@ -151,7 +191,7 @@ const heroSubtitle = showBoth
         font-weight: 800;
         line-height: 1;
         letter-spacing: 0.06em;
-        color: rgba(230, 106, 63, 0.09);
+        color: color-mix(in srgb, var(--accent-strong) 12%, transparent);
         pointer-events: none;
     }
 
@@ -159,9 +199,13 @@ const heroSubtitle = showBoth
         content: "";
         position: absolute;
         inset: 0;
-        background-image: radial-gradient(rgba(255, 181, 94, 0.14) 1.2px, transparent 1.3px);
-        background-size: 18px 18px;
-        opacity: 0.55;
+        background-image: radial-gradient(
+            circle,
+            color-mix(in srgb, var(--accent-gold) 22%, transparent) 0 0.7px,
+            transparent 0.9px
+        );
+        background-size: 1.35rem 1.35rem;
+        opacity: 0.36;
         pointer-events: none;
     }
 
@@ -173,7 +217,12 @@ const heroSubtitle = showBoth
 
     .not-found-hero {
         max-width: 38rem;
-        margin-bottom: 1.6rem;
+        margin-bottom: clamp(1.25rem, 2.4vw, 1.7rem);
+    }
+
+    .not-found-hero h1 {
+        margin-bottom: 0.5rem;
+        text-wrap: balance;
     }
 
     .not-found-kicker {
@@ -182,9 +231,9 @@ const heroSubtitle = showBoth
         gap: 0.45rem;
         margin-bottom: 0.55rem;
         padding: 0.28rem 0.78rem;
-        border: 1px solid rgba(217, 77, 32, 0.16);
+        border: 1px solid color-mix(in srgb, var(--accent-color) 28%, transparent);
         border-radius: 999px;
-        background: rgba(255, 245, 232, 0.9);
+        background: color-mix(in srgb, var(--surface-elevated) 82%, var(--accent-faint));
         color: var(--accent-strong);
         font-family: var(--font-mono);
         font-size: 0.86rem;
@@ -198,11 +247,12 @@ const heroSubtitle = showBoth
         margin: 0;
         color: var(--text-soft);
         font-size: 1rem;
+        text-wrap: pretty;
     }
 
     .not-found-grid {
         display: grid;
-        gap: 1rem;
+        gap: clamp(0.8rem, 1.8vw, 1rem);
         grid-template-columns: minmax(0, 1fr);
     }
 
@@ -213,15 +263,20 @@ const heroSubtitle = showBoth
     .locale-card {
         position: relative;
         overflow: hidden;
+        min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 1.1rem;
+        gap: 1rem;
         min-height: 100%;
-        padding: 1.15rem;
-        border: 1px solid rgba(243, 191, 152, 0.92);
+        padding: clamp(1rem, 2vw, 1.2rem);
+        border: 1px solid var(--not-found-border);
         border-radius: var(--radius-medium);
-        background: linear-gradient(180deg, rgba(255, 253, 249, 0.96), rgba(255, 245, 231, 0.92));
-        box-shadow: 0 14px 32px rgba(158, 78, 37, 0.08);
+        background: linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--surface-strong) 94%, transparent),
+            color-mix(in srgb, var(--surface-elevated) 88%, var(--accent-faint))
+        );
+        box-shadow: var(--shadow-sm);
     }
 
     .locale-card::before {
@@ -230,7 +285,12 @@ const heroSubtitle = showBoth
         inset: 0 auto auto 0;
         width: 100%;
         height: 3px;
-        background: linear-gradient(90deg, var(--accent-gold), var(--accent-color), rgba(255, 133, 105, 0.35));
+        background: linear-gradient(
+            90deg,
+            var(--accent-gold),
+            var(--accent-color),
+            color-mix(in srgb, var(--accent-berry) 36%, transparent)
+        );
     }
 
     .locale-card-top {
@@ -253,15 +313,15 @@ const heroSubtitle = showBoth
     .locale-badge {
         padding: 0.3rem 0.8rem;
         background: color-mix(in srgb, var(--surface-strong) 78%, var(--accent-faint));
-        border: 1px solid rgba(243, 191, 152, 0.95);
+        border: 1px solid var(--not-found-border);
         color: var(--heading-color);
         font-weight: 700;
     }
 
     .locale-command {
         padding: 0.3rem 0.7rem;
-        background: rgba(255, 248, 239, 0.86);
-        border: 1px dashed rgba(230, 106, 63, 0.28);
+        background: color-mix(in srgb, var(--surface-muted) 86%, transparent);
+        border: 1px dashed color-mix(in srgb, var(--accent-color) 40%, transparent);
         color: var(--text-soft);
         font-family: var(--font-mono);
     }
@@ -273,7 +333,7 @@ const heroSubtitle = showBoth
 
     .locale-error {
         margin: 0;
-        color: #c04a5a;
+        color: var(--accent-text);
         font-weight: 700;
     }
 
@@ -292,9 +352,11 @@ const heroSubtitle = showBoth
 
     .locale-command-link {
         display: inline-flex;
+        max-width: 100%;
         align-items: center;
         justify-content: center;
         text-decoration: none;
+        border-radius: 999px;
     }
 
     .locale-command-link code {
@@ -302,28 +364,52 @@ const heroSubtitle = showBoth
         align-items: center;
         justify-content: center;
         min-height: 2.9rem;
+        max-width: 100%;
         padding: 0.55rem 1rem;
         border-radius: 999px;
-        border: 1px solid rgba(217, 77, 32, 0.18);
-        background: linear-gradient(135deg, rgba(255, 244, 228, 0.95), rgba(255, 234, 205, 0.98));
+        border: 1px solid color-mix(in srgb, var(--accent-color) 34%, transparent);
+        background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--surface-elevated) 62%, var(--accent-faint)),
+            color-mix(in srgb, var(--accent-faint) 74%, var(--surface-muted))
+        );
         color: var(--accent-strong);
         font-family: var(--font-mono);
         font-size: 0.88rem;
         font-weight: 700;
-        box-shadow: 0 12px 24px rgba(217, 77, 32, 0.12);
+        text-align: center;
+        overflow-wrap: anywhere;
+        box-shadow: 0 8px 18px color-mix(in srgb, var(--accent-strong) 16%, transparent);
         transition:
-            transform 0.22s ease,
-            box-shadow 0.22s ease,
-            background-color 0.22s ease,
-            color 0.22s ease;
+            transform var(--motion-fast) var(--ease-standard),
+            box-shadow var(--motion-fast) var(--ease-standard),
+            background var(--motion-fast) var(--ease-standard),
+            color var(--motion-fast) var(--ease-standard);
     }
 
-    .locale-command-link:hover code,
+    .locale-command-link:focus-visible {
+        outline: 3px solid var(--focus-ring);
+        outline-offset: 4px;
+    }
+
     .locale-command-link:focus-visible code {
-        transform: translateY(-2px);
-        box-shadow: 0 16px 28px rgba(217, 77, 32, 0.18);
-        background: linear-gradient(135deg, rgba(255, 235, 205, 1), rgba(255, 223, 185, 1));
+        box-shadow: 0 12px 24px color-mix(in srgb, var(--accent-strong) 24%, transparent);
+        background: color-mix(in srgb, var(--accent-faint) 82%, var(--surface-muted));
         color: var(--accent-strong);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .locale-command-link:hover code {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px color-mix(in srgb, var(--accent-strong) 24%, transparent);
+            background: color-mix(in srgb, var(--accent-faint) 82%, var(--surface-muted));
+            color: var(--accent-strong);
+        }
+    }
+
+    .locale-command-link:active code {
+        transform: translateY(0);
+        box-shadow: 0 4px 10px color-mix(in srgb, var(--accent-strong) 16%, transparent);
     }
 
     .cursor {
@@ -333,23 +419,6 @@ const heroSubtitle = showBoth
         margin-left: 0.28rem;
         vertical-align: -0.14em;
         background: currentColor;
-        animation: blinking-cursor 1s steps(2, start) infinite;
-    }
-
-    @keyframes blinking-cursor {
-        to {
-            opacity: 0;
-        }
-    }
-
-    @keyframes drift-glow {
-        0%,
-        100% {
-            transform: translate3d(0, 0, 0) scale(1);
-        }
-        50% {
-            transform: translate3d(0, -10px, 0) scale(1.04);
-        }
     }
 
     @media (max-width: 780px) {
@@ -364,6 +433,48 @@ const heroSubtitle = showBoth
         .not-found-frame::before {
             font-size: clamp(4rem, 28vw, 6.4rem);
             top: 1.35rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .not-found-shell {
+            min-height: 0;
+        }
+
+        .not-found-frame {
+            padding: 1.05rem;
+            border-radius: var(--radius-medium);
+        }
+
+        .not-found-frame::before {
+            right: 0.65rem;
+            opacity: 0.72;
+        }
+
+        .locale-card-top {
+            align-items: flex-start;
+        }
+
+        .locale-command {
+            max-width: 100%;
+            overflow-wrap: anywhere;
+        }
+    }
+
+    @media (prefers-contrast: more) {
+        .not-found-frame,
+        .locale-card {
+            border-color: var(--border-color);
+        }
+
+        .not-found-frame::after {
+            display: none;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .locale-command-link code {
+            transition: none !important;
         }
     }
 </style>

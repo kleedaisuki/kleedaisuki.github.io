@@ -1,10 +1,243 @@
 ---
-import { t, asLocale } from "@i18n/t";
+import { asLocale, t } from "@i18n/t";
+
+/** @brief 当前页面的界面语言 (current interface locale)。 */
 const locale = asLocale(Astro.currentLocale);
+
+/** @brief 当前路径的规范化表示 (normalized current pathname)。 */
+const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
+
+/** @brief 站内导航链接 (site navigation links)。 */
+const links = [
+  { href: `/${locale}/`, label: t("home", locale) },
+  { href: `/${locale}/about/`, label: t("about", locale) },
+  { href: `/${locale}/blog/`, label: t("blog", locale) },
+];
+
+/**
+ * @brief 判断导航链接是否对应当前页面 (check whether a navigation link is current)。
+ * @param href 待比较的站内路径 (site path to compare)。
+ * @return 当前链接是否为当前页面 (whether the link is for the current page)。
+ */
+const isCurrentPage = (href: string) =>
+  currentPath === (href.replace(/\/+$/, "") || "/");
+
+/** @brief 主题切换按钮的本地化文案 (localized theme-toggle copy)。 */
+const themeCopy =
+  locale === "en"
+    ? {
+        navigation: "Primary navigation",
+        toggle: "Toggle light and dark theme",
+        light: "Light",
+        switchToDark: "Switch to dark theme",
+      }
+    : {
+        navigation: "主导航",
+        toggle: "切换日间与夜间主题",
+        light: "日间",
+        switchToDark: "切换至夜间主题",
+      };
 ---
 
-<nav class="site-nav">
-    <a href={`/${locale}/`}>{t("home", locale)}</a>
-    <a href={`/${locale}/about/`}>{t("about", locale)}</a>
-    <a href={`/${locale}/blog/`}>{t("blog", locale)}</a>
+<nav class="site-nav" aria-label={themeCopy.navigation}>
+  {
+    links.map(({ href, label }) => (
+      <a href={href} aria-current={isCurrentPage(href) ? "page" : undefined}>
+        {label}
+      </a>
+    ))
+  }
+  <button
+    class="theme-toggle"
+    type="button"
+    data-theme-toggle
+    aria-label={themeCopy.toggle}
+    aria-pressed="false"
+    title={themeCopy.switchToDark}
+  >
+    <svg
+      class="theme-toggle__icon"
+      aria-hidden="true"
+      focusable="false"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path
+        data-theme-icon="sun"
+        style="display: none"
+        d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36-1.42 1.42M7.05 16.95l-1.41 1.41m12.72 0-1.42-1.41M7.05 7.05 5.64 5.64M15.5 12a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+      />
+      <path
+        data-theme-icon="moon"
+        d="M20.5 14.1A8.5 8.5 0 0 1 9.9 3.5 8.5 8.5 0 1 0 20.5 14.1Z"
+      />
+    </svg>
+    <span class="theme-toggle__label" data-theme-label>{themeCopy.light}</span>
+    <span
+      class="theme-toggle__status"
+      data-theme-status
+      aria-live="polite"
+      aria-atomic="true"
+    ></span>
+  </button>
 </nav>
+
+<script is:inline>
+  (() => {
+    /** @brief 主题偏好的本地存储键 (localStorage key for theme preference)。 */
+    const storageKey = "site-theme";
+    /** @brief 文档根节点 (document root element)。 */
+    const root = document.documentElement;
+    /** @brief 原生主题切换按钮 (native theme-toggle button)。 */
+    const toggle = document.querySelector("[data-theme-toggle]");
+
+    if (!(toggle instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    /** @brief 当前界面的语言是否为英语 (whether the interface language is English)。 */
+    const isEnglish = root.lang.toLowerCase().startsWith("en");
+    /** @brief 根据语言提供主题状态和提示语 (localized theme state and action copy)。 */
+    const copy = isEnglish
+      ? {
+          light: "Light",
+          dark: "Dark",
+          toLight: "Switch to light theme",
+          toDark: "Switch to dark theme",
+          changedToLight: "Theme changed to light.",
+          changedToDark: "Theme changed to dark.",
+        }
+      : {
+          light: "日间",
+          dark: "夜间",
+          toLight: "切换至日间主题",
+          toDark: "切换至夜间主题",
+          changedToLight: "已切换至日间主题。",
+          changedToDark: "已切换至夜间主题。",
+        };
+    /** @brief 系统明暗偏好媒体查询 (system color-scheme media query)。 */
+    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
+    /** @brief 主题显示文字节点 (visible theme-label element)。 */
+    const label = toggle.querySelector("[data-theme-label]");
+    /** @brief 屏幕阅读器状态节点 (screen-reader live-status element)。 */
+    const status = toggle.querySelector("[data-theme-status]");
+    /** @brief 浏览器工具栏颜色元数据 (browser theme-color metadata)。 */
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+
+    /**
+     * @brief 校验主题值 (validate a theme value)。
+     * @param theme 待校验的主题值 (theme value to validate)。
+     * @return 是否为受支持的主题 (whether it is a supported theme)。
+     */
+    const isTheme = (theme) => theme === "light" || theme === "dark";
+
+    /**
+     * @brief 读取用户明确保存的主题 (read the user's explicit saved theme)。
+     * @return 已保存主题；不可用时返回 null (saved theme, or null when unavailable)。
+     */
+    const readStoredTheme = () => {
+      try {
+        const storedTheme = localStorage.getItem(storageKey);
+        return isTheme(storedTheme) ? storedTheme : null;
+      } catch {
+        return null;
+      }
+    };
+
+    /**
+     * @brief 写入用户主题偏好 (persist the user's theme preference)。
+     * @param theme 要保存的主题 (theme to persist)。
+     * @return 无返回值 (no return value)。
+     */
+    const writeStoredTheme = (theme) => {
+      try {
+        localStorage.setItem(storageKey, theme);
+      } catch {
+        // 隐私模式或受限存储下保留本页切换能力 (keep this-page switching when storage is unavailable)。
+      }
+    };
+
+    /**
+     * @brief 将页面和控件同步到给定主题 (synchronize page and control to a theme)。
+     * @param theme 目标主题 (target theme)。
+     * @param announce 是否在辅助技术中播报切换结果 (whether to announce the result to assistive technology)。
+     * @return 无返回值 (no return value)。
+     */
+    const applyTheme = (theme, announce = false) => {
+      const isDark = theme === "dark";
+      const actionIcon = isDark ? "sun" : "moon";
+
+      root.dataset.theme = theme;
+      root.style.colorScheme = theme;
+      toggle.dataset.theme = theme;
+      toggle.setAttribute("aria-pressed", String(isDark));
+      toggle.setAttribute("title", isDark ? copy.toLight : copy.toDark);
+
+      if (label) {
+        label.textContent = isDark ? copy.dark : copy.light;
+      }
+
+      if (status) {
+        status.textContent = announce
+          ? isDark
+            ? copy.changedToDark
+            : copy.changedToLight
+          : "";
+      }
+
+      for (const icon of toggle.querySelectorAll("[data-theme-icon]")) {
+        if (icon instanceof SVGElement) {
+          icon.style.display =
+            icon.getAttribute("data-theme-icon") === actionIcon ? "" : "none";
+        }
+      }
+
+      if (themeColor instanceof HTMLMetaElement) {
+        const browserThemeColor = getComputedStyle(root)
+          .getPropertyValue("--browser-theme-color")
+          .trim();
+        if (browserThemeColor) {
+          themeColor.content = browserThemeColor;
+        }
+      }
+    };
+
+    /** @brief 用户是否已有明确的主题选择 (whether the user has an explicit theme choice)。 */
+    let hasExplicitTheme = Boolean(readStoredTheme());
+    applyTheme(root.dataset.theme === "dark" ? "dark" : "light");
+
+    toggle.addEventListener("click", () => {
+      const nextTheme = root.dataset.theme === "dark" ? "light" : "dark";
+      hasExplicitTheme = true;
+      writeStoredTheme(nextTheme);
+      applyTheme(nextTheme, true);
+    });
+
+    window.addEventListener("storage", (event) => {
+      if (event.key !== storageKey && event.key !== null) {
+        return;
+      }
+
+      const storedTheme = isTheme(event.newValue) ? event.newValue : null;
+      hasExplicitTheme = Boolean(storedTheme);
+      applyTheme(storedTheme ?? (systemTheme.matches ? "dark" : "light"));
+    });
+
+    /**
+     * @brief 跟随未手动覆盖时的系统主题变化 (follow system changes without a manual override)。
+     * @param event 系统色彩偏好变化事件 (system color-scheme change event)。
+     * @return 无返回值 (no return value)。
+     */
+    const followSystemTheme = (event) => {
+      if (!hasExplicitTheme) {
+        applyTheme(event.matches ? "dark" : "light");
+      }
+    };
+
+    systemTheme.addEventListener("change", followSystemTheme);
+  })();
+</script>

@@ -1,22 +1,26 @@
 ---
-import { getRelativeLocaleUrl } from "astro:i18n";
 import { getCollection } from "astro:content";
+import { getRelativeLocaleUrl } from "astro:i18n";
 import { getPublishedAlternates } from "../lib/localized-blog";
 
 const pathname = Astro.url.pathname;
 const m = pathname.match(/^\/(zh|en)\/blog\/([^/]+)\/?$/);
+const currentLocale = pathname.match(/^\/(zh|en)(?:\/|$)/)?.[1] as
+  | "zh"
+  | "en"
+  | undefined;
 
 const raw = pathname.replace(/^\/(zh|en)\//, "");
 let toZH: string | undefined = getRelativeLocaleUrl("zh", raw);
 let toEN: string | undefined = getRelativeLocaleUrl("en", raw);
 
 if (m) {
-  const currentLocale = m[1] as "zh" | "en";
+  const postLocale = m[1] as "zh" | "en";
   const currentSlug = decodeURIComponent(m[2]);
   const allPosts = await getCollection("blog", ({ data }) => !data.draft);
   const publishedAlternates = getPublishedAlternates(
     allPosts,
-    currentLocale,
+    postLocale,
     currentSlug,
   );
   const zhAlternate = publishedAlternates.find(
@@ -35,12 +39,16 @@ if (m) {
 }
 ---
 
-<nav class="lang-switch" aria-label="Language switcher">
+<nav
+    class="lang-switch"
+    aria-label={currentLocale === "zh" ? "语言切换" : "Language switcher"}
+>
     {
         toZH && (
             <a
                 href={toZH}
                 hreflang="zh"
+                aria-current={currentLocale === "zh" ? "page" : undefined}
                 onclick="try{localStorage.setItem('prefLocale','zh')}catch(e){}">中文</a
             >
         )
@@ -51,6 +59,7 @@ if (m) {
             <a
                 href={toEN}
                 hreflang="en"
+                aria-current={currentLocale === "en" ? "page" : undefined}
                 onclick="try{localStorage.setItem('prefLocale','en')}catch(e){}"
                 >English</a
             >

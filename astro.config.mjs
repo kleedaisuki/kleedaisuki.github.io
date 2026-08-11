@@ -14,7 +14,11 @@ const isIndexableSitemapPage = (page) => new URL(page).pathname !== "/";
 
 export default defineConfig({
   site: "https://blog.moesegfault.dev",
-  trailingSlash: "always",
+  // 开发环境接受带或不带末尾斜杠的 URL；静态产物仍以目录形式输出，保留既有的 /path/ 链接语义。
+  trailingSlash: "ignore",
+  build: {
+    format: "directory",
+  },
   i18n: {
     locales: ["zh", "en"],
     defaultLocale: "zh",

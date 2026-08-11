@@ -62,24 +62,44 @@ const matrixData = [
         data-username={username}
         data-profile-url={profileUrl}
         data-has-server-data={hasStaticGitHubData ? "1" : "0"}
+        data-github-state={hasStaticGitHubData ? "ready" : "loading"}
         data-loading-text="正在从 GitHub 同步数据..."
         data-error-text="GitHub 数据暂时不可用，请稍后再试。"
+        data-success-text="GitHub 数据已更新。"
+        aria-busy={hasStaticGitHubData ? "false" : "true"}
     >
+        <p
+            class="github-status"
+            data-github-status
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+        ></p>
         {
             githubProfile && (
-                <header class="about-header" data-github-header-dynamic>
+                <header
+                    class="about-header"
+                    data-kicker="冒险者档案"
+                    data-github-header-dynamic
+                >
                     <img
                         src={githubProfile.avatar_url}
-                        alt="GitHub Avatar"
+                        alt={`${githubProfile.name || githubProfile.login} 的 GitHub 头像`}
                         class="profile-avatar"
+                        width="130"
+                        height="130"
+                        decoding="async"
                     />
                     <h1>{githubProfile.name || githubProfile.login}</h1>
-                    <p>{githubProfile.bio}</p>
+                    {githubProfile.bio && (
+                        <p class="profile-bio">{githubProfile.bio}</p>
+                    )}
                     <a
                         class="github-profile-link"
                         href={profileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        aria-label="在新标签页打开 GitHub 个人主页"
                     >
                         {t("about.github_profile")}
                     </a>
@@ -88,7 +108,15 @@ const matrixData = [
         }
         {
             !githubProfile && (
-                <header class="about-header" data-github-header-dynamic>
+                <header
+                    class="about-header"
+                    data-kicker="冒险者档案"
+                    data-github-header-dynamic
+                >
+                    <div
+                        class="profile-avatar profile-avatar-placeholder"
+                        aria-hidden="true"
+                    ></div>
                     <h1>@{username}</h1>
                     <p class="github-loading">正在从 GitHub 同步数据...</p>
                     <a
@@ -96,6 +124,7 @@ const matrixData = [
                         href={profileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        aria-label="在新标签页打开 GitHub 个人主页"
                     >
                         {t("about.github_profile")}
                     </a>
@@ -147,7 +176,7 @@ const matrixData = [
                         </div>
                     </div>
 
-                    <h3 class="section-title" style="font-size: 1.5em;">
+                    <h3 class="section-title repos-title">
                         {t("about.repos_title")}
                     </h3>
                     <div class="repo-grid">
@@ -157,6 +186,7 @@ const matrixData = [
                                     href={repo.html_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label={`在新标签页打开 GitHub 仓库 ${repo.name}`}
                                 >
                                     <h4 class="repo-title">{repo.name}</h4>
                                     <p class="repo-desc">
@@ -202,13 +232,16 @@ const matrixData = [
                 root.getAttribute("data-has-server-data") === "1";
             const loadingText = root.getAttribute("data-loading-text") || "Loading...";
             const errorText = root.getAttribute("data-error-text") || "Failed to load GitHub data.";
+            const successText = root.getAttribute("data-success-text") || "GitHub data updated.";
             if (!username || !profileUrl) return;
 
             const headerNode = root.querySelector("[data-github-header-dynamic]");
             const datalinkNode = root.querySelector("[data-github-datalink-dynamic]");
+            const statusNode = root.querySelector("[data-github-status]");
             if (!headerNode || !datalinkNode) return;
 
             const setFallbackMessage = (message) => {
+                if (statusNode) statusNode.textContent = message;
                 [headerNode, datalinkNode].forEach((node) => {
                     if (!node) return;
                     const loadingEl = node.querySelector(".github-loading");
@@ -228,17 +261,24 @@ const matrixData = [
 
                 const avatar = createEl("img", "profile-avatar");
                 avatar.src = profile.avatar_url;
-                avatar.alt = "GitHub Avatar";
+                avatar.alt = `${profile.name || profile.login || `@${username}`} 的 GitHub 头像`;
+                avatar.width = 130;
+                avatar.height = 130;
+                avatar.decoding = "async";
 
                 const name = createEl("h1", "", profile.name || profile.login || `@${username}`);
-                const bio = createEl("p", "", profile.bio || "");
+                const bioText = typeof profile.bio === "string" ? profile.bio.trim() : "";
+                const bio = createEl("p", "profile-bio", bioText);
 
                 const link = createEl("a", "github-profile-link", "去 GitHub 看看");
                 link.href = profile.html_url || profileUrl;
                 link.target = "_blank";
                 link.rel = "noopener noreferrer";
+                link.setAttribute("aria-label", "在新标签页打开 GitHub 个人主页");
 
-                headerNode.append(avatar, name, bio, link);
+                headerNode.append(avatar, name);
+                if (bioText) headerNode.appendChild(bio);
+                headerNode.appendChild(link);
             };
 
             const renderDatalink = (profile, repos) => {
@@ -260,8 +300,7 @@ const matrixData = [
                 );
                 datalinkNode.appendChild(statsGrid);
 
-                const repoTitle = createEl("h3", "section-title", "最近在折腾");
-                repoTitle.style.fontSize = "1.5em";
+                const repoTitle = createEl("h3", "section-title repos-title", "最近在折腾");
                 datalinkNode.appendChild(repoTitle);
 
                 const repoGrid = createEl("div", "repo-grid");
@@ -271,6 +310,7 @@ const matrixData = [
                     link.href = repo.html_url;
                     link.target = "_blank";
                     link.rel = "noopener noreferrer";
+                    link.setAttribute("aria-label", `在新标签页打开 GitHub 仓库 ${repo.name}`);
 
                     const name = createEl("h4", "repo-title", repo.name);
                     const desc = createEl("p", "repo-desc", repo.description || "暂无仓库描述。");
@@ -289,6 +329,8 @@ const matrixData = [
                 datalinkNode.appendChild(repoGrid);
             };
 
+            root.dataset.githubState = hasServerData ? "refreshing" : "loading";
+            root.setAttribute("aria-busy", "true");
             setFallbackMessage(loadingText);
 
             Promise.all([
@@ -310,10 +352,18 @@ const matrixData = [
 
                     renderHeader(profile);
                     renderDatalink(profile, repos);
+                    root.dataset.githubState = "ready";
+                    root.setAttribute("aria-busy", "false");
+                    if (statusNode) statusNode.textContent = successText;
                 })
                 .catch(() => {
+                    root.setAttribute("aria-busy", "false");
                     if (!hasServerData) {
+                        root.dataset.githubState = "error";
                         setFallbackMessage(errorText);
+                    } else {
+                        root.dataset.githubState = "ready";
+                        if (statusNode) statusNode.textContent = errorText;
                     }
                 });
         })();

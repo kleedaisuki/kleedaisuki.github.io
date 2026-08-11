@@ -1,84 +1,89 @@
 .hero {
   position: relative;
+  display: flex;
+  min-block-size: clamp(22rem, 52svh, 32rem);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-  padding: clamp(3rem, 9vw, 5.8rem) clamp(1rem, 3vw, 2.3rem);
-  min-height: min(70vh, 560px);
-  border: 1px solid rgba(243, 191, 152, 0.85);
-  border-radius: 28px;
+  padding: clamp(3rem, 8vw, 5.5rem) clamp(1.15rem, 4vw, 2.75rem);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-large);
   background:
     radial-gradient(
-      circle at 85% 22%,
-      rgba(255, 193, 125, 0.45),
-      transparent 40%
+      circle at 86% 20%,
+      color-mix(in srgb, var(--accent-gold) 42%, transparent),
+      transparent 38%
     ),
     radial-gradient(
-      circle at 10% 75%,
-      rgba(255, 227, 193, 0.7),
-      transparent 58%
+      circle at 8% 82%,
+      color-mix(in srgb, var(--accent-berry) 24%, transparent),
+      transparent 54%
     ),
-    linear-gradient(140deg, rgba(255, 254, 248, 0.97), rgba(255, 241, 218, 0.9));
-  box-shadow: 0 18px 36px rgba(165, 87, 45, 0.16);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+    linear-gradient(142deg, var(--surface-elevated), var(--accent-wash));
+  box-shadow: var(--shadow-md);
   isolation: isolate;
+  text-align: center;
 }
 
 .hero::after {
-  content: "";
   position: absolute;
-  inset: auto -18% -40% auto;
-  width: clamp(220px, 30vw, 340px);
+  right: -11%;
+  bottom: -33%;
+  z-index: 0;
+  width: clamp(13rem, 29vw, 21rem);
   aspect-ratio: 1;
-  border-radius: 999px;
+  border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(230, 106, 63, 0.38),
-    rgba(230, 106, 63, 0)
+    color-mix(in srgb, var(--accent-color) 34%, transparent),
+    transparent 68%
   );
+  content: "";
   pointer-events: none;
 }
 
 .hero::before {
-  content: "adventure log";
   position: absolute;
   top: 1rem;
   right: 1rem;
-  padding: 0.28rem 0.7rem;
+  z-index: 1;
+  padding: 0.26rem 0.68rem;
+  border: 1px solid var(--border-subtle);
   border-radius: 999px;
-  border: 1px solid rgba(243, 191, 152, 0.95);
-  background: rgba(255, 247, 233, 0.95);
+  background: color-mix(in srgb, var(--surface-elevated) 88%, transparent);
+  box-shadow: var(--shadow-sm);
   color: var(--accent-strong);
+  content: "adventure log";
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  box-shadow: 0 6px 14px rgba(165, 87, 45, 0.12);
-  z-index: 2;
 }
 
 .hero-greeting {
-  margin: 0;
-  font-size: clamp(2rem, 5.8vw, 3.8rem);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--accent-strong);
-  text-wrap: balance;
-  text-shadow: 0 3px 0 rgba(255, 228, 199, 0.85);
   position: relative;
   z-index: 1;
+  inline-size: min(100%, 20ch);
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: clamp(2.2rem, 6vw, 4.15rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.12;
+  text-shadow: 0 2px 0 color-mix(in srgb, var(--accent-faint) 68%, transparent);
+  text-wrap: balance;
 }
 
 .hero-greeting .cursor {
   display: inline-block;
-  width: 0.65em;
-  height: 1.05em;
-  margin-left: 0.18em;
-  border-radius: 3px;
+  width: 0.6em;
+  height: 0.94em;
+  margin-left: 0.16em;
+  border-radius: 0.16em;
   background-color: var(--accent-color);
   animation: cursor-blink 1s steps(2, start) infinite;
+  vertical-align: -0.05em;
 }
 
 @keyframes cursor-blink {
@@ -88,173 +93,222 @@
 }
 
 .hero-intro {
-  max-width: 640px;
-  margin: 1.2rem 0 0;
-  font-size: clamp(1rem, 2.4vw, 1.18rem);
+  position: relative;
+  z-index: 1;
+  inline-size: min(100%, 41rem);
+  margin: 1.25rem 0 0;
   color: var(--text-soft);
+  font-size: clamp(1rem, 2.2vw, 1.18rem);
+  line-height: 1.8;
+  text-wrap: pretty;
   transition:
-    opacity 0.45s ease,
-    transform 0.45s ease;
+    opacity var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-emphasized);
 }
 
 .hero.is-typing .hero-intro {
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(0.5rem);
 }
 
-.hero-intro.visible {
+.hero.is-typing .hero-intro.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
 .section-title {
-  margin: 2.5rem 0 1.2rem;
-  text-align: center;
-  color: var(--heading-color);
   position: relative;
+  margin: clamp(2.35rem, 6vw, 3.5rem) 0 1.25rem;
+  color: var(--heading-color);
+  text-align: center;
+  text-wrap: balance;
 }
 
-.section-title::before,
 .section-title::after {
+  display: block;
+  width: 3.25rem;
+  height: 0.28rem;
+  margin: 0.62rem auto 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-gold), var(--accent-berry));
   content: "";
-  display: inline-block;
-  width: 0.5rem;
-  height: 0.5rem;
-  margin-inline: 0.45rem;
-  border-radius: 50%;
-  vertical-align: middle;
-}
-
-.section-title::before {
-  background: var(--accent-gold);
-  box-shadow: 0 0 0 4px rgba(255, 181, 94, 0.16);
-}
-
-.section-title::after {
-  background: var(--accent-berry);
-  box-shadow: 0 0 0 4px rgba(255, 133, 105, 0.14);
+  opacity: 0.84;
 }
 
 .card-grid {
-  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: clamp(0.9rem, 2.4vw, 1.2rem);
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.1rem;
+  list-style: none;
 }
 
 .card {
   position: relative;
+  min-inline-size: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-medium);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-sm);
   list-style: none;
-  background: var(--surface-color);
-  border: 1px solid rgba(243, 191, 152, 0.82);
-  border-radius: 20px;
-  box-shadow: 0 10px 20px rgba(170, 87, 43, 0.1);
   transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    border-color 0.25s ease;
+    transform var(--motion-base) var(--ease-emphasized),
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard);
 }
 
-.card::after {
-  content: "";
+.card::before {
   position: absolute;
-  right: 0.8rem;
-  bottom: 0.75rem;
-  width: 1.1rem;
-  height: 1.1rem;
-  border-radius: 50%;
-  border: 2px dashed rgba(255, 181, 94, 0.55);
-  opacity: 0.72;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  border-color: var(--accent-color);
-  box-shadow: 0 16px 28px rgba(170, 87, 43, 0.16);
-}
-
-.card:nth-child(3n + 1) {
-  transform: rotate(-0.45deg);
-}
-
-.card:nth-child(3n + 2) {
-  transform: rotate(0.5deg);
-}
-
-.card:nth-child(3n + 3) {
-  transform: rotate(-0.2deg);
-}
-
-.card:nth-child(3n + 1):hover,
-.card:nth-child(3n + 2):hover,
-.card:nth-child(3n + 3):hover {
-  transform: translateY(-4px) rotate(0deg);
-}
-
-.card a {
-  position: relative;
-  display: block;
-  height: 100%;
-  padding: 1.2rem 1.2rem 1.1rem;
-  color: inherit;
-}
-
-.card a::after {
+  top: 0;
+  right: 1.15rem;
+  left: 1.15rem;
+  height: 0.2rem;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(90deg, var(--accent-gold), var(--accent-berry));
   content: "";
-  position: absolute;
-  inset: 0.6rem;
-  border: 1px dashed rgba(255, 181, 94, 0.24);
-  border-radius: 14px;
+  opacity: 0;
+  transform: scaleX(0.4);
+  transition:
+    opacity var(--motion-fast) var(--ease-standard),
+    transform var(--motion-base) var(--ease-emphasized);
   pointer-events: none;
 }
 
+.card a {
+  display: flex;
+  min-block-size: 100%;
+  flex-direction: column;
+  padding: 1.25rem 1.25rem 1.2rem;
+  color: inherit;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+
 .post-date {
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.5rem;
   color: var(--accent-strong);
   font-family: var(--font-mono);
-  font-size: 0.83rem;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.015em;
 }
 
 .card-title {
   margin: 0;
-  font-size: 1.24rem;
   color: var(--heading-color);
+  font-size: clamp(1.18rem, 2.25vw, 1.36rem);
+  line-height: 1.35;
+  text-wrap: balance;
+  transition: color var(--motion-fast) var(--ease-standard);
 }
 
 .card-desc {
-  margin: 0.66rem 0 0;
+  margin: 0.7rem 0 0;
   color: var(--text-soft);
+  line-height: 1.7;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--accent-color) 58%,
+      var(--border-subtle)
+    );
+    box-shadow: var(--shadow-md);
+    transform: translateY(-0.3rem);
+  }
+
+  .card:hover::before {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  .card:hover .card-title {
+    color: var(--accent-strong);
+  }
+}
+
+.card:focus-within {
+  border-color: color-mix(
+    in srgb,
+    var(--accent-color) 58%,
+    var(--border-subtle)
+  );
+  box-shadow: var(--shadow-md);
+  transform: translateY(-0.2rem);
+}
+
+.card:focus-within::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.card:focus-within .card-title {
+  color: var(--accent-strong);
+}
+
+.card a:focus-visible {
+  outline-offset: -0.35rem;
+}
+
+.card a:active {
+  transform: translateY(0.08rem);
 }
 
 @media (max-width: 640px) {
   .hero {
-    min-height: 52vh;
-    border-radius: 20px;
-    padding: 2.6rem 1rem;
+    min-block-size: clamp(21rem, 52svh, 27rem);
+    padding: 3.1rem 1rem 2.6rem;
+    border-radius: var(--radius-medium);
   }
 
   .hero::before {
     top: 0.8rem;
     right: 0.8rem;
+    font-size: 0.65rem;
   }
 
-  .section-title::before,
-  .section-title::after,
-  .card::after,
-  .card a::after {
-    display: none;
+  .hero-greeting {
+    inline-size: min(100%, 15ch);
   }
 
   .section-title {
-    margin-top: 2rem;
+    margin-top: 2.3rem;
   }
 
+  .card a {
+    padding: 1.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-greeting .cursor {
+    animation: none;
+  }
+
+  .hero-intro,
   .card,
-  .card:nth-child(3n + 1),
-  .card:nth-child(3n + 2),
-  .card:nth-child(3n + 3) {
+  .card::before,
+  .card a {
+    transition: none;
+  }
+
+  .card:hover,
+  .card:focus-within,
+  .card a:active {
     transform: none;
   }
+}
+
+/* 保持内联启动器和客户端脚本之间的首绘状态一致 (keep pre-paint state in sync). */
+:root[data-home-typing="true"] .hero-greeting,
+:root[data-home-typing="true"] .hero-intro {
+  opacity: 0;
+}
+
+:root[data-home-typing="true"] .hero-greeting {
+  color: transparent;
+  text-shadow: none;
 }

@@ -23,6 +23,8 @@ interface LayoutProps {
   tags?: string[];
   structuredData?: JsonLdObject;
   robots?: string;
+  /** @brief 是否显示语言切换导航 (whether to render the language switcher). */
+  showLanguageSwitch?: boolean;
 }
 
 const pathname = Astro.url.pathname;
@@ -70,6 +72,7 @@ const {
   tags = [],
   structuredData,
   robots,
+  showLanguageSwitch = true,
 } = Astro.props as LayoutProps;
 const rssPath = currentLocale === "zh" ? "/zh/rss.xml" : "/en/rss.xml";
 const rssTitle =
@@ -83,7 +86,38 @@ const alternateOpenGraphLocales = alternates
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#5b3cc4" />
+    <meta name="color-scheme" content="light dark" />
+    <meta id="theme-color" name="theme-color" content="#fff6ea" />
+    <script is:inline>
+      /**
+       * @brief 在首次绘制前恢复站点主题 (Restore theme before first paint).
+       * @note 主题仅保存在浏览器本地，系统偏好用作首次访问的回退值。
+       */
+      (() => {
+        const storageKey = "site-theme";
+        const root = document.documentElement;
+        let savedTheme = null;
+
+        try {
+          savedTheme = localStorage.getItem(storageKey);
+        } catch {
+          // 隐私模式或受限环境下退回系统主题 (Fall back when storage is unavailable).
+        }
+
+        const theme =
+          savedTheme === "light" || savedTheme === "dark"
+            ? savedTheme
+            : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+
+        root.dataset.theme = theme;
+        root.style.colorScheme = theme;
+        document
+          .querySelector('meta[name="theme-color"]')
+          ?.setAttribute("content", theme === "dark" ? "#21130f" : "#fff6ea");
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonical} />
     <meta name="description" content={description} />
@@ -139,12 +173,15 @@ const alternateOpenGraphLocales = alternates
     <title>{pageTitle}</title>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">
+      {currentLocale === "zh" ? "跳至正文" : "Skip to content"}
+    </a>
     <div class="site-wrapper">
       <header class="container">
         <Nav />
-        <LangSwitch />
+        {showLanguageSwitch && <LangSwitch />}
       </header>
-      <main class="container">
+      <main id="main-content" class="container" tabindex="-1">
         <slot />
       </main>
       <footer class="container">

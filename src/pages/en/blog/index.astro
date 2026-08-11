@@ -1,8 +1,8 @@
 ---
+import { getCollection } from "astro:content";
+import { useTranslations } from "@i18n/utils";
 // src/pages/en/blog/index.astro
 import BaseLayout from "@layouts/BaseLayout.astro";
-import { useTranslations } from "@i18n/utils";
-import { getCollection } from "astro:content";
 import "@styles/blog.css";
 import { createBlogJsonLd, getAbsoluteUrl } from "../../../lib/seo";
 
@@ -30,16 +30,15 @@ const posts = (await getCollection("blog"))
 >
   <div class="blog-container">
     <header class="blog-header">
-      <h1 class="blog-title">{t("blog.title")}</h1>
+      <h1 id="blog-archive-heading" class="blog-title">{t("blog.title")}</h1>
       <p class="blog-description">{archiveDescription}</p>
     </header>
 
-    <section aria-label={t("blog.title")}>
+    <section aria-labelledby="blog-archive-heading">
       <ul class="post-list">
         {
           posts.map((p) => (
             <li class="post-item">
-              {/* [新增] 使用一个 div 包裹，应用 flex-direction: column */}
               <div class="post-content">
                 <div class="post-meta">
                   <time datetime={p.data.date.toISOString()}>
@@ -59,7 +58,6 @@ const posts = (await getCollection("blog"))
                   <p class="post-description">{p.data.description}</p>
                 )}
 
-                {/* [新增] 渲染标签列表 */}
                 {p.data.tags && p.data.tags.length > 0 && (
                   <ul class="post-tags">
                     {p.data.tags.map((tag) => (

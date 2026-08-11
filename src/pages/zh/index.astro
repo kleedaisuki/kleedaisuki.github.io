@@ -26,11 +26,33 @@ const recentPosts = sortedPosts.slice(0, 3);
     description={t("home.intro")}
     structuredData={structuredData}
 >
+    <script is:inline>
+        /**
+         * @brief 在首次绘制前准备标题动画 (prepare title animation before first paint).
+         * @note 用户偏好减少动态效果时保留静态标题 (keep the static heading for reduced motion).
+         */
+        if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            const root = document.documentElement;
+            root.dataset.homeTyping = "true";
+
+            /**
+             * @brief 释放未启动动画的首屏兜底 (release a stalled first-paint animation).
+             * @return 无返回值 / No return value.
+             */
+            window.setTimeout(() => {
+                if (root.dataset.homeTyping !== "true") return;
+                root.removeAttribute("data-home-typing");
+                document.querySelector("[data-hero]")?.classList.remove("is-typing");
+                document.getElementById("hero-intro")?.classList.add("visible");
+            }, 1400);
+        }
+    </script>
     <section class="hero" data-hero>
         <h1
             id="hero-greeting"
             class="hero-greeting"
             data-greeting={t("home.greeting")}
+            aria-label={t("home.greeting")}
         >{t("home.greeting")}</h1>
         <p id="hero-intro" class="hero-intro">{t("home.intro")}</p>
     </section>
@@ -54,11 +76,15 @@ const recentPosts = sortedPosts.slice(0, 3);
 </BaseLayout>
 
 <script>
-    // 这是一个在页面加载后执行的客户端脚本
+    /**
+     * @brief 初始化首页打字动画 (typewriter animation) / Initialize the homepage typewriter animation.
+     * @return 无返回值 / No return value.
+     */
     document.addEventListener("DOMContentLoaded", () => {
         const heroEl = document.querySelector("[data-hero]");
         const greetingEl = document.getElementById("hero-greeting");
         const introEl = document.getElementById("hero-intro");
+        const root = document.documentElement;
 
         // 如果找不到元素，就直接退出，避免报错
         if (
@@ -66,11 +92,18 @@ const recentPosts = sortedPosts.slice(0, 3);
             !(greetingEl instanceof HTMLElement) ||
             !(introEl instanceof HTMLElement)
         ) {
+            root.removeAttribute("data-home-typing");
             return;
         }
         const greetingText = greetingEl.dataset.greeting;
-        if (!greetingText) return;
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        if (!greetingText) {
+            root.removeAttribute("data-home-typing");
+            return;
+        }
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            root.removeAttribute("data-home-typing");
+            return;
+        }
 
         heroEl.classList.add("is-typing");
         startTypewriter(greetingEl, introEl, greetingText);
@@ -88,27 +121,42 @@ const recentPosts = sortedPosts.slice(0, 3);
         introEl: HTMLElement,
         greetingText: string,
     ) {
+        const typeStartDelayMs = 120;
+        const typeIntervalMs = 32;
+        const cursorDismissDelayMs = 480;
+        const greetingCharacters = Array.from(greetingText);
         let i = 0;
         const cursor = document.createElement("span");
         cursor.className = "cursor";
         cursor.setAttribute("aria-hidden", "true");
 
+        /**
+         * @brief 渲染当前标题文本 (render greeting text) / Render the current greeting text.
+         * @param text 标题文本 (greeting text) / Greeting text.
+         * @return 无返回值 / No return value.
+         */
         function renderGreeting(text: string) {
-            greetingEl.textContent = text;
-            greetingEl.append(cursor);
+            greetingEl.replaceChildren(text, cursor);
         }
 
+        /**
+         * @brief 逐字更新标题 (type one character) / Type one character into the greeting.
+         * @return 无返回值 / No return value.
+         */
         function typeWriter() {
-            if (i < greetingText.length) {
-                renderGreeting(greetingText.substring(0, i + 1));
+            if (i < greetingCharacters.length) {
+                renderGreeting(greetingCharacters.slice(0, i + 1).join(""));
                 i++;
-                setTimeout(typeWriter, Math.random() * 150 + 50);
+                window.setTimeout(typeWriter, typeIntervalMs);
             } else {
                 renderGreeting(greetingText);
                 introEl.classList.add("visible");
+                window.setTimeout(() => cursor.remove(), cursorDismissDelayMs);
             }
         }
 
-        setTimeout(typeWriter, 500);
+        renderGreeting("");
+        document.documentElement.removeAttribute("data-home-typing");
+        window.setTimeout(typeWriter, typeStartDelayMs);
     }
 </script>

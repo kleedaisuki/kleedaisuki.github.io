@@ -1,6 +1,7 @@
 ---
 import Base from "@layouts/BaseLayout.astro";
-import { getCollection, render, type CollectionEntry } from "astro:content";
+import "@styles/blog.css";
+import { type CollectionEntry, getCollection, render } from "astro:content";
 import { t } from "@i18n/t";
 import {
   createBlogPostingJsonLd,
@@ -75,7 +76,7 @@ const structuredData = createBlogPostingJsonLd({
       </ol>
     </nav>
     <header class="post-header">
-      <h1>{entry.data.title}</h1>
+      <h1 id="post-title">{entry.data.title}</h1>
       <p class="post-summary">{entry.data.description}</p>
       <p class="post-byline">
         <time datetime={entry.data.date.toISOString()}>发布于 {formattedDate}</time>
@@ -102,6 +103,6 @@ const structuredData = createBlogPostingJsonLd({
         )
       }
     </header>
-    <article class="prose"><Content /></article>
+    <article class="prose" aria-labelledby="post-title"><Content /></article>
   </div>
 </Base>

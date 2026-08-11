@@ -156,9 +156,31 @@ function verifyDiscoveryEntries() {
   readOutputFile("rss.xml");
 }
 
+/**
+ * @brief 验证本地化 404 路由 (localized 404 routes) / Verify localized 404 routes.
+ * @return 无返回值 / No return value.
+ * @note 通用 404 已显示两种语言的回首页入口，不能再生成会落入第二个 404 的语言切换链接。
+ */
+function verifyNotFoundRoutes() {
+  const genericNotFound = readOutputFile("404.html");
+  assert(
+    !genericNotFound.includes('class="lang-switch"'),
+    "Generic 404 must not render a redundant language switcher",
+  );
+
+  for (const locale of ["zh", "en"]) {
+    const notFound = readOutputFile(join(locale, "404", "index.html"));
+    assert(
+      notFound.includes(`href="/${locale}/"`),
+      `Localized 404 has no direct home link: ${locale}`,
+    );
+  }
+}
+
 assert(existsSync(OUTPUT_DIRECTORY), "Build output is missing; run pnpm build first");
 verifySitemap();
 verifyDiscoveryEntries();
+verifyNotFoundRoutes();
 
 for (const locale of ["zh", "en"]) {
   const articleFiles = getArticleFiles(locale);

@@ -1,39 +1,82 @@
 .about-container {
+  /* @brief About 页局部设计令牌 / Local design tokens for the About page. */
+  --about-surface: var(--surface-elevated, var(--surface-strong));
+  --about-surface-muted: var(--surface-muted, var(--surface-color));
+  --about-border: var(--border-subtle, var(--border-color));
+  --about-wash: var(--accent-wash, var(--accent-faint));
+  --about-shadow-sm: var(--shadow-sm, 0 8px 18px var(--shadow-color));
+  --about-shadow-md: var(--shadow-md, 0 16px 32px var(--shadow-color));
+  --about-motion-fast: var(--motion-fast, 160ms);
+  --about-motion-base: var(--motion-base, 240ms);
+  --about-motion-slow: var(--motion-slow, 620ms);
+  --about-ease-standard: var(--ease-standard, ease);
+  --about-ease-emphasized: var(
+    --ease-emphasized,
+    cubic-bezier(0.2, 0.75, 0.3, 1)
+  );
+
   display: grid;
-  gap: 1.6rem;
+  gap: clamp(1.1rem, 2.6vw, 1.8rem);
+}
+
+.about-header,
+.personality-matrix,
+.datalink-section {
+  position: relative;
+  border: 1px solid var(--about-border);
+  border-radius: var(--radius-large);
+  box-shadow: var(--about-shadow-sm);
 }
 
 .about-header {
-  position: relative;
+  isolation: isolate;
+  display: grid;
+  justify-items: center;
   overflow: hidden;
+  padding: clamp(2.7rem, 6vw, 3.5rem) clamp(1rem, 4vw, 2.3rem)
+    clamp(1.35rem, 3vw, 1.85rem);
   text-align: center;
-  padding: 2rem 1rem 1.6rem;
-  border: 1px solid rgba(243, 191, 152, 0.9);
-  border-radius: 24px;
   background:
     radial-gradient(
-      circle at 50% 14%,
-      rgba(255, 206, 154, 0.45),
-      transparent 45%
+      circle at 15% 0%,
+      color-mix(in srgb, var(--accent-gold) 31%, transparent),
+      transparent 37%
     ),
-    linear-gradient(165deg, rgba(255, 252, 246, 0.96), rgba(255, 236, 209, 0.9));
-  box-shadow: 0 12px 26px rgba(163, 83, 40, 0.15);
+    radial-gradient(
+      circle at 87% 82%,
+      color-mix(in srgb, var(--accent-berry) 18%, transparent),
+      transparent 46%
+    ),
+    linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--about-surface) 94%, var(--bg-color)),
+      var(--about-surface-muted)
+    );
+  box-shadow: var(--about-shadow-md);
+}
+
+.about-header > * {
+  position: relative;
+  z-index: 1;
 }
 
 .about-header::before {
-  content: "adventurer profile";
+  content: attr(data-kicker);
   position: absolute;
-  top: 0.9rem;
-  left: 0.95rem;
-  padding: 0.24rem 0.62rem;
-  border: 1px solid rgba(243, 191, 152, 0.95);
+  z-index: 1;
+  top: 0.85rem;
+  left: 0.9rem;
+  padding: 0.23rem 0.62rem;
+  border: 1px solid var(--about-border);
   border-radius: 999px;
-  background: rgba(255, 248, 235, 0.95);
+  background: color-mix(in srgb, var(--about-surface) 90%, var(--about-wash));
   color: var(--accent-strong);
   font-family: var(--font-mono);
   font-size: 0.68rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  box-shadow: var(--about-shadow-sm);
 }
 
 .about-header::after {
@@ -41,135 +84,212 @@
   position: absolute;
   right: 1rem;
   top: 0.95rem;
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 1.05rem;
+  height: 1.05rem;
   border-radius: 50%;
   background: var(--accent-gold);
   box-shadow:
-    -1.25rem 0.25rem 0 rgba(255, 133, 105, 0.82),
-    -0.58rem -0.45rem 0 rgba(255, 181, 94, 0.7);
+    -1.18rem 0.25rem 0 color-mix(in srgb, var(--accent-berry) 82%, transparent),
+    -0.55rem -0.42rem 0 color-mix(in srgb, var(--accent-gold) 68%, transparent);
+}
+
+.about-header > h1 {
+  margin: 0;
+  max-width: 20ch;
+  text-wrap: balance;
+}
+
+.profile-bio,
+.about-header > p:not(.github-loading) {
+  max-width: 62ch;
+  margin: 0.68rem auto 0;
+  color: var(--text-soft);
+  font-size: clamp(0.98rem, 2vw, 1.06rem);
+  line-height: 1.68;
+  text-wrap: pretty;
 }
 
 .profile-avatar {
-  width: 130px;
-  height: 130px;
+  display: block;
+  width: clamp(6.5rem, 17vw, 8.125rem);
+  height: clamp(6.5rem, 17vw, 8.125rem);
+  margin: 0 0 1rem;
+  border: 4px solid
+    color-mix(in srgb, var(--accent-color) 72%, var(--about-surface));
   border-radius: 50%;
+  background: var(--about-wash);
   object-fit: cover;
-  border: 4px solid rgba(230, 106, 63, 0.9);
-  box-shadow: 0 10px 24px rgba(230, 106, 63, 0.24);
-  margin-bottom: 0.9rem;
-  animation: avatar-bob 3.2s ease-in-out infinite;
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--about-wash) 58%, transparent),
+    var(--about-shadow-md);
+}
+
+.profile-avatar-placeholder {
+  background:
+    radial-gradient(
+      circle at 36% 33%,
+      color-mix(in srgb, var(--about-surface) 68%, transparent) 0 11%,
+      transparent 12%
+    ),
+    radial-gradient(
+      ellipse at 50% 108%,
+      color-mix(in srgb, var(--accent-color) 28%, transparent) 0 42%,
+      transparent 43%
+    ),
+    var(--about-wash);
 }
 
 .github-profile-link {
-  display: inline-block;
-  margin-top: 0.7rem;
-  padding: 0.45rem 0.8rem;
-  border: 1px solid rgba(230, 106, 63, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 2.75rem;
+  margin-top: 1rem;
+  padding: 0.52rem 0.9rem;
+  border: 1px solid
+    color-mix(in srgb, var(--accent-color) 46%, var(--about-border));
   border-radius: 999px;
-  background: rgba(255, 250, 242, 0.86);
+  background: color-mix(in srgb, var(--about-surface) 82%, var(--about-wash));
   color: var(--accent-strong);
   font-family: var(--font-mono);
   font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.2;
   text-decoration: none;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    transform var(--about-motion-base) var(--about-ease-standard),
+    box-shadow var(--about-motion-base) var(--about-ease-standard),
+    border-color var(--about-motion-base) var(--about-ease-standard),
+    background-color var(--about-motion-base) var(--about-ease-standard);
 }
 
-.github-profile-link:hover {
-  transform: translateY(-2px);
-  border-color: rgba(230, 106, 63, 0.8);
-  box-shadow: 0 7px 16px rgba(163, 83, 40, 0.16);
+.github-profile-link::after {
+  content: "↗";
+  font-size: 1em;
+  line-height: 1;
+}
+
+.github-profile-link:focus-visible {
+  color: var(--accent-strong);
+  outline: 2px solid var(--accent-color);
+  outline-offset: 4px;
+  box-shadow: var(--about-shadow-md);
 }
 
 .github-loading {
-  margin: 0.4rem 0 0;
+  min-height: 1.75em;
+  margin: 0.62rem 0 0;
   color: var(--text-soft);
   font-size: 0.95rem;
 }
 
+.github-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .personality-matrix,
 .datalink-section {
-  position: relative;
-  padding: 1.2rem;
-  border: 1px solid rgba(243, 191, 152, 0.82);
-  border-radius: 20px;
-  background: rgba(255, 251, 244, 0.86);
+  padding: clamp(1rem, 3vw, 1.45rem);
+  background: color-mix(
+    in srgb,
+    var(--about-surface-muted) 90%,
+    var(--bg-color)
+  );
 }
 
 .personality-matrix {
+  isolation: isolate;
   overflow: hidden;
   background:
     radial-gradient(
-      circle at 12% 18%,
-      rgba(255, 216, 167, 0.24),
-      transparent 42%
+      circle at 10% 10%,
+      color-mix(in srgb, var(--accent-gold) 19%, transparent),
+      transparent 37%
     ),
     radial-gradient(
-      circle at 88% 78%,
-      rgba(255, 176, 120, 0.18),
-      transparent 45%
+      circle at 91% 86%,
+      color-mix(in srgb, var(--accent-berry) 14%, transparent),
+      transparent 42%
     ),
-    rgba(255, 251, 244, 0.9);
-  animation: matrix-fade-in 0.7s ease-out both;
+    color-mix(in srgb, var(--about-surface-muted) 90%, var(--bg-color));
 }
 
 .personality-matrix::after {
   content: "";
   position: absolute;
+  z-index: 0;
   inset: 0;
+  opacity: 0;
   background: linear-gradient(
-    120deg,
-    transparent 10%,
-    rgba(255, 214, 166, 0.18) 48%,
-    transparent 85%
+    112deg,
+    transparent 16%,
+    color-mix(in srgb, var(--about-wash) 64%, transparent) 50%,
+    transparent 84%
   );
-  transform: translateX(-140%);
+  transform: translateX(-125%);
   pointer-events: none;
-  animation: matrix-scan 5.2s ease-in-out 0.6s infinite;
+  transition:
+    transform var(--about-motion-slow) var(--about-ease-emphasized),
+    opacity var(--about-motion-fast) var(--about-ease-standard);
 }
 
 .personality-matrix::before,
 .datalink-section::before {
   content: "";
   position: absolute;
-  left: 0.7rem;
-  right: 0.7rem;
-  top: 0.7rem;
-  bottom: 0.7rem;
-  border: 1px dashed rgba(255, 181, 94, 0.25);
-  border-radius: 14px;
+  inset: 0.68rem;
+  border: 1px dashed color-mix(in srgb, var(--about-border) 72%, transparent);
+  border-radius: calc(var(--radius-medium) - 2px);
   pointer-events: none;
 }
 
-.section-title {
-  margin: 0 0 1rem;
-  text-align: center;
+.personality-matrix > *,
+.datalink-section > * {
+  position: relative;
+  z-index: 1;
 }
 
-.matrix-grid {
+.section-title {
+  margin: 0 0 clamp(0.85rem, 2vw, 1.1rem);
+  text-align: center;
+  text-wrap: balance;
+}
+
+.repos-title {
+  margin-top: clamp(0.45rem, 1.5vw, 0.8rem);
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+}
+
+.matrix-grid,
+.repo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: clamp(0.78rem, 2vw, 1rem);
 }
 
 .trait-card {
   position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.78rem;
   overflow: hidden;
-  border: 1px solid rgba(243, 191, 152, 0.85);
-  border-radius: 16px;
-  background: var(--surface-strong);
-  padding: 1rem;
-  box-shadow: 0 8px 18px rgba(163, 83, 40, 0.09);
-  transform: translateY(12px) scale(0.985);
-  opacity: 0;
-  animation: trait-enter 0.55s cubic-bezier(0.19, 0.95, 0.42, 1) forwards;
+  padding: clamp(0.92rem, 2.5vw, 1.12rem);
+  border: 1px solid var(--about-border);
+  border-radius: var(--radius-medium);
+  background: var(--about-surface);
+  box-shadow: var(--about-shadow-sm);
   transition:
-    transform 0.26s ease,
-    box-shadow 0.26s ease,
-    border-color 0.26s ease;
+    transform var(--about-motion-base) var(--about-ease-standard),
+    box-shadow var(--about-motion-base) var(--about-ease-standard),
+    border-color var(--about-motion-base) var(--about-ease-standard);
 }
 
 .trait-card::after {
@@ -178,192 +298,223 @@
   inset: 0;
   background: linear-gradient(
     108deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.42) 48%,
-    transparent 100%
+    transparent 12%,
+    color-mix(in srgb, var(--about-surface) 60%, transparent) 49%,
+    transparent 86%
   );
-  transform: translateX(-150%);
-  transition: transform 0.5s ease;
+  transform: translateX(-140%);
   pointer-events: none;
+  transition: transform var(--about-motion-slow) var(--about-ease-emphasized);
 }
 
 .trait-card::before {
   content: "";
   position: absolute;
-  top: 0.65rem;
-  right: 0.7rem;
-  width: 0.5rem;
-  height: 0.5rem;
+  z-index: 1;
+  top: 0.72rem;
+  right: 0.78rem;
+  width: 0.46rem;
+  height: 0.46rem;
   border-radius: 50%;
-  background: rgba(255, 181, 94, 0.88);
-  box-shadow: 0 0 0 4px rgba(255, 181, 94, 0.12);
-}
-
-.trait-card:hover {
-  transform: translateY(-6px) rotateX(1deg);
-  border-color: rgba(230, 106, 63, 0.5);
-  box-shadow: 0 14px 26px rgba(163, 83, 40, 0.16);
-}
-
-.trait-card:hover::after {
-  transform: translateX(120%);
-}
-
-.matrix-grid .trait-card:nth-child(1) {
-  animation-delay: 0.06s;
-}
-.matrix-grid .trait-card:nth-child(2) {
-  animation-delay: 0.12s;
-}
-.matrix-grid .trait-card:nth-child(3) {
-  animation-delay: 0.18s;
-}
-.matrix-grid .trait-card:nth-child(4) {
-  animation-delay: 0.24s;
-}
-.matrix-grid .trait-card:nth-child(5) {
-  animation-delay: 0.3s;
-}
-.matrix-grid .trait-card:nth-child(6) {
-  animation-delay: 0.36s;
+  background: var(--accent-gold);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-gold) 16%, transparent);
 }
 
 .trait-card-quote {
+  flex: 1;
+  min-width: 0;
   margin: 0;
-  padding: 0.6rem 0.75rem;
+  padding: 0.68rem 0.78rem;
   border-left: 3px solid var(--accent-color);
-  border-radius: 0 10px 10px 0;
-  background: rgba(255, 234, 211, 0.55);
+  border-radius: 0 var(--radius-small) var(--radius-small) 0;
+  background: color-mix(in srgb, var(--about-wash) 64%, transparent);
   color: var(--heading-color);
   font-size: 1rem;
-  line-height: 1.62;
+  line-height: 1.68;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
   transition:
-    background 0.22s ease,
-    border-color 0.22s ease;
-}
-
-.trait-card:hover .trait-card-quote {
-  background: rgba(255, 226, 191, 0.66);
-  border-left-color: rgba(230, 106, 63, 0.9);
+    background-color var(--about-motion-base) var(--about-ease-standard),
+    border-color var(--about-motion-base) var(--about-ease-standard);
 }
 
 .trait-card-tags {
-  margin: 0.72rem 0 0;
+  min-width: 0;
+  margin: 0;
   color: var(--text-soft);
+  font-size: 0.9rem;
+  line-height: 1.64;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .datalink-section {
   display: grid;
-  gap: 1.2rem;
+  gap: clamp(1rem, 2.5vw, 1.25rem);
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+  gap: clamp(0.68rem, 1.8vw, 0.88rem);
 }
 
 .stat-item {
   position: relative;
-  text-align: center;
-  border: 1px solid rgba(243, 191, 152, 0.85);
-  border-radius: 14px;
-  background: rgba(255, 247, 236, 0.8);
+  display: grid;
+  min-width: 0;
+  min-height: 6.45rem;
+  align-content: center;
+  gap: 0.16rem;
+  overflow: hidden;
   padding: 0.8rem;
+  border: 1px solid var(--about-border);
+  border-radius: var(--radius-small);
+  background: color-mix(in srgb, var(--about-surface) 86%, var(--about-wash));
+  text-align: center;
+  box-shadow: var(--about-shadow-sm);
+}
+
+.stat-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 16%;
+  left: 16%;
+  height: 0.2rem;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(90deg, var(--accent-gold), var(--accent-berry));
 }
 
 .stat-item .count {
   color: var(--accent-strong);
   font-family: var(--font-mono);
-  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-size: clamp(1.38rem, 4vw, 2rem);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
 }
 
 .stat-item .label {
   color: var(--text-soft);
-  font-size: 0.9rem;
-}
-
-.repo-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 0.85rem;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  text-wrap: balance;
 }
 
 .repo-card {
   position: relative;
-  border: 1px solid rgba(243, 191, 152, 0.85);
-  border-radius: 16px;
-  background: var(--surface-strong);
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--about-border);
+  border-radius: var(--radius-medium);
+  background: var(--about-surface);
+  box-shadow: var(--about-shadow-sm);
   transition:
-    transform 0.22s ease,
-    box-shadow 0.22s ease,
-    border-color 0.22s ease;
+    transform var(--about-motion-base) var(--about-ease-standard),
+    box-shadow var(--about-motion-base) var(--about-ease-standard),
+    border-color var(--about-motion-base) var(--about-ease-standard);
 }
 
 .repo-card::before {
   content: "";
   position: absolute;
-  top: 0.62rem;
-  right: 0.72rem;
-  width: 0.9rem;
-  height: 0.9rem;
+  z-index: 1;
+  top: 0.7rem;
+  right: 0.78rem;
+  width: 0.72rem;
+  height: 0.72rem;
+  border: 1px solid
+    color-mix(in srgb, var(--accent-berry) 72%, var(--about-border));
   border-radius: 2px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 181, 94, 0.72),
-    rgba(255, 133, 105, 0.6)
-  );
+  background: color-mix(in srgb, var(--accent-gold) 62%, var(--about-wash));
   transform: rotate(45deg);
+  pointer-events: none;
 }
 
 .repo-card::after {
   content: "";
   position: absolute;
-  left: 0.62rem;
-  top: 0.62rem;
-  width: 0.58rem;
-  height: 0.58rem;
+  z-index: 1;
+  top: 0.76rem;
+  left: 0.82rem;
+  width: 0.46rem;
+  height: 0.46rem;
   border-radius: 50%;
-  background: rgba(255, 133, 105, 0.84);
-}
-
-.repo-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--accent-color);
-  box-shadow: 0 12px 22px rgba(163, 83, 40, 0.15);
+  background: var(--accent-berry);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-berry) 13%, transparent);
+  pointer-events: none;
 }
 
 .repo-card a {
+  position: relative;
   display: flex;
-  flex-direction: column;
+  min-width: 0;
   height: 100%;
-  padding: 0.95rem;
+  flex-direction: column;
+  padding: 1.35rem 1rem 1rem;
   color: inherit;
+  text-decoration: none;
+}
+
+.repo-card:focus-within {
+  border-color: var(--accent-color);
+  outline: 2px solid var(--focus-ring, var(--accent-color));
+  outline-offset: 3px;
+  box-shadow: var(--about-shadow-md);
+}
+
+.repo-card a:focus-visible {
+  color: inherit;
+  outline: none;
 }
 
 .repo-title {
+  min-width: 0;
   margin: 0;
-  font-size: 1.08rem;
+  padding-right: 1.2rem;
   color: var(--heading-color);
-  word-break: break-word;
+  font-size: 1.08rem;
+  overflow-wrap: anywhere;
+  transition: color var(--about-motion-fast) var(--about-ease-standard);
 }
 
 .repo-desc {
-  margin: 0.66rem 0;
-  font-size: 0.92rem;
-  color: var(--text-soft);
   flex: 1;
+  min-width: 0;
+  margin: 0.66rem 0 0.8rem;
+  color: var(--text-soft);
+  font-size: 0.92rem;
+  line-height: 1.62;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .repo-footer {
   display: flex;
-  justify-content: space-between;
+  min-width: 0;
   align-items: center;
+  justify-content: space-between;
   gap: 0.6rem;
+  color: var(--text-soft);
   font-family: var(--font-mono);
   font-size: 0.8rem;
-  color: var(--text-soft);
+  line-height: 1.35;
+}
+
+.repo-lang {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.repo-lang .lang-dot {
+  display: inline-block;
+  width: 0.62rem;
+  height: 0.62rem;
+  margin-right: 0.36rem;
+  border-radius: 50%;
+  background: var(--accent-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 13%, transparent);
 }
 
 @keyframes avatar-bob {
@@ -373,14 +524,14 @@
   }
 
   50% {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
   }
 }
 
-@keyframes matrix-fade-in {
+@keyframes trait-enter {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
 
   to {
@@ -389,52 +540,111 @@
   }
 }
 
-@keyframes matrix-scan {
-  0% {
-    transform: translateX(-140%);
+@media (hover: hover) and (pointer: fine) and (
+    prefers-reduced-motion: no-preference
+  ) {
+  .github-profile-link:hover {
+    color: var(--accent-strong);
+    border-color: var(--accent-color);
+    background: var(--about-wash);
+    box-shadow: var(--about-shadow-md);
+    transform: translateY(-2px);
   }
 
-  46% {
-    transform: translateX(140%);
-  }
-
-  100% {
-    transform: translateX(140%);
-  }
-}
-
-@keyframes trait-enter {
-  to {
-    transform: translateY(0) scale(1);
+  .personality-matrix:hover::after {
     opacity: 1;
+    transform: translateX(125%);
+  }
+
+  .trait-card:hover {
+    border-color: var(--accent-color);
+    box-shadow: var(--about-shadow-md);
+    transform: translateY(-4px);
+  }
+
+  .trait-card:hover::after {
+    transform: translateX(130%);
+  }
+
+  .trait-card:hover .trait-card-quote {
+    border-left-color: var(--accent-strong);
+    background: color-mix(in srgb, var(--about-wash) 82%, transparent);
+  }
+
+  .repo-card:hover {
+    border-color: var(--accent-color);
+    box-shadow: var(--about-shadow-md);
+    transform: translateY(-3px);
+  }
+
+  .repo-card:hover .repo-title {
+    color: var(--accent-strong);
   }
 }
 
-.repo-lang .lang-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  margin-right: 0.36rem;
-  border-radius: 50%;
-  background: var(--accent-color);
+@media (prefers-reduced-motion: no-preference) {
+  .profile-avatar:not(.profile-avatar-placeholder) {
+    animation: avatar-bob 3.2s var(--about-ease-emphasized) infinite;
+  }
+
+  .trait-card {
+    animation: trait-enter 0.48s var(--about-ease-emphasized) both;
+  }
+
+  .matrix-grid .trait-card:nth-child(1) {
+    animation-delay: 0.04s;
+  }
+
+  .matrix-grid .trait-card:nth-child(2) {
+    animation-delay: 0.08s;
+  }
+
+  .matrix-grid .trait-card:nth-child(3) {
+    animation-delay: 0.12s;
+  }
+
+  .matrix-grid .trait-card:nth-child(4) {
+    animation-delay: 0.16s;
+  }
+
+  .matrix-grid .trait-card:nth-child(5) {
+    animation-delay: 0.2s;
+  }
+
+  .matrix-grid .trait-card:nth-child(6) {
+    animation-delay: 0.24s;
+  }
 }
 
 @media (max-width: 640px) {
+  .about-container {
+    gap: 1rem;
+  }
+
   .about-header,
   .personality-matrix,
   .datalink-section {
+    border-radius: var(--radius-medium);
+  }
+
+  .about-header {
+    padding: 2.7rem 1rem 1.15rem;
+  }
+
+  .personality-matrix,
+  .datalink-section {
     padding: 0.95rem;
-    border-radius: 16px;
   }
 
   .profile-avatar {
-    width: 108px;
-    height: 108px;
+    width: 6.5rem;
+    height: 6.5rem;
   }
 
   .about-header::before {
+    top: 0.72rem;
+    left: 0.72rem;
     font-size: 0.62rem;
-    left: 0.7rem;
   }
 
   .about-header::after,
@@ -442,23 +652,32 @@
   .datalink-section::before {
     display: none;
   }
+
+  .matrix-grid,
+  .repo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trait-card {
+    padding: 0.92rem;
+  }
+
+  .repo-card a {
+    padding: 1.24rem 0.92rem 0.92rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .profile-avatar,
-  .personality-matrix,
-  .personality-matrix::after,
-  .trait-card {
+  main.container > .about-container {
     animation: none;
   }
 
-  .trait-card,
-  .trait-card:hover {
-    transform: none;
-    opacity: 1;
-  }
-
-  .trait-card::after {
-    display: none;
+  .about-container,
+  .about-container *,
+  .about-container *::before,
+  .about-container *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
   }
 }

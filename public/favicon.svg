@@ -1,11 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Klee blog">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="favicon-title">
+  <title id="favicon-title">Klee 的博客</title>
   <defs>
-    <linearGradient id="violet" x1="8" y1="6" x2="56" y2="60" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#8b5cf6" />
-      <stop offset="1" stop-color="#3b1b86" />
+    <linearGradient id="coral" x1="10" y1="8" x2="54" y2="57" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff8569" />
+      <stop offset="1" stop-color="#bd4525" />
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="16" fill="url(#violet)" />
-  <path fill="#fff" d="M19 14h8v14l13-14h10L35 31l17 19H41L28 35v15h-9V14Z" />
-  <path fill="#fcd34d" d="m50 8 1.9 5.1L57 15l-5.1 1.9L50 22l-1.9-5.1L43 15l5.1-1.9L50 8Z" />
+  <rect width="64" height="64" rx="16" fill="url(#coral)" />
+  <path fill="#fffaf2" d="M18 13h9v14.4L40.2 13H51L35.7 30.2 52 51H40.6L28.3 35.3 27 36.7V51h-9V13Z" />
+  <path fill="#ffb55e" d="m49.5 7 1.8 4.7L56 13.5l-4.7 1.8L49.5 20l-1.8-4.7-4.7-1.8 4.7-1.8L49.5 7Z" />
 </svg>
