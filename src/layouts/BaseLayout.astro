@@ -1,16 +1,16 @@
 ---
 import "@styles/global.css"; // 我们把 global.css 的引用放在这里
 import "@styles/fonts.css";
-import Nav from "@components/Nav.astro";
-import LangSwitch from "@components/LangSwitch.astro";
-import { getAbsoluteLocaleUrl } from "astro:i18n";
 import { getCollection } from "astro:content";
-import { getPublishedAlternates, type BlogLocale } from "../lib/localized-blog";
+import { getAbsoluteLocaleUrl } from "astro:i18n";
+import LangSwitch from "@components/LangSwitch.astro";
+import Nav from "@components/Nav.astro";
+import { type BlogLocale, getPublishedAlternates } from "../lib/localized-blog";
 import {
   getOpenGraphLocale,
-  serializeJsonLd,
-  SITE,
   type JsonLdObject,
+  SITE,
+  serializeJsonLd,
 } from "../lib/seo";
 
 /** @brief 页面布局的 SEO 属性 (layout SEO props) / SEO properties accepted by the base layout. */
@@ -25,12 +25,16 @@ interface LayoutProps {
   robots?: string;
   /** @brief 是否显示语言切换导航 (whether to render the language switcher). */
   showLanguageSwitch?: boolean;
+  /** @brief 文档内容语言；无语言路由页面必须显式提供 (document content locale for pages outside locale routing). */
+  documentLocale?: BlogLocale;
+  /** @brief 页面是否属于无语言分区的独立内容域 (whether the page belongs to a locale-independent standalone area). */
+  standalone?: boolean;
 }
 
 const pathname = Astro.url.pathname;
 const strip = pathname.replace(/^\/(zh|en)\//, "");
 const m = pathname.match(/^\/(zh|en)\/blog\/([^/]+)\/?$/);
-const currentLocale: BlogLocale = Astro.currentLocale === "en" ? "en" : "zh";
+const siteLocale: BlogLocale = Astro.currentLocale === "en" ? "en" : "zh";
 
 let alternates = (["zh", "en"] as const).map((loc) => ({
   locale: loc,
@@ -65,7 +69,7 @@ const canonical = new URL(
 ).toString();
 const {
   pageTitle = SITE.name,
-  description = SITE.defaultDescription[currentLocale],
+  description = SITE.defaultDescription[siteLocale],
   pageType = "website",
   publishedTime,
   modifiedTime,
@@ -73,16 +77,22 @@ const {
   structuredData,
   robots,
   showLanguageSwitch = true,
+  documentLocale = siteLocale,
+  standalone = false,
 } = Astro.props as LayoutProps;
-const rssPath = currentLocale === "zh" ? "/zh/rss.xml" : "/en/rss.xml";
+/** @brief Atelier 使用独立内容语言且不参与站点国际化路由 (Atelier uses an independent document language outside site i18n routing). */
+const isLocaleIndependent =
+  standalone || pathname === "/atelier/" || pathname.startsWith("/atelier/");
+const effectiveShowLanguageSwitch = showLanguageSwitch && !isLocaleIndependent;
+const rssPath = siteLocale === "zh" ? "/zh/rss.xml" : "/en/rss.xml";
 const rssTitle =
-  currentLocale === "zh" ? "kleedaisuki 中文 RSS" : "kleedaisuki English RSS";
+  siteLocale === "zh" ? "kleedaisuki 中文 RSS" : "kleedaisuki English RSS";
 const alternateOpenGraphLocales = alternates
-  .filter((alternate) => alternate.locale !== currentLocale)
+  .filter((alternate) => alternate.locale !== siteLocale)
   .map((alternate) => getOpenGraphLocale(alternate.locale));
 ---
 
-<html lang={currentLocale}>
+<html lang={documentLocale}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -127,27 +137,31 @@ const alternateOpenGraphLocales = alternates
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:locale" content={getOpenGraphLocale(currentLocale)} />
+    <meta property="og:locale" content={getOpenGraphLocale(documentLocale)} />
     {
-      alternateOpenGraphLocales.map((locale) => (
+      !isLocaleIndependent && alternateOpenGraphLocales.map((locale) => (
         <meta property="og:locale:alternate" content={locale} />
       ))
     }
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
-    <link
-      rel="alternate"
-      type="application/rss+xml"
-      title={rssTitle}
-      href={rssPath}
-    />
     {
-      alternates.map((a) => (
+      !isLocaleIndependent && (
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title={rssTitle}
+          href={rssPath}
+        />
+      )
+    }
+    {
+      !isLocaleIndependent && alternates.map((a) => (
         <link rel="alternate" hreflang={a.locale} href={a.url} />
       ))
     }
-    {xDefaultUrl && <link rel="alternate" hreflang="x-default" href={xDefaultUrl} />}
+    {!isLocaleIndependent && xDefaultUrl && <link rel="alternate" hreflang="x-default" href={xDefaultUrl} />}
     {
       pageType === "article" && publishedTime && (
         <meta property="article:published_time" content={publishedTime} />
@@ -174,12 +188,12 @@ const alternateOpenGraphLocales = alternates
   </head>
   <body>
     <a class="skip-link" href="#main-content">
-      {currentLocale === "zh" ? "跳至正文" : "Skip to content"}
+      {documentLocale === "zh" ? "跳至正文" : "Skip to content"}
     </a>
     <div class="site-wrapper">
       <header class="container">
-        <Nav />
-        {showLanguageSwitch && <LangSwitch />}
+        <Nav locale={documentLocale} />
+        {effectiveShowLanguageSwitch && <LangSwitch />}
       </header>
       <main id="main-content" class="container" tabindex="-1">
         <slot />

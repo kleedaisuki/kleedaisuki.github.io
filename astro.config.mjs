@@ -1,8 +1,13 @@
 // astro.config.mjs
-import { defineConfig } from "astro/config";
+
 import sitemap from "@astrojs/sitemap"; // 必须是默认导入
-import remarkMath from "remark-math";
+import { defineConfig } from "astro/config";
 import rehypeKatex from "rehype-katex";
+import remarkMath from "remark-math";
+import { viteStaticCopy } from "vite-plugin-static-copy";
+
+/** @brief 固定的 PDF.js 资源版本 (pinned PDF.js asset version) / Pinned PDF.js asset version. */
+const PDFJS_ASSET_VERSION = "6.2.108";
 
 /**
  * @brief 判断 URL 是否可放入 sitemap (sitemap eligibility) / Decide whether a URL belongs in the sitemap.
@@ -10,7 +15,14 @@ import rehypeKatex from "rehype-katex";
  * @return 仅当页面可索引时返回 true / True only for indexable pages.
  * @note 根路径只做客户端语言跳转并带有 noindex，不能与 /zh/、/en/ 竞争。
  */
-const isIndexableSitemapPage = (page) => new URL(page).pathname !== "/";
+const isIndexableSitemapPage = (page) => {
+  const pathname = new URL(page).pathname;
+  if (pathname === "/") return false;
+
+  return !/^\/atelier\/[^/]+\/(?:[^/]+\/)?(?:read|reader|source|raw)(?:\/|$)/.test(
+    pathname,
+  );
+};
 
 export default defineConfig({
   site: "https://blog.moesegfault.dev",
@@ -43,6 +55,22 @@ export default defineConfig({
     },
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],
+  },
+  vite: {
+    plugins: [
+      viteStaticCopy({
+        targets: [
+          { source: "cmaps", destination: "cmaps" },
+          { source: "standard_fonts", destination: "standard_fonts" },
+          { source: "wasm", destination: "wasm" },
+          { source: "iccs", destination: "iccs" },
+          { source: "web/images", destination: "images" },
+        ].map(({ source, destination }) => ({
+          src: `node_modules/pdfjs-dist/${source}/*`,
+          dest: `_pdfjs/${PDFJS_ASSET_VERSION}/${destination}`,
+        })),
+      }),
+    ],
   },
   alias: {
     "@styles": "./src/styles",

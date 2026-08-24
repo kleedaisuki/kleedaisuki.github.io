@@ -45,6 +45,36 @@ export interface BlogSchemaInput {
   description: string;
 }
 
+/** @brief Atelier 索引中的作品摘要 (Atelier collection item) / Work summary listed by the Atelier collection. */
+export interface AtelierCollectionItem {
+  url: string;
+  name: string;
+  description: string;
+}
+
+/** @brief Atelier 索引结构化数据输入 (Atelier collection schema input) / Input for Atelier collection structured data. */
+export interface AtelierCollectionSchemaInput {
+  url: string;
+  name: string;
+  description: string;
+  items: readonly AtelierCollectionItem[];
+}
+
+/** @brief Atelier 作品结构化数据输入 (Atelier work schema input) / Input for Atelier work structured data. */
+export interface AtelierWorkSchemaInput {
+  url: string;
+  atelierUrl: string;
+  name: string;
+  description: string;
+  publishedAt: Date;
+  modifiedAt?: Date;
+  tags?: readonly string[];
+  license?: string;
+  repository?: string;
+  atelierName?: string;
+  homeName?: string;
+}
+
 /**
  * @brief 构造站内绝对 URL (absolute URL) / Build an absolute URL on this site.
  * @param path 以斜杠开头的站内路径 (root-relative path) / Root-relative site path.
@@ -214,6 +244,121 @@ export function createBlogPostingJsonLd(input: BlogPostingInput): JsonLdObject {
             "@type": "ListItem",
             position: 3,
             name: input.title,
+            item: input.url,
+          },
+        ],
+      },
+    ],
+  };
+}
+
+/**
+ * @brief 生成 Atelier 索引 JSON-LD (Atelier collection JSON-LD) / Create CollectionPage JSON-LD for Atelier.
+ * @param input 索引页及其可见作品信息 / Collection page and its visible work summaries.
+ * @return 包含 CollectionPage 与作品列表的 JSON-LD 图 / JSON-LD graph with CollectionPage and its work list.
+ */
+export function createAtelierCollectionJsonLd(
+  input: AtelierCollectionSchemaInput,
+): JsonLdObject {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${input.url}#collection`,
+        url: input.url,
+        name: input.name,
+        description: input.description,
+        inLanguage: "en",
+        author: {
+          "@type": "Person",
+          name: SITE.authorName,
+          url: SITE.authorUrl,
+        },
+        mainEntity: {
+          "@type": "ItemList",
+          numberOfItems: input.items.length,
+          itemListElement: input.items.map((item, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            url: item.url,
+            item: {
+              "@type": "CreativeWork",
+              "@id": `${item.url}#work`,
+              url: item.url,
+              name: item.name,
+              description: item.description,
+            },
+          })),
+        },
+      },
+    ],
+  };
+}
+
+/**
+ * @brief 生成 Atelier 作品与面包屑 JSON-LD (Atelier work and breadcrumb JSON-LD) / Create CreativeWork and BreadcrumbList JSON-LD.
+ * @param input 详情页上可见且准确的作品信息 / Accurate work facts visible on the detail page.
+ * @return 可嵌入详情页的 JSON-LD 图 / JSON-LD graph for an Atelier work page.
+ */
+export function createAtelierWorkJsonLd(
+  input: AtelierWorkSchemaInput,
+): JsonLdObject {
+  const work: JsonLdObject = {
+    "@type": "CreativeWork",
+    "@id": `${input.url}#work`,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": input.url,
+    },
+    url: input.url,
+    name: input.name,
+    headline: input.name,
+    description: input.description,
+    datePublished: input.publishedAt.toISOString(),
+    inLanguage: "en",
+    author: {
+      "@type": "Person",
+      name: SITE.authorName,
+      url: SITE.authorUrl,
+    },
+    isPartOf: {
+      "@type": "CollectionPage",
+      "@id": `${input.atelierUrl}#collection`,
+      url: input.atelierUrl,
+      name: input.atelierName ?? "Atelier",
+    },
+  };
+
+  if (input.modifiedAt) work.dateModified = input.modifiedAt.toISOString();
+  if (input.tags && input.tags.length > 0) work.keywords = [...input.tags];
+  if (input.license) work.license = input.license;
+  if (input.repository) work.codeRepository = input.repository;
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      work,
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${input.url}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: input.homeName ?? "Home",
+            item: getAbsoluteUrl("/zh/"),
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: input.atelierName ?? "Atelier",
+            item: input.atelierUrl,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: input.name,
             item: input.url,
           },
         ],

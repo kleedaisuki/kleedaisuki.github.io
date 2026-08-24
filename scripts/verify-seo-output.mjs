@@ -7,6 +7,9 @@ const OUTPUT_DIRECTORY = join(process.cwd(), "dist");
 /** @brief 站点规范来源 (canonical origin) / Canonical site origin. */
 const SITE_ORIGIN = "https://blog.moesegfault.dev";
 
+/** @brief PDF.js 静态资源的锁定目录 (pinned PDF.js asset directory) / Pinned PDF.js static-asset directory. */
+const PDFJS_ASSET_DIRECTORY = join("_pdfjs", "6.2.108");
+
 /**
  * @brief 断言构建产物条件 (build-output assertion) / Assert a condition about the build output.
  * @param condition 待验证的条件 (condition to validate) / Condition to validate.
@@ -129,6 +132,142 @@ function verifySitemap() {
     sitemap.includes(`<loc>${SITE_ORIGIN}/en/</loc>`),
     "Sitemap is missing the English home page",
   );
+  assert(
+    sitemap.includes(`<loc>${SITE_ORIGIN}/atelier/</loc>`),
+    "Sitemap is missing the Atelier collection",
+  );
+  assert(
+    !/<loc>[^<]*\/atelier\/[^<]+\/(?:read|reader|source|raw)(?:\/|<)/.test(
+      sitemap,
+    ),
+    "Sitemap includes an Atelier reader, source, or raw-resource route",
+  );
+}
+
+/**
+ * @brief 提取 Atelier 能力页面链接 (extract Atelier capability links) / Extract linked Atelier reader and source pages.
+ * @param html Atelier 详情页 HTML / Atelier detail-page HTML.
+ * @return 去重后的站内能力页面路径 / Deduplicated site-local capability page paths.
+ */
+function getAtelierCapabilityPaths(html) {
+  const paths = new Set();
+  for (const match of html.matchAll(/href="([^"]+)"/g)) {
+    const pathname = new URL(match[1], SITE_ORIGIN).pathname;
+    if (
+      /^\/atelier\/[^/]+\/(?:[^/]+\/)?(?:read|reader|source)(?:\/|$)/.test(
+        pathname,
+      )
+    ) {
+      paths.add(pathname);
+    }
+  }
+  return [...paths];
+}
+
+/**
+ * @brief 将站点目录路径映射到静态 HTML (map a site directory URL to static HTML) / Map a site directory URL to its generated HTML file.
+ * @param pathname 以斜杠开头的页面路径 / Root-relative page pathname.
+ * @return 相对 dist 的 index.html 路径 / Path to index.html relative to dist.
+ */
+function pageOutputPath(pathname) {
+  return join(pathname.replace(/^\/+|\/+$/g, ""), "index.html");
+}
+
+/**
+ * @brief 验证 Atelier 独立内容域 (Atelier standalone-content contract) / Verify the standalone Atelier output contract.
+ * @return 无返回值 / No return value.
+ * @note 正式空态没有详情目录；此时索引页本身即为完整有效产物。
+ */
+function verifyAtelier() {
+  const indexPath = join("atelier", "index.html");
+  const index = readOutputFile(indexPath);
+  assert(/<html lang="en"/.test(index), "Atelier must declare English as its document language");
+  assert(!index.includes('hreflang='), "Atelier must not emit hreflang alternates");
+  assert(
+    !/rel="alternate" type="application\/rss\+xml"/.test(index),
+    "Atelier must not emit a localized RSS alternate",
+  );
+  assert(!index.includes('class="lang-switch"'), "Atelier must not render a language switcher");
+  assert(/<h1[^>]*>\s*Klee(?:’|&#39;|')s Atelier\s*<\/h1>/.test(index), "Atelier has no visible catalogue H1");
+  const collectionJsonLd = parseJsonLd(index, indexPath);
+  const collectionGraph = collectionJsonLd["@graph"];
+  assert(
+    Array.isArray(collectionGraph) &&
+      collectionGraph.some((item) => item?.["@type"] === "CollectionPage"),
+    "Atelier JSON-LD has no CollectionPage",
+  );
+
+  const atelierDirectory = join(OUTPUT_DIRECTORY, "atelier");
+  const workDirectories = readdirSync(atelierDirectory, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        existsSync(join(atelierDirectory, entry.name, "index.html")),
+    )
+    .map((entry) => entry.name);
+
+  if (workDirectories.length === 0) {
+    assert(
+      index.includes("The atelier is being prepared."),
+      "The empty Atelier catalogue has no intentional empty state",
+    );
+  }
+
+  for (const slug of workDirectories) {
+    const workDirectory = join(atelierDirectory, slug);
+    const detailPaths = [join("atelier", slug, "index.html")];
+    detailPaths.push(
+      ...readdirSync(workDirectory, { withFileTypes: true })
+        .filter(
+          (entry) =>
+            entry.isDirectory() &&
+            existsSync(join(workDirectory, entry.name, "index.html")),
+        )
+        .map((entry) => join("atelier", slug, entry.name, "index.html")),
+    );
+
+    for (const detailPath of detailPaths) {
+      const detail = readOutputFile(detailPath);
+      const detailJsonLd = parseJsonLd(detail, detailPath);
+      const detailGraph = detailJsonLd["@graph"];
+      assert(
+        Array.isArray(detailGraph) &&
+          detailGraph.some((item) => item?.["@type"] === "CreativeWork") &&
+          detailGraph.some((item) => item?.["@type"] === "BreadcrumbList"),
+        `Atelier detail JSON-LD is incomplete: ${detailPath}`,
+      );
+      assert(!detail.includes('hreflang='), `Atelier detail emits hreflang: ${detailPath}`);
+      assert(
+        !detail.includes('class="lang-switch"'),
+        `Atelier detail renders a language switcher: ${detailPath}`,
+      );
+
+      for (const capabilityPath of getAtelierCapabilityPaths(detail)) {
+        const capabilityOutput = pageOutputPath(capabilityPath);
+        const capability = readOutputFile(capabilityOutput);
+        assert(
+          /<meta name="robots" content="[^"]*noindex[^"]*">/.test(capability),
+          `Atelier capability page is not noindex: ${capabilityOutput}`,
+        );
+      }
+    }
+  }
+}
+
+/**
+ * @brief 验证 PDF.js 辅助资源布局 (PDF.js auxiliary asset layout) / Verify the copied PDF.js resource layout.
+ * @return 无返回值 / No return value.
+ */
+function verifyPdfJsAssets() {
+  for (const directory of ["cmaps", "standard_fonts", "wasm", "iccs", "images"]) {
+    const relativePath = join(PDFJS_ASSET_DIRECTORY, directory);
+    const absolutePath = join(OUTPUT_DIRECTORY, relativePath);
+    assert(existsSync(absolutePath), `Missing PDF.js asset directory: ${relativePath}`);
+    assert(
+      readdirSync(absolutePath).length > 0,
+      `PDF.js asset directory is empty: ${relativePath}`,
+    );
+  }
 }
 
 /**
@@ -153,6 +292,7 @@ function verifyDiscoveryEntries() {
   const llms = readOutputFile("llms.txt");
   assert(llms.includes(`${SITE_ORIGIN}/zh/blog/`), "llms.txt is missing the Chinese archive");
   assert(llms.includes(`${SITE_ORIGIN}/en/blog/`), "llms.txt is missing the English archive");
+  assert(llms.includes(`${SITE_ORIGIN}/atelier/`), "llms.txt is missing Atelier");
   readOutputFile("rss.xml");
 }
 
@@ -181,6 +321,8 @@ assert(existsSync(OUTPUT_DIRECTORY), "Build output is missing; run pnpm build fi
 verifySitemap();
 verifyDiscoveryEntries();
 verifyNotFoundRoutes();
+verifyAtelier();
+verifyPdfJsAssets();
 
 for (const locale of ["zh", "en"]) {
   const articleFiles = getArticleFiles(locale);

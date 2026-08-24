@@ -1,4 +1,4 @@
-import { getCollection, type CollectionEntry } from "astro:content";
+import { type CollectionEntry, getCollection } from "astro:content";
 import type { BlogLocale } from "../lib/localized-blog";
 import { getAbsoluteUrl, getPostPath, SITE } from "../lib/seo";
 
@@ -57,12 +57,23 @@ function formatPostEntry(post: CollectionEntry<"blog">): string {
 }
 
 /**
+ * @brief 格式化一条 Atelier 索引项 (Atelier index entry) / Format one Atelier work entry.
+ * @param work 已发布的 Atelier 作品 / Published Atelier work.
+ * @return Markdown 格式的规范详情页链接 / Markdown canonical detail-page link.
+ */
+function formatAtelierEntry(work: CollectionEntry<"atelier">): string {
+  const url = getAbsoluteUrl(`/atelier/${encodeURIComponent(work.data.slug)}/`);
+  return `- [${escapeMarkdownLinkLabel(work.data.title)}](${url}): ${normalizeSummary(work.data.summary)}`;
+}
+
+/**
  * @brief 构建面向 LLM 的站点导航 (LLM navigation) / Build concise site navigation for LLMs and agents.
  * @return 根目录 llms.txt 的静态响应 / Static response for the root llms.txt file.
  * @note 该文件是补充发现入口，不替代 canonical HTML、RSS、sitemap 或 robots.txt。
  */
 export async function GET(): Promise<Response> {
   const posts = await getCollection("blog", ({ data }) => !data.draft);
+  const works = await getCollection("atelier", ({ data }) => !data.draft);
   const lines = [
     `# ${SITE.name}`,
     "",
@@ -73,11 +84,26 @@ export async function GET(): Promise<Response> {
     "## Start here",
     `- [Chinese home](${getAbsoluteUrl("/zh/")})`,
     `- [English home](${getAbsoluteUrl("/en/")})`,
+    `- [Atelier](${getAbsoluteUrl("/atelier/")}): Locale-independent documents, source code, and other published works.`,
     `- [Author on GitHub](${SITE.authorUrl})`,
     `- [All-language RSS feed](${getAbsoluteUrl("/rss.xml")})`,
     `- [XML sitemap](${getAbsoluteUrl("/sitemap-index.xml")})`,
     "",
   ];
+
+  lines.push("## Atelier works (locale-independent canonical HTML)");
+  lines.push(
+    `- [Atelier index](${getAbsoluteUrl("/atelier/")}): Documents, source code, and downloadable releases.`,
+  );
+  lines.push(
+    ...works
+      .sort(
+        (left, right) =>
+          right.data.published.valueOf() - left.data.published.valueOf(),
+      )
+      .map(formatAtelierEntry),
+    "",
+  );
 
   for (const section of LLM_LOCALE_SECTIONS) {
     const localePosts = posts

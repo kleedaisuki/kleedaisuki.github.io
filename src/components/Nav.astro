@@ -1,26 +1,54 @@
 ---
-import { asLocale, t } from "@i18n/t";
+import { asLocale, type Locale, t } from "@i18n/t";
+
+/** @brief 导航组件属性 (navigation component properties)。 */
+interface Props {
+  /** @brief 导航界面语言 (navigation interface locale)。 */
+  locale?: Locale;
+}
 
 /** @brief 当前页面的界面语言 (current interface locale)。 */
-const locale = asLocale(Astro.currentLocale);
+const locale = Astro.props.locale ?? asLocale(Astro.currentLocale);
 
 /** @brief 当前路径的规范化表示 (normalized current pathname)。 */
 const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
 
+/** @brief 当前页面是否属于无语言分区的 Atelier (whether this page belongs to locale-independent Atelier)。 */
+const isAtelier =
+  currentPath === "/atelier" || currentPath.startsWith("/atelier/");
+
+/** @brief 站内链接的服务端回退语言 (SSR fallback locale for localized site links)。 */
+const linkLocale: Locale = isAtelier ? "zh" : locale;
+
 /** @brief 站内导航链接 (site navigation links)。 */
 const links = [
-  { href: `/${locale}/`, label: t("home", locale) },
-  { href: `/${locale}/about/`, label: t("about", locale) },
-  { href: `/${locale}/blog/`, label: t("blog", locale) },
+  { href: `/${linkLocale}/`, label: t("home", locale), section: "home" },
+  {
+    href: `/${linkLocale}/about/`,
+    label: t("about", locale),
+    section: "about",
+  },
+  { href: `/${linkLocale}/blog/`, label: t("blog", locale), section: "blog" },
+  { href: "/atelier/", label: t("atelier", locale), section: "atelier" },
 ];
 
 /**
  * @brief 判断导航链接是否对应当前页面 (check whether a navigation link is current)。
  * @param href 待比较的站内路径 (site path to compare)。
+ * @param section 链接所属的一级栏目 (top-level section represented by the link)。
  * @return 当前链接是否为当前页面 (whether the link is for the current page)。
  */
-const isCurrentPage = (href: string) =>
-  currentPath === (href.replace(/\/+$/, "") || "/");
+const isCurrentPage = (href: string, section: string) => {
+  const normalizedHref = href.replace(/\/+$/, "") || "/";
+  if (section === "atelier") return isAtelier;
+  if (section === "blog") {
+    return (
+      currentPath === normalizedHref ||
+      currentPath.startsWith(`${normalizedHref}/`)
+    );
+  }
+  return currentPath === normalizedHref;
+};
 
 /** @brief 主题切换按钮的本地化文案 (localized theme-toggle copy)。 */
 const themeCopy =
@@ -41,8 +69,16 @@ const themeCopy =
 
 <nav class="site-nav" aria-label={themeCopy.navigation}>
   {
-    links.map(({ href, label }) => (
-      <a href={href} aria-current={isCurrentPage(href) ? "page" : undefined}>
+    links.map(({ href, label, section }) => (
+      <a
+        href={href}
+        data-localized-path={
+          isAtelier && href !== "/atelier/"
+            ? href.replace(/^\/(?:zh|en)/, "")
+            : undefined
+        }
+        aria-current={isCurrentPage(href, section) ? "page" : undefined}
+      >
         {label}
       </a>
     ))
@@ -88,6 +124,27 @@ const themeCopy =
 
 <script is:inline>
   (() => {
+    /** @brief 最近一次站点语言的存储键 (storage key for the most recent site locale)。 */
+    const localeStorageKey = "prefLocale";
+    /** @brief 当前页面的语言分区 (locale segment of the current page)。 */
+    const pageLocale = location.pathname.match(/^\/(zh|en)(?:\/|$)/)?.[1];
+
+    try {
+      if (pageLocale === "zh" || pageLocale === "en") {
+        localStorage.setItem(localeStorageKey, pageLocale);
+      } else if (location.pathname === "/atelier/" || location.pathname.startsWith("/atelier/")) {
+        const returnLocale = localStorage.getItem(localeStorageKey) === "en" ? "en" : "zh";
+        for (const link of document.querySelectorAll("[data-localized-path]")) {
+          const localizedPath = link.getAttribute("data-localized-path");
+          if (link instanceof HTMLAnchorElement && localizedPath) {
+            link.href = `/${returnLocale}${localizedPath}`;
+          }
+        }
+      }
+    } catch {
+      // 存储不可用时保留服务端渲染的中文返回路径 (keep the SSR Chinese return path when storage is unavailable)。
+    }
+
     /** @brief 主题偏好的本地存储键 (localStorage key for theme preference)。 */
     const storageKey = "site-theme";
     /** @brief 文档根节点 (document root element)。 */
