@@ -109,12 +109,12 @@ const structuredData = createAtelierWorkJsonLd({
   tags: entry.data.tags,
   license: entry.data.license,
   repository: entry.data.repository,
-  atelierName: "Klee’s Atelier",
+  atelierName: "Atelier",
 });
 ---
 
 <BaseLayout
-  pageTitle={`${getAtelierText(entry.data.title, locale)} ${release.version} | Klee’s Atelier`}
+  pageTitle={`${getAtelierText(entry.data.title, locale)} ${release.version} | Atelier`}
   description={`${getAtelierText(entry.data.summary, locale)} ${locale === "zh" ? "版本" : "Version"} ${release.version}.`}
   pageType="article"
   publishedTime={entry.data.published.toISOString()}

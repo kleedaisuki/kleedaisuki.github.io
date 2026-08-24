@@ -88,14 +88,10 @@ const catalogueWorks = await Promise.all(
 const typeFilters = [
   ...new Set(catalogueWorks.flatMap(({ types }) => types)),
 ].sort();
-/** @brief 动态主题标签筛选项 / Dynamic topical-tag filters. */
-const tagFilters = [...new Set(works.flatMap((work) => work.data.tags))].sort(
-  (left, right) => left.localeCompare(right, "en"),
-);
 /** @brief Atelier 目录结构化数据 / Structured data for the Atelier catalogue. */
 const structuredData = createAtelierCollectionJsonLd({
   url: getAbsoluteUrl(cataloguePath),
-  name: "Klee’s Atelier",
+  name: "Atelier",
   description,
   items: works.map((work) => ({
     url: getAbsoluteUrl(getAtelierPath(locale, work.data.slug)),
@@ -106,7 +102,7 @@ const structuredData = createAtelierCollectionJsonLd({
 ---
 
 <BaseLayout
-  pageTitle="Klee’s Atelier | kleedaisuki"
+  pageTitle="Atelier | kleedaisuki"
   description={description}
   structuredData={structuredData}
   documentLocale={locale}
@@ -119,7 +115,7 @@ const structuredData = createAtelierCollectionJsonLd({
   >
     <header class="atelier-hero">
       <p class="atelier-eyebrow">{copy.selectedWorks}</p>
-      <h1>Klee’s Atelier</h1>
+      <h1>{copy.atelier}</h1>
       <p class="atelier-hero__tagline">{copy.tagline}</p>
       <p class="atelier-hero__description">{copy.heroDescription}</p>
     </header>
@@ -127,34 +123,19 @@ const structuredData = createAtelierCollectionJsonLd({
     {
       works.length > 0 ? (
         <>
-          {(typeFilters.length > 0 || tagFilters.length > 0) && (
+          {typeFilters.length > 0 && (
             <nav class="atelier-filters" aria-label={copy.filterWorks}>
-              {typeFilters.length > 0 && (
-                <div class="atelier-filter-group" data-filter-group="type">
-                  <span class="atelier-filter-group__label">{copy.type}</span>
-                  <div class="atelier-filter-group__options">
-                    <a href={cataloguePath} data-filter-value="" aria-current="true">{copy.allTypes}</a>
-                    {typeFilters.map((type) => (
-                      <a href={`?type=${encodeURIComponent(type.toLocaleLowerCase())}`} data-filter-value={type.toLocaleLowerCase()}>
-                        {type}
-                      </a>
-                    ))}
-                  </div>
+              <div class="atelier-filter-group" data-filter-group="type">
+                <span class="atelier-filter-group__label">{copy.type}</span>
+                <div class="atelier-filter-group__options">
+                  <a href={cataloguePath} data-filter-value="" aria-current="true">{copy.allTypes}</a>
+                  {typeFilters.map((type) => (
+                    <a href={`?type=${encodeURIComponent(type.toLocaleLowerCase())}`} data-filter-value={type.toLocaleLowerCase()}>
+                      {type}
+                    </a>
+                  ))}
                 </div>
-              )}
-              {tagFilters.length > 0 && (
-                <div class="atelier-filter-group" data-filter-group="tag">
-                  <span class="atelier-filter-group__label">{copy.tag}</span>
-                  <div class="atelier-filter-group__options">
-                    <a href={cataloguePath} data-filter-value="" aria-current="true">{copy.allTags}</a>
-                    {tagFilters.map((tag) => (
-                      <a href={`?tag=${encodeURIComponent(tag.toLocaleLowerCase())}`} data-filter-value={tag.toLocaleLowerCase()}>
-                        {tag}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
+              </div>
             </nav>
           )}
 
@@ -202,7 +183,6 @@ const structuredData = createAtelierCollectionJsonLd({
     /** @brief 可由 URL 恢复的目录筛选状态 / Catalogue filter state restorable from the URL. */
     interface FilterState {
       type: string;
-      tag: string;
     }
 
     /** @brief Atelier 目录根节点 / Atelier catalogue root. */
@@ -226,19 +206,17 @@ const structuredData = createAtelierCollectionJsonLd({
         const params = new URLSearchParams(window.location.search);
         return {
           type: params.get("type")?.toLocaleLowerCase() ?? "",
-          tag: params.get("tag")?.toLocaleLowerCase() ?? "",
         };
       };
 
       /**
        * @brief 解析卡片的 JSON 数据列表 / Parse a card's JSON data list.
        * @param card 作品卡片 / Work card.
-       * @param name data 属性名 / Data attribute name.
        * @return 规范化字符串列表 / Normalized string list.
        */
-      const readValues = (card: HTMLElement, name: "types" | "tags"): string[] => {
+      const readTypes = (card: HTMLElement): string[] => {
         try {
-          return JSON.parse(card.dataset[name] ?? "[]");
+          return JSON.parse(card.dataset.types ?? "[]");
         } catch {
           return [];
         }
@@ -251,9 +229,8 @@ const structuredData = createAtelierCollectionJsonLd({
       const applyFilters = (state: FilterState): void => {
         let visibleCount = 0;
         for (const card of cards) {
-          const typeMatch = !state.type || readValues(card, "types").includes(state.type);
-          const tagMatch = !state.tag || readValues(card, "tags").includes(state.tag);
-          card.hidden = !(typeMatch && tagMatch);
+          const typeMatch = !state.type || readTypes(card).includes(state.type);
+          card.hidden = !typeMatch;
           if (!card.hidden) visibleCount += 1;
         }
 
@@ -289,7 +266,6 @@ const structuredData = createAtelierCollectionJsonLd({
       const writeState = (state: FilterState): void => {
         const params = new URLSearchParams();
         if (state.type) params.set("type", state.type);
-        if (state.tag) params.set("tag", state.tag);
         const query = params.toString();
         history.pushState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
         applyFilters(state);
@@ -309,7 +285,7 @@ const structuredData = createAtelierCollectionJsonLd({
 
       catalogue.querySelector("[data-clear-filters]")?.addEventListener("click", (event) => {
         event.preventDefault();
-        writeState({ type: "", tag: "" });
+        writeState({ type: "" });
       });
       window.addEventListener("popstate", () => applyFilters(readState()));
       applyFilters(readState());

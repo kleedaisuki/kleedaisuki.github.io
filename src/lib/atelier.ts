@@ -5,21 +5,24 @@ import path from "node:path";
 import { strToU8, zipSync } from "fflate";
 import type { AtelierLocale } from "../i18n/atelier";
 
+/** @brief 无自定义封面时使用的统一插图 / Shared illustration used when a work has no custom cover. */
+export const DEFAULT_ATELIER_COVER = "/atelier-default-cover.svg";
+
+/** @brief 单值或双语 Atelier 文本 / Scalar or bilingual Atelier text. */
+export type AtelierText = string | Readonly<Record<AtelierLocale, string>>;
+
 /** @brief Atelier 中一个可下载文件的元数据 / Metadata for one downloadable Atelier file. */
 export interface AtelierFile {
   id: string;
-  label: string;
+  label: AtelierText;
   path: string;
   mediaType?: string;
-  description?: string;
+  description?: AtelierText;
   size?: number;
   checksum?: string;
   /** @brief 构建期确认的可用状态 / Availability confirmed at build time. */
   available?: boolean;
 }
-
-/** @brief 单值或双语 Atelier 文本 / Scalar or bilingual Atelier text. */
-export type AtelierText = string | Readonly<Record<AtelierLocale, string>>;
 
 /**
  * @brief 解析共享制品的本地化文本 / Resolve localized text for a shared artifact.
@@ -38,7 +41,7 @@ export function getAtelierText(
 export interface AtelierRelease {
   version: string;
   date: Date;
-  notes?: string;
+  notes?: AtelierText;
   files: AtelierFile[];
 }
 

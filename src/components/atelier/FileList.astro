@@ -1,7 +1,9 @@
 ---
 import { ATELIER_COPY, type AtelierLocale } from "@i18n/atelier";
 import {
+  type AtelierText,
   formatFileSize,
+  getAtelierText,
   getFileCapability,
   getPdfReaderUrl,
   getReleaseFileUrl,
@@ -10,10 +12,10 @@ import {
 /** @brief Atelier 文件描述 / Atelier file descriptor. */
 interface AtelierFile {
   id: string;
-  label: string;
+  label: AtelierText;
   path: string;
   mediaType?: string;
-  description?: string;
+  description?: AtelierText;
   size?: number;
   checksum?: string;
   available?: boolean;
@@ -93,8 +95,8 @@ for (const file of files) {
             return (
               <li class="file-item">
                 <div class="file-item__content">
-                  <p class="file-item__title">{file.label}</p>
-                  {file.description && <p class="file-item__description">{file.description}</p>}
+                  <p class="file-item__title">{getAtelierText(file.label, locale)}</p>
+                  {file.description && <p class="file-item__description">{getAtelierText(file.description, locale)}</p>}
                   <dl class="file-item__meta">
                     {file.mediaType && (
                       <div><dt>{copy.format}</dt><dd>{file.mediaType}</dd></div>

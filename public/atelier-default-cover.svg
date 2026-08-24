@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900" role="img" aria-labelledby="title desc">
+  <title id="title">Atelier default cover</title>
+  <desc id="desc">An abstract stack of papers, a pencil, and small stars.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff5eb"/>
+      <stop offset="1" stop-color="#f3d9cd"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffdf9"/>
+      <stop offset="1" stop-color="#f8eee7"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="900" fill="url(#background)"/>
+  <circle cx="620" cy="118" r="142" fill="#e8a3a8" opacity=".22"/>
+  <circle cx="76" cy="792" r="178" fill="#d98b68" opacity=".16"/>
+  <path d="M78 132h564M78 220h564M78 308h564M78 396h564M78 484h564M78 572h564M78 660h564M78 748h564" stroke="#9f705d" stroke-opacity=".1"/>
+  <path d="M118 90v720M206 90v720M294 90v720M382 90v720M470 90v720M558 90v720" stroke="#9f705d" stroke-opacity=".08"/>
+  <g transform="rotate(-6 355 480)">
+    <rect x="185" y="240" width="390" height="516" rx="20" fill="#7d4b40" opacity=".18"/>
+    <rect x="167" y="218" width="390" height="516" rx="20" fill="url(#paper)" stroke="#8f5c4f" stroke-width="5"/>
+    <path d="M217 317h230M217 363h286M217 409h250M217 501h286M217 547h212M217 593h267" stroke="#b77b68" stroke-width="12" stroke-linecap="round" opacity=".62"/>
+    <rect x="217" y="262" width="128" height="21" rx="10.5" fill="#d97876"/>
+    <path d="M447 642l104-104 34 34-104 104-55 21z" fill="#d97876" stroke="#75483e" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M551 538l18-18a24 24 0 0134 0l1 1a24 24 0 010 34l-19 17z" fill="#f1b7a4" stroke="#75483e" stroke-width="5"/>
+    <path d="M426 697l21-55 34 34z" fill="#f2ca8f" stroke="#75483e" stroke-width="5" stroke-linejoin="round"/>
+  </g>
+  <g fill="#d96f72">
+    <path d="M122 235l8 22 22 8-22 8-8 22-8-22-22-8 22-8z"/>
+    <path d="M594 686l7 19 19 7-19 7-7 19-7-19-19-7 19-7z"/>
+  </g>
+  <g fill="none" stroke="#8f5c4f" stroke-width="6">
+    <circle cx="594" cy="242" r="20"/>
+    <path d="M84 598c34-12 58-5 74 23" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -2,6 +2,7 @@
 import type { CollectionEntry } from "astro:content";
 import { ATELIER_COPY, type AtelierLocale } from "@i18n/atelier";
 import {
+  DEFAULT_ATELIER_COVER,
   getAtelierPath,
   getAtelierText,
   getLatestRelease,
@@ -28,6 +29,10 @@ const copy = ATELIER_COPY[locale];
 const title = getAtelierText(entry.data.title, locale);
 /** @brief 当前语言的作品摘要 / Localized work summary. */
 const summary = getAtelierText(entry.data.summary, locale);
+/** @brief 当前语言的作品正文 / Work prose in the current locale. */
+const about = entry.data.about?.[locale];
+/** @brief 作品封面或统一默认封面 / Work cover or the shared default cover. */
+const coverUrl = entry.data.cover ?? DEFAULT_ATELIER_COVER;
 /** @brief 作品的最新发布版本 / Latest release of the work. */
 const latestRelease = getLatestRelease(entry.data.releases);
 /** @brief 当前是否展示最新版本 / Whether the selected release is current. */
@@ -55,22 +60,16 @@ const releaseHistory = [...entry.data.releases].sort(
   <nav class="atelier-breadcrumb" aria-label={copy.breadcrumb}>
     <ol>
       <li><a href={`/${locale}/atelier/`}>{copy.atelier}</a></li>
-      <li aria-current="page">{entry.data.title}</li>
+      <li aria-current="page">{title}</li>
     </ol>
   </nav>
 
   <header class="atelier-detail__hero">
-    <div class:list={["atelier-detail__cover", { "atelier-detail__cover--placeholder": !entry.data.cover }]}>
-      {
-        entry.data.cover ? (
-          <img src={entry.data.cover} alt="" decoding="async" />
-        ) : (
-          <span aria-hidden="true">{title.trim().slice(0, 1).toLocaleUpperCase() || "A"}</span>
-        )
-      }
+    <div class="atelier-detail__cover">
+      <img src={coverUrl} alt="" decoding="async" />
     </div>
     <div class="atelier-detail__intro">
-      <p class="atelier-eyebrow">Klee’s Atelier</p>
+      <p class="atelier-eyebrow">{copy.atelier}</p>
       <h1 id="work-title">{title}</h1>
       <p class="atelier-detail__summary">{summary}</p>
       <dl class="atelier-detail__facts">
@@ -103,7 +102,9 @@ const releaseHistory = [...entry.data.releases].sort(
     <div class="atelier-detail__main">
       <section class="atelier-panel atelier-description" aria-labelledby="about-this-work">
         <h2 id="about-this-work">{copy.aboutWork}</h2>
-        <div class="atelier-prose"><slot /></div>
+        <div class="atelier-prose">
+          {about ? about.map((paragraph) => <p>{paragraph}</p>) : <slot />}
+        </div>
       </section>
 
       <section class="atelier-panel" aria-labelledby="files-heading">
@@ -116,7 +117,7 @@ const releaseHistory = [...entry.data.releases].sort(
           </div>
           {release && !isLatest && <a href={workPath}>{copy.viewLatest}</a>}
         </div>
-        {release?.notes && <p class="atelier-release-note">{release.notes}</p>}
+        {release?.notes && <p class="atelier-release-note">{getAtelierText(release.notes, locale)}</p>}
         {release && sourcePath && (
           <p class="atelier-source-actions">
             <a class="atelier-button atelier-button--primary" href={sourcePath}>{copy.browseSource}</a>
@@ -150,7 +151,7 @@ const releaseHistory = [...entry.data.releases].sort(
                     {item.version === latestRelease?.version && <span class="version-badge">{copy.latest}</span>}
                   </div>
                   <time datetime={item.date.toISOString()}>{dateFormatter.format(item.date)}</time>
-                  {item.notes && <p>{item.notes}</p>}
+                  {item.notes && <p>{getAtelierText(item.notes, locale)}</p>}
                 </li>
               );
             })}

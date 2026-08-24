@@ -17,28 +17,34 @@ const blog = defineCollection({
   }),
 });
 
-/** @brief Atelier 文件描述模式 / Atelier file descriptor schema. */
-const atelierFile = z.object({
-  id: z.string(),
-  label: z.string(),
-  path: z.string(),
-  mediaType: z.string().optional(),
-  description: z.string().optional(),
-  size: z.number().nonnegative().optional(),
-  checksum: z.string().optional(),
-});
-
 /** @brief 可共享实体的本地化文本 / Localized text for a shared artifact entity. */
 const atelierText = z.union([
   z.string(),
   z.object({ zh: z.string(), en: z.string() }),
 ]);
 
+/** @brief Atelier 文件描述模式 / Atelier file descriptor schema. */
+const atelierFile = z.object({
+  id: z.string(),
+  label: atelierText,
+  path: z.string(),
+  mediaType: z.string().optional(),
+  description: atelierText.optional(),
+  size: z.number().nonnegative().optional(),
+  checksum: z.string().optional(),
+});
+
+/** @brief 共享制品实体的本地化正文 / Localized prose for a shared artifact entity. */
+const atelierProse = z.object({
+  zh: z.array(z.string()).min(1),
+  en: z.array(z.string()).min(1),
+});
+
 /** @brief Atelier 发布版本模式 / Atelier release schema. */
 const atelierRelease = z.object({
   version: z.string(),
   date: z.coerce.date(),
-  notes: z.string().optional(),
+  notes: atelierText.optional(),
   files: z.array(atelierFile).default([]),
 });
 
@@ -50,6 +56,7 @@ const atelier = defineCollection({
     slug: z.string(),
     title: atelierText,
     summary: atelierText,
+    about: atelierProse.optional(),
     published: z.coerce.date(),
     updated: z.coerce.date().optional(),
     tags: z.array(z.string()).default([]),

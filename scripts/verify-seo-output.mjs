@@ -208,8 +208,12 @@ function verifyAtelier() {
     );
     assert(index.includes('class="lang-switch"'), `Atelier lacks a language switcher: ${indexPath}`);
     assert(
-      /<h1[^>]*>\s*Klee(?:’|&#39;|')s Atelier\s*<\/h1>/.test(index),
+      /<h1[^>]*>\s*Atelier\s*<\/h1>/.test(index),
       `Atelier has no visible catalogue H1: ${indexPath}`,
+    );
+    assert(
+      !index.includes('data-filter-group="tag"'),
+      `Atelier unexpectedly exposes a tag filter: ${indexPath}`,
     );
     const collectionJsonLd = parseJsonLd(index, indexPath);
     const collectionGraph = collectionJsonLd["@graph"];
@@ -262,6 +266,24 @@ function verifyAtelier() {
           detail.includes('class="lang-switch"'),
           `Atelier detail lacks a language switcher: ${detailPath}`,
         );
+        if (slug === "ai-job-workspace-internship-report") {
+          const expectedAbout = locale === "zh"
+            ? "这份报告总结了 AI 求职工作台"
+            : "This report reflects on turning an AI job-search workspace";
+          const foreignAbout = locale === "zh"
+            ? "This report reflects on turning an AI job-search workspace"
+            : "这份报告总结了 AI 求职工作台";
+          const expectedFileLabel = locale === "zh" ? "实习报告" : "Internship report";
+          const foreignFileLabel = locale === "zh" ? "Internship report" : "实习报告";
+          assert(detail.includes(expectedAbout), `Atelier detail lacks localized prose: ${detailPath}`);
+          assert(!detail.includes(foreignAbout), `Atelier detail mixes localized prose: ${detailPath}`);
+          assert(detail.includes(expectedFileLabel), `Atelier detail lacks a localized file label: ${detailPath}`);
+          assert(!detail.includes(foreignFileLabel), `Atelier detail mixes file-label languages: ${detailPath}`);
+          assert(
+            detail.includes('src="/atelier-default-cover.svg"'),
+            `Atelier detail lacks the default cover: ${detailPath}`,
+          );
+        }
 
         for (const capabilityPath of getAtelierCapabilityPaths(detail)) {
           const capabilityOutput = pageOutputPath(capabilityPath);
@@ -281,6 +303,10 @@ function verifyAtelier() {
  * @return 无返回值 / No return value.
  */
 function verifyPdfJsAssets() {
+  assert(
+    existsSync(join(OUTPUT_DIRECTORY, "atelier-default-cover.svg")),
+    "Atelier default cover was not emitted",
+  );
   const representativeAssets = {
     cmaps: "78-EUC-H.bcmap",
     standard_fonts: "FoxitDingbats.pfb",
