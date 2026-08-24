@@ -259,13 +259,25 @@ function verifyAtelier() {
  * @return 无返回值 / No return value.
  */
 function verifyPdfJsAssets() {
-  for (const directory of ["cmaps", "standard_fonts", "wasm", "iccs", "images"]) {
+  const representativeAssets = {
+    cmaps: "78-EUC-H.bcmap",
+    standard_fonts: "FoxitDingbats.pfb",
+    wasm: "jbig2.wasm",
+    iccs: "CGATS001Compat-v2-micro.icc",
+    images: "altText_add.svg",
+  };
+
+  for (const [directory, representativeAsset] of Object.entries(representativeAssets)) {
     const relativePath = join(PDFJS_ASSET_DIRECTORY, directory);
     const absolutePath = join(OUTPUT_DIRECTORY, relativePath);
     assert(existsSync(absolutePath), `Missing PDF.js asset directory: ${relativePath}`);
     assert(
       readdirSync(absolutePath).length > 0,
       `PDF.js asset directory is empty: ${relativePath}`,
+    );
+    assert(
+      existsSync(join(absolutePath, representativeAsset)),
+      `PDF.js asset has an unexpected nested path: ${join(relativePath, representativeAsset)}`,
     );
   }
 }

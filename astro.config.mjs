@@ -68,6 +68,7 @@ export default defineConfig({
         ].map(({ source, destination }) => ({
           src: `node_modules/pdfjs-dist/${source}/*`,
           dest: `_pdfjs/${PDFJS_ASSET_VERSION}/${destination}`,
+          rename: { stripBase: true },
         })),
       }),
     ],
