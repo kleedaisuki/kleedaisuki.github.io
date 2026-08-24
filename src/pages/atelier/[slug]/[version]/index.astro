@@ -1,0 +1,99 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { getCollection, render } from "astro:content";
+import WorkDetail from "@components/atelier/WorkDetail.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import "@styles/atelier.css";
+import {
+  type AtelierRelease,
+  enrichAtelierFile,
+  getAtelierPath,
+  getSourceArchiveUrl,
+  getSourceBrowserUrl,
+  scanSourceFiles,
+} from "../../../../lib/atelier";
+import { createAtelierWorkJsonLd, getAbsoluteUrl } from "../../../../lib/seo";
+
+/**
+ * @brief 生成全部公开历史版本页 / Generate every published version page.
+ * @return Astro 静态路由参数、作品与版本 / Astro static params, works, and releases.
+ */
+export async function getStaticPaths() {
+  const works = await getCollection("atelier", ({ data }) => !data.draft);
+  return works.flatMap((entry) =>
+    entry.data.releases.map((release) => ({
+      params: { slug: entry.data.slug, version: release.version },
+      props: { entry, release },
+    })),
+  );
+}
+
+/** @brief 当前历史版本页属性 / Current historical-release page props. */
+const { entry, release } = Astro.props as {
+  entry: CollectionEntry<"atelier">;
+  release: AtelierRelease;
+};
+/** @brief 以真实静态文件信息补全历史版本 / Enrich the historical release with real static-file metadata. */
+const displayRelease = {
+  ...release,
+  files: await Promise.all(
+    release.files.map((file) =>
+      enrichAtelierFile(entry.data.slug, release.version, file),
+    ),
+  ),
+};
+/** @brief 当前版本可浏览的源码文件 / Browsable source files in this release. */
+const sourceFiles = await scanSourceFiles(entry.data.slug, release.version);
+/** @brief 源码浏览入口；无源码时省略 / Source-browser entry, omitted without source. */
+const sourcePath =
+  sourceFiles.length > 0
+    ? getSourceBrowserUrl(
+        entry.data.slug,
+        release.version,
+        (
+          sourceFiles.find(
+            (file) => file.content !== undefined && file.size <= 524_288,
+          ) ?? sourceFiles[0]
+        ).path,
+      )
+    : undefined;
+/** @brief 当前历史版本源码 ZIP 地址 / Source ZIP URL for the selected release. */
+const sourceArchivePath =
+  sourceFiles.length > 0
+    ? getSourceArchiveUrl(entry.data.slug, release.version)
+    : undefined;
+/** @brief Markdown 作品说明 / Rendered Markdown work description. */
+const { Content } = await render(entry);
+/** @brief 历史版本稳定路径 / Stable historical-release path. */
+const releasePath = `${getAtelierPath(entry.data.slug)}${encodeURIComponent(release.version)}/`;
+/** @brief 当前版本结构化数据 / Structured data for the selected release. */
+const structuredData = createAtelierWorkJsonLd({
+  url: getAbsoluteUrl(releasePath),
+  atelierUrl: getAbsoluteUrl("/atelier/"),
+  name: `${entry.data.title} — ${release.version}`,
+  description: entry.data.summary,
+  publishedAt: entry.data.published,
+  modifiedAt: release.date,
+  tags: entry.data.tags,
+  license: entry.data.license,
+  repository: entry.data.repository,
+  atelierName: "Klee’s Atelier",
+});
+---
+
+<BaseLayout
+  pageTitle={`${entry.data.title} ${release.version} | Klee’s Atelier`}
+  description={`${entry.data.summary} Version ${release.version}.`}
+  pageType="article"
+  publishedTime={entry.data.published.toISOString()}
+  modifiedTime={release.date.toISOString()}
+  tags={entry.data.tags}
+  structuredData={structuredData}
+  standalone
+  documentLocale="en"
+  showLanguageSwitch={false}
+>
+  <WorkDetail entry={entry} release={displayRelease} sourcePath={sourcePath} sourceArchivePath={sourceArchivePath}>
+    <Content />
+  </WorkDetail>
+</BaseLayout>

@@ -1,0 +1,70 @@
+---
+/** @brief Atelier 卡片属性 / Atelier work-card properties. */
+interface Props {
+  slug: string;
+  title: string;
+  summary: string;
+  published: Date;
+  updated?: Date;
+  cover?: string;
+  version?: string;
+  tags: string[];
+  types: string[];
+}
+
+const {
+  slug,
+  title,
+  summary,
+  published,
+  updated,
+  cover,
+  version,
+  tags,
+  types,
+} = Astro.props as Props;
+
+/** @brief 卡片所展示的日期 / Date displayed on the card. */
+const displayDate = updated ?? published;
+/** @brief 稳定的占位符字母 / Stable placeholder monogram. */
+const monogram = title.trim().slice(0, 1).toLocaleUpperCase() || "A";
+---
+
+<article
+  class="atelier-card"
+  data-work-card
+  data-types={JSON.stringify(types.map((type) => type.toLocaleLowerCase()))}
+  data-tags={JSON.stringify(tags.map((tag) => tag.toLocaleLowerCase()))}
+>
+  <div class:list={["atelier-card__cover", { "atelier-card__cover--placeholder": !cover }]}>
+    {
+      cover ? (
+        <img src={cover} alt="" loading="lazy" decoding="async" />
+      ) : (
+        <span aria-hidden="true">{monogram}</span>
+      )
+    }
+  </div>
+  <div class="atelier-card__body">
+    <div class="atelier-card__meta">
+      <time datetime={displayDate.toISOString()}>
+        {displayDate.toLocaleDateString("en", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })}
+      </time>
+      {version && <span>v{version}</span>}
+    </div>
+    <h2><a href={`/atelier/${encodeURIComponent(slug)}/`}>{title}</a></h2>
+    <p>{summary}</p>
+    {
+      (types.length > 0 || tags.length > 0) && (
+        <ul class="atelier-card__chips" aria-label="Work formats and tags">
+          {types.map((type) => <li class="atelier-chip atelier-chip--type">{type}</li>)}
+          {tags.map((tag) => <li class="atelier-chip">{tag}</li>)}
+        </ul>
+      )
+    }
+  </div>
+</article>

@@ -1,0 +1,172 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { getAtelierPath, getLatestRelease } from "../../lib/atelier";
+import FileList from "./FileList.astro";
+
+/** @brief Atelier 条目的发布版本 / Release type inferred from an Atelier entry. */
+type AtelierRelease = CollectionEntry<"atelier">["data"]["releases"][number];
+
+/** @brief 作品详情属性 / Work-detail properties. */
+interface Props {
+  entry: CollectionEntry<"atelier">;
+  release?: AtelierRelease;
+  sourcePath?: string;
+  sourceArchivePath?: string;
+}
+
+const { entry, release, sourcePath, sourceArchivePath } = Astro.props as Props;
+/** @brief 作品的最新发布版本 / Latest release of the work. */
+const latestRelease = getLatestRelease(entry.data.releases);
+/** @brief 当前是否展示最新版本 / Whether the selected release is current. */
+const isLatest = Boolean(
+  release && latestRelease && release.version === latestRelease.version,
+);
+/** @brief 作品详情的稳定地址 / Stable work-detail URL. */
+const workPath = getAtelierPath(entry.data.slug);
+/** @brief 作品事件日期格式器 / Work timeline date formatter. */
+const dateFormatter = new Intl.DateTimeFormat("en", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+/** @brief 按发布日期倒序的版本历史 / Release history ordered newest first. */
+const releaseHistory = [...entry.data.releases].sort(
+  (left, right) => right.date.getTime() - left.date.getTime(),
+);
+---
+
+<div class="atelier-detail">
+  <nav class="atelier-breadcrumb" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/atelier/">Atelier</a></li>
+      <li aria-current="page">{entry.data.title}</li>
+    </ol>
+  </nav>
+
+  <header class="atelier-detail__hero">
+    <div class:list={["atelier-detail__cover", { "atelier-detail__cover--placeholder": !entry.data.cover }]}>
+      {
+        entry.data.cover ? (
+          <img src={entry.data.cover} alt="" decoding="async" />
+        ) : (
+          <span aria-hidden="true">{entry.data.title.trim().slice(0, 1).toLocaleUpperCase() || "A"}</span>
+        )
+      }
+    </div>
+    <div class="atelier-detail__intro">
+      <p class="atelier-eyebrow">Klee’s Atelier</p>
+      <h1 id="work-title">{entry.data.title}</h1>
+      <p class="atelier-detail__summary">{entry.data.summary}</p>
+      <dl class="atelier-detail__facts">
+        <div>
+          <dt>Published</dt>
+          <dd><time datetime={entry.data.published.toISOString()}>{dateFormatter.format(entry.data.published)}</time></dd>
+        </div>
+        {entry.data.updated && (
+          <div>
+            <dt>Updated</dt>
+            <dd><time datetime={entry.data.updated.toISOString()}>{dateFormatter.format(entry.data.updated)}</time></dd>
+          </div>
+        )}
+        {latestRelease && (
+          <div>
+            <dt>Latest release</dt>
+            <dd>v{latestRelease.version}</dd>
+          </div>
+        )}
+      </dl>
+      {entry.data.tags.length > 0 && (
+        <ul class="atelier-tags" aria-label="Work tags">
+          {entry.data.tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+      )}
+    </div>
+  </header>
+
+  <div class="atelier-detail__layout">
+    <div class="atelier-detail__main">
+      <section class="atelier-panel atelier-description" aria-labelledby="about-this-work">
+        <h2 id="about-this-work">About this work</h2>
+        <div class="atelier-prose"><slot /></div>
+      </section>
+
+      <section class="atelier-panel" aria-labelledby="files-heading">
+        <div class="atelier-section-heading">
+          <div>
+            <p class="atelier-eyebrow">Release files</p>
+            <h2 id="files-heading">
+              {release ? `Version ${release.version}` : "No release yet"}
+            </h2>
+          </div>
+          {release && !isLatest && <a href={workPath}>View latest</a>}
+        </div>
+        {release?.notes && <p class="atelier-release-note">{release.notes}</p>}
+        {release && sourcePath && (
+          <p class="atelier-source-actions">
+            <a class="atelier-button atelier-button--primary" href={sourcePath}>Browse source</a>
+            {sourceArchivePath && <a class="atelier-button" href={sourceArchivePath} download>Download source ZIP</a>}
+          </p>
+        )}
+        {release && release.files.length > 0 ? (
+          <FileList slug={entry.data.slug} version={release.version} files={release.files} />
+        ) : (
+          <p class="atelier-inline-empty">No downloadable files are listed for this release.</p>
+        )}
+      </section>
+    </div>
+
+    <aside class="atelier-detail__aside" aria-label="Work information">
+      <section class="atelier-panel atelier-panel--compact">
+        <h2>Version history</h2>
+        {entry.data.releases.length > 0 ? (
+          <ol class="version-list">
+            {releaseHistory.map((item) => {
+              const selected = release?.version === item.version;
+              const versionUrl = item.version === latestRelease?.version
+                ? workPath
+                : `${workPath}${encodeURIComponent(item.version)}/`;
+              return (
+                <li class:list={{ "version-list__item--current": selected }}>
+                  <div>
+                    {selected ? (
+                      <strong aria-current="page">v{item.version}</strong>
+                    ) : (
+                      <a href={versionUrl}>v{item.version}</a>
+                    )}
+                    {item.version === latestRelease?.version && <span class="version-badge">Latest</span>}
+                  </div>
+                  <time datetime={item.date.toISOString()}>{dateFormatter.format(item.date)}</time>
+                  {item.notes && <p>{item.notes}</p>}
+                </li>
+              );
+            })}
+          </ol>
+        ) : (
+          <p class="atelier-inline-empty">No releases have been published yet.</p>
+        )}
+      </section>
+
+      <section class="atelier-panel atelier-panel--compact">
+        <h2>Links &amp; license</h2>
+        <dl class="atelier-link-list">
+          <div>
+            <dt>License</dt>
+            <dd>{entry.data.license ?? "License not specified"}</dd>
+          </div>
+          {entry.data.repository && (
+            <div>
+              <dt>Repository</dt>
+              <dd><a href={entry.data.repository}>View repository</a></dd>
+            </div>
+          )}
+          {entry.data.relatedPost && (
+            <div>
+              <dt>From the blog</dt>
+              <dd><a href={entry.data.relatedPost}>Read the related post</a></dd>
+            </div>
+          )}
+        </dl>
+      </section>
+    </aside>
+  </div>
+</div>

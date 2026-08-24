@@ -1,0 +1,98 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { getCollection, render } from "astro:content";
+import WorkDetail from "@components/atelier/WorkDetail.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import "@styles/atelier.css";
+import {
+  enrichAtelierFile,
+  getAtelierPath,
+  getLatestRelease,
+  getSourceArchiveUrl,
+  getSourceBrowserUrl,
+  scanSourceFiles,
+} from "../../../lib/atelier";
+import { createAtelierWorkJsonLd, getAbsoluteUrl } from "../../../lib/seo";
+
+/**
+ * @brief 生成全部公开作品详情页 / Generate every published work detail page.
+ * @return Astro 静态路由参数与条目 / Astro static params and entries.
+ */
+export async function getStaticPaths() {
+  const works = await getCollection("atelier", ({ data }) => !data.draft);
+  return works.map((entry) => ({
+    params: { slug: entry.data.slug },
+    props: { entry },
+  }));
+}
+
+/** @brief 当前作品条目 / Current work entry. */
+const { entry } = Astro.props as { entry: CollectionEntry<"atelier"> };
+/** @brief 当前作品的最新版本 / Latest release for the current work. */
+const release = getLatestRelease(entry.data.releases);
+/** @brief 以真实静态文件信息补全当前版本 / Enrich the current release with real static-file metadata. */
+const displayRelease = release
+  ? {
+      ...release,
+      files: await Promise.all(
+        release.files.map((file) =>
+          enrichAtelierFile(entry.data.slug, release.version, file),
+        ),
+      ),
+    }
+  : undefined;
+/** @brief 当前版本可浏览的源码文件 / Browsable source files in the current release. */
+const sourceFiles = release
+  ? await scanSourceFiles(entry.data.slug, release.version)
+  : [];
+/** @brief 源码浏览入口；无源码时省略 / Source-browser entry, omitted without source. */
+const sourcePath =
+  release && sourceFiles.length > 0
+    ? getSourceBrowserUrl(
+        entry.data.slug,
+        release.version,
+        (
+          sourceFiles.find(
+            (file) => file.content !== undefined && file.size <= 524_288,
+          ) ?? sourceFiles[0]
+        ).path,
+      )
+    : undefined;
+/** @brief 当前版本源码 ZIP 地址 / Source ZIP URL for the current release. */
+const sourceArchivePath =
+  release && sourceFiles.length > 0
+    ? getSourceArchiveUrl(entry.data.slug, release.version)
+    : undefined;
+/** @brief Markdown 作品说明 / Rendered Markdown work description. */
+const { Content } = await render(entry);
+/** @brief 当前作品结构化数据 / Structured data for the current work. */
+const structuredData = createAtelierWorkJsonLd({
+  url: getAbsoluteUrl(getAtelierPath(entry.data.slug)),
+  atelierUrl: getAbsoluteUrl("/atelier/"),
+  name: entry.data.title,
+  description: entry.data.summary,
+  publishedAt: entry.data.published,
+  modifiedAt: entry.data.updated,
+  tags: entry.data.tags,
+  license: entry.data.license,
+  repository: entry.data.repository,
+  atelierName: "Klee’s Atelier",
+});
+---
+
+<BaseLayout
+  pageTitle={`${entry.data.title} | Klee’s Atelier`}
+  description={entry.data.summary}
+  pageType="article"
+  publishedTime={entry.data.published.toISOString()}
+  modifiedTime={entry.data.updated?.toISOString()}
+  tags={entry.data.tags}
+  structuredData={structuredData}
+  standalone
+  documentLocale="en"
+  showLanguageSwitch={false}
+>
+  <WorkDetail entry={entry} release={displayRelease} sourcePath={sourcePath} sourceArchivePath={sourceArchivePath}>
+    <Content />
+  </WorkDetail>
+</BaseLayout>
