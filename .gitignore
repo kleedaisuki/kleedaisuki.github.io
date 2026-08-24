@@ -24,3 +24,7 @@ pnpm-debug.log*
 .idea/
 
 .vscode
+
+# browser compatibility artifacts
+playwright-report/
+test-results/

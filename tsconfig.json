@@ -20,5 +20,6 @@
         "src/styles/*"
       ]
     }
-  }
+  },
+  "exclude": ["dist", "playwright-report", "test-results"]
 }

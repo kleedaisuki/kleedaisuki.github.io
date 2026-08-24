@@ -58,6 +58,10 @@ export default defineConfig({
     rehypePlugins: [rehypeKatex],
   },
   vite: {
+    build: {
+      // 与 PDF.js 现代构建所需的 Promise.try 能力一致，不引入 legacy bundle 或旧浏览器 polyfill。
+      target: ["chrome128", "edge128", "firefox134", "safari18.2"],
+    },
     plugins: [
       viteStaticCopy({
         targets: [

@@ -10,12 +10,24 @@
     "astro": "astro",
     "check": "astro check",
     "test": "vitest run",
+    "test:e2e": "pnpm build && pnpm test:e2e:ci",
+    "test:e2e:ci": "playwright test --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --project=wechat-android --project=wechat-ios",
+    "test:e2e:branded": "pnpm build && playwright test --project=chrome --project=edge",
     "verify:seo": "node scripts/verify-seo-output.mjs",
     "verify:atelier": "node scripts/verify-atelier-build.mjs",
     "test:watch": "vitest",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "format:check": "biome format ."
+  },
+  "browserslist": {
+    "production": [
+      "Chrome >= 128",
+      "Edge >= 128",
+      "Firefox >= 134",
+      "Safari >= 18.2",
+      "iOS >= 18.2"
+    ]
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
@@ -29,7 +41,10 @@
   "devDependencies": {
     "@astrojs/rss": "^4.0.12",
     "@biomejs/biome": "^2.5.7",
+    "@playwright/test": "1.62.1",
+    "autoprefixer": "10.5.4",
     "katex": "^0.16.22",
+    "postcss": "8.5.26",
     "rehype-katex": "^7.0.1",
     "rehype-stringify": "^10.0.1",
     "remark-math": "^6.0.0",
