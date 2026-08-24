@@ -6,17 +6,28 @@
 
 .pdf-reader {
   --reader-bar-height: 4.2rem;
+  --reader-viewport-height: 100vh;
   position: relative;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
   width: 100%;
-  height: min(100dvh, 68rem);
-  min-height: 38rem;
+  height: min(var(--reader-viewport-height), 68rem);
+  min-height: min(38rem, var(--reader-viewport-height));
   overflow: hidden;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-large);
   background: color-mix(in srgb, var(--surface-muted) 82%, var(--bg-color));
   box-shadow: var(--shadow-md);
+}
+
+/**
+ * @brief 在可用时采用动态视口高度 (Use dynamic viewport height when available).
+ * @note 自定义属性让不支持 dvh 的 runtime 保留 vh 回退 (The custom property preserves the vh fallback in runtimes without dvh).
+ */
+@supports (height: 100dvh) {
+  .pdf-reader {
+    --reader-viewport-height: 100dvh;
+  }
 }
 
 .pdf-reader__bar {
@@ -29,6 +40,7 @@
   padding: 0.62rem 0.78rem;
   border-bottom: 1px solid var(--border-subtle);
   background: color-mix(in srgb, var(--surface-strong) 92%, transparent);
+  -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
 }
 
@@ -57,16 +69,6 @@
     color var(--motion-fast) var(--ease-standard),
     background var(--motion-fast) var(--ease-standard),
     transform var(--motion-fast) var(--ease-standard);
-}
-
-.pdf-reader__back:hover,
-.pdf-reader__controls button:hover:not(:disabled),
-.pdf-reader__controls a:hover,
-.pdf-reader__find button:hover,
-.pdf-reader__outline-heading button:hover {
-  color: var(--on-accent);
-  background: var(--interactive-color);
-  transform: translateY(-1px);
 }
 
 .pdf-reader__controls button:focus-visible,
@@ -287,11 +289,6 @@
   cursor: pointer;
 }
 
-.pdf-reader__outline nav button:hover {
-  color: var(--accent-text-hover);
-  background: var(--accent-wash);
-}
-
 .pdf-reader__outline > p {
   padding: 1rem;
   color: var(--text-soft);
@@ -311,6 +308,7 @@
   color: var(--text-soft);
   background: color-mix(in srgb, var(--surface-muted) 94%, transparent);
   text-align: center;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 
@@ -379,6 +377,27 @@
   }
 }
 
+/**
+ * @brief 仅为精确悬停设备启用悬停装饰 (Enable hover decoration only for precise hover devices).
+ * @note 避免触屏浏览器的粘滞悬停状态 (Avoid sticky hover states in touch browsers).
+ */
+@media (hover: hover) and (pointer: fine) {
+  .pdf-reader__back:hover,
+  .pdf-reader__controls button:hover:not(:disabled),
+  .pdf-reader__controls a:hover,
+  .pdf-reader__find button:hover,
+  .pdf-reader__outline-heading button:hover {
+    color: var(--on-accent);
+    background: var(--interactive-color);
+    transform: translateY(-1px);
+  }
+
+  .pdf-reader__outline nav button:hover {
+    color: var(--accent-text-hover);
+    background: var(--accent-wash);
+  }
+}
+
 @media (max-width: 960px) {
   .pdf-reader__button-label,
   .pdf-reader__back-label,
@@ -400,8 +419,8 @@
 
 @media (max-width: 760px) {
   .pdf-reader {
-    height: calc(100dvh - 1rem);
-    min-height: 30rem;
+    height: calc(var(--reader-viewport-height) - 1rem);
+    min-height: min(30rem, calc(var(--reader-viewport-height) - 1rem));
     border-radius: var(--radius-medium);
   }
 
@@ -443,10 +462,12 @@
 
   .pdf-reader__find {
     justify-content: stretch;
+    overflow-x: auto;
     padding: 0.42rem;
   }
 
   .pdf-reader__find label {
+    flex: 1 0 8rem;
     min-width: 7rem;
   }
 
@@ -456,6 +477,41 @@
 
   .pdf-reader .pdfViewer {
     padding-block: 0.7rem 2rem;
+  }
+}
+
+/**
+ * @brief 在短视口与移动端横屏中压缩固定界面 (Compact fixed chrome in short viewports and mobile landscape).
+ * @note 主舞台和目录继续占用剩余空间并独立滚动 (The stage and outline keep the remaining space and scroll independently).
+ */
+@media (max-height: 520px) {
+  .pdf-reader {
+    min-height: 0;
+  }
+
+  .pdf-reader__bar {
+    min-height: 0;
+    padding-block: 0.35rem;
+  }
+
+  .pdf-reader__find {
+    min-height: 0;
+    padding-block: 0.3rem;
+  }
+
+  .pdf-reader__controls,
+  .pdf-reader__find {
+    scrollbar-width: thin;
+  }
+
+  .pdf-reader__controls::-webkit-scrollbar,
+  .pdf-reader__find::-webkit-scrollbar {
+    display: block;
+    height: 0.3rem;
+  }
+
+  .pdf-reader .pdfViewer {
+    padding-block: 0.5rem 1.25rem;
   }
 }
 
