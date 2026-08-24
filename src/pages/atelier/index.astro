@@ -10,12 +10,40 @@
     <title>Redirecting to Atelier…</title>
     <script is:inline>
       (() => {
-        let locale = "zh";
+        /** @brief 最近一次站点语言的存储键 (storage key for the most recent site locale). */
+        const localeStorageKey = "prefLocale";
+        /** @brief 站点支持的语言集合 (set of locales supported by the site). */
+        const supportedLocales = new Set(["zh", "en"]);
+        /** @brief URL 查询参数显式指定的语言 (locale explicitly selected by the URL query). */
+        const queryLocale = new URLSearchParams(location.search).get("lang");
+        /** @brief 已保存的语言偏好 (stored locale preference). */
+        let storedLocale = null;
+
         try {
-          locale = localStorage.getItem("prefLocale") === "en" ? "en" : "zh";
+          /** @brief 从本地存储读取的原始语言值 (raw locale value read from local storage). */
+          const value = localStorage.getItem(localeStorageKey);
+          storedLocale = supportedLocales.has(value) ? value : null;
         } catch {
-          locale = navigator.language.toLowerCase().startsWith("en") ? "en" : "zh";
+          // 受限存储环境下继续使用浏览器语言 (continue with browser language when storage is unavailable).
         }
+
+        /** @brief 浏览器首选语言 (browser's preferred locale). */
+        const browserLanguage = navigator.languages?.[0] ?? navigator.language ?? "";
+        /** @brief 根据浏览器语言推导的站点语言 (site locale inferred from browser language). */
+        const inferredLocale = browserLanguage.toLowerCase().startsWith("en")
+          ? "en"
+          : "zh";
+        /** @brief Atelier 的最终目标语言 (resolved target locale for Atelier). */
+        const locale = supportedLocales.has(queryLocale)
+          ? queryLocale
+          : storedLocale ?? inferredLocale;
+
+        try {
+          localStorage.setItem(localeStorageKey, locale);
+        } catch {
+          // 受限存储环境下仍可完成当前跳转 (the current redirect still works when storage is unavailable).
+        }
+
         location.replace(`/${locale}/atelier/`);
       })();
     </script>

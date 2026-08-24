@@ -285,6 +285,8 @@ const themeCopy =
       }
     };
 
-    systemTheme.addEventListener("change", followSystemTheme);
+    if (typeof systemTheme.addEventListener === "function") {
+      systemTheme.addEventListener("change", followSystemTheme);
+    }
   })();
 </script>

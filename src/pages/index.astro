@@ -1,60 +1,65 @@
 ---
-// src/pages/index.astro
-// 纯静态：用前端 0ms 跳转，记忆用户语言偏好；JS 关闭时提供无障碍链接。
+/** @brief 站点根路径根据明确偏好选择语言 (site root selects a locale from explicit preferences). */
 ---
 
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <!-- 根路径不需要被收录，避免和 /zh/、/en/ 竞争 -->
-        <meta name="robots" content="noindex" />
-        <title>Redirecting…</title>
-        <script is:inline>
-            (function () {
-                var KEY = "prefLocale";
-                var supported = { zh: 1, en: 1 };
+  <head>
+    <meta charset="utf-8" />
+    <!-- @brief 避免根路径与本地化页面竞争收录 (prevent the root redirect from competing with localized pages). -->
+    <meta name="robots" content="noindex" />
+    <title>Redirecting…</title>
+    <script is:inline>
+      (() => {
+        /** @brief 最近一次站点语言的存储键 (storage key for the most recent site locale). */
+        const localeStorageKey = "prefLocale";
+        /** @brief 站点支持的语言集合 (set of locales supported by the site). */
+        const supportedLocales = new Set(["zh", "en"]);
+        /** @brief URL 查询参数显式指定的语言 (locale explicitly selected by the URL query). */
+        const queryLocale = new URLSearchParams(location.search).get("lang");
+        /** @brief 已保存的语言偏好 (stored locale preference). */
+        let storedLocale = null;
 
-                // 1) URL 参数强制选择（例如 /?lang=en）
-                var qp = new URLSearchParams(location.search).get("lang");
-                var fromQuery = qp && supported[qp] ? qp : null;
+        try {
+          /** @brief 从本地存储读取的原始语言值 (raw locale value read from local storage). */
+          const value = localStorage.getItem(localeStorageKey);
+          storedLocale = supportedLocales.has(value) ? value : null;
+        } catch {
+          // 受限存储环境下继续使用浏览器语言 (continue with browser language when storage is unavailable).
+        }
 
-                // 2) 记忆的偏好
-                var saved = null;
-                try {
-                    saved = localStorage.getItem(KEY);
-                } catch (e) {}
+        /** @brief 浏览器首选语言 (browser's preferred locale). */
+        const browserLanguage = navigator.languages?.[0] ?? navigator.language ?? "";
+        /** @brief 根据浏览器语言推导的站点语言 (site locale inferred from browser language). */
+        const inferredLocale = browserLanguage.toLowerCase().startsWith("en")
+          ? "en"
+          : "zh";
+        /** @brief 站点根路径的最终目标语言 (resolved target locale for the site root). */
+        const locale = supportedLocales.has(queryLocale)
+          ? queryLocale
+          : storedLocale ?? inferredLocale;
 
-                // 3) 浏览器语言猜测（仅第一次）
-                var nav =
-                    (navigator.languages && navigator.languages[0]) ||
-                    navigator.language ||
-                    "";
-                var guess = (nav + "").toLowerCase().startsWith("en")
-                    ? "en"
-                    : "zh";
+        try {
+          localStorage.setItem(localeStorageKey, locale);
+        } catch {
+          // 受限存储环境下仍可完成当前跳转 (the current redirect still works when storage is unavailable).
+        }
 
-                var target = fromQuery || saved || guess;
-
-                // 记住选择
-                try {
-                    localStorage.setItem(KEY, target);
-                } catch (e) {}
-
-                var to = "/" + target + "/";
-                if (location.pathname !== to) location.replace(to);
-            })();
-        </script>
-        <!-- JS 被禁用时的兜底 -->
-        <noscript><meta http-equiv="refresh" content="0; url=/zh/" /></noscript>
-    </head>
-    <body>
-        <noscript>
-            <p>
-                请选择语言 / Choose your language:
-                <a href="/zh/">中文</a> |
-                <a href="/en/">English</a>
-            </p>
-        </noscript>
-    </body>
+        /** @brief 根路径的本地化目标路径 (localized destination path for the site root). */
+        const destination = `/${locale}/`;
+        location.replace(destination);
+      })();
+    </script>
+    <!-- @brief JavaScript 禁用时默认进入中文页面 (default to Chinese when JavaScript is disabled). -->
+    <noscript><meta http-equiv="refresh" content="0; url=/zh/" /></noscript>
+  </head>
+  <body>
+    <noscript>
+      <p>
+        请选择语言 / Choose your language:
+        <a href="/zh/">中文</a> |
+        <a href="/en/">English</a>
+      </p>
+    </noscript>
+  </body>
 </html>
