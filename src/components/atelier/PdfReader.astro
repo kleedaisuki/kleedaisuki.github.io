@@ -13,14 +13,11 @@ interface Props {
   downloadName: string;
   /** @brief 制品标题 (work title). */
   title: string;
-  /** @brief 发布版本 (release version). */
-  version: string;
   /** @brief 返回详情页地址 (work detail URL). */
   backUrl: string;
 }
 
-const { locale, pdfUrl, downloadName, title, version, backUrl } =
-  Astro.props as Props;
+const { locale, pdfUrl, downloadName, title, backUrl } = Astro.props as Props;
 /** @brief 当前阅读器文案 / Current localized reader copy. */
 const copy = ATELIER_COPY[locale];
 ---
@@ -40,11 +37,6 @@ const copy = ATELIER_COPY[locale];
     <a class="pdf-reader__back" href={backUrl} aria-label={copy.backToDetails}>
       <span aria-hidden="true">←</span><span class="pdf-reader__back-label">{copy.back}</span>
     </a>
-
-    <div class="pdf-reader__identity">
-      <strong>{title}</strong>
-      <span>PDF · {version}</span>
-    </div>
 
     <div class="pdf-reader__controls" role="toolbar" aria-label={copy.pdfControls}>
       <button type="button" data-action="outline" aria-expanded="false" title={copy.tableOfContents}>
