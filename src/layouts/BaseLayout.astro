@@ -31,6 +31,8 @@ interface LayoutProps {
   standalone?: boolean;
   /** @brief 可选的规范 URL 覆盖 (optional canonical URL override). */
   canonicalPath?: string;
+  /** @brief 页面布局模式；阅读器在移动端使用沉浸式视口 (page layout mode; readers use an immersive mobile viewport). */
+  layoutMode?: "default" | "reader";
 }
 
 const pathname = Astro.url.pathname;
@@ -78,6 +80,7 @@ const {
   documentLocale = siteLocale,
   standalone = false,
   canonicalPath,
+  layoutMode = "default",
 } = Astro.props as LayoutProps;
 const canonical = new URL(
   canonicalPath ?? Astro.url.pathname,
@@ -191,7 +194,7 @@ const alternateOpenGraphLocales = alternates
     )}
     <title>{pageTitle}</title>
   </head>
-  <body>
+  <body class:list={{ "layout-reader": layoutMode === "reader" }}>
     <a class="skip-link" href="#main-content">
       {documentLocale === "zh" ? "跳至正文" : "Skip to content"}
     </a>

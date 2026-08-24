@@ -523,6 +523,10 @@
   background: var(--surface-muted);
 }
 
+.file-item__content {
+  min-width: 0;
+}
+
 .file-item__title {
   margin: 0;
   color: var(--heading-color);

@@ -3,6 +3,8 @@ import { expect, type Page, test } from "@playwright/test";
 /** @brief 已知可公开访问的 PDF 阅读器路径 (known public PDF-reader path). */
 const pdfReaderPath =
   "/zh/atelier/jacobi-svd-locality-kernel-policy/1.0.0/read/paper/";
+/** @brief 已知包含本地制品校验和的详情页 (known detail page containing local artifact checksums). */
+const atelierDetailPath = "/zh/atelier/cinder-cuda-tensor-library/1.0.0/";
 
 /** @brief E2E 使用的稳定 GitHub 用户响应 (stable GitHub user response used by E2E). */
 const githubProfileFixture = {
@@ -169,14 +171,77 @@ test("主导航保持语言分区并到达目标页", async ({ page }) => {
   );
 });
 
-test("PDF 阅读器在窄且短的 viewport 中加载并保留工具栏", async ({ page }) => {
+test("制品校验和在手机端局部横滑且不撑宽页面", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(atelierDetailPath);
+  const checksum = page.locator(".file-item__checksum code").first();
+  await expect(checksum).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+
+  const widths = await checksum.evaluate((element) => ({
+    client: element.clientWidth,
+    scroll: element.scrollWidth,
+  }));
+  expect(widths.scroll).toBeGreaterThan(widths.client);
+  await checksum.evaluate((element) => {
+    element.scrollLeft = element.scrollWidth;
+  });
+  await expect.poll(() => checksum.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+});
+
+test("PDF 阅读器在移动端保留全部核心控件并响应旋转", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 480 });
   await page.goto(pdfReaderPath);
   const reader = page.locator("[data-pdf-reader]");
   await expect(reader).toHaveClass(/pdf-reader--ready/, { timeout: 45_000 });
-  await expect(page.getByRole("toolbar")).toBeVisible();
+  const toolbar = page.getByRole("toolbar");
+  const stage = page.locator("[data-viewer-container]");
+  const pdfPage = page.locator(".pdfViewer .page").first();
+  await expect(toolbar).toBeVisible();
+  await expect(toolbar.locator('[data-action="zoom-out"]')).toBeVisible();
+  await expect(toolbar.locator('[data-action="zoom-in"]')).toBeVisible();
   await expect(page.locator("[data-page-count]")).not.toHaveText("—");
-  await expect(page.locator("[data-viewer-container]")).toBeVisible();
+  await expect(stage).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+
+  const portraitPageWidth = await pdfPage.evaluate((element) => element.clientWidth);
+  const portraitStageHeight = await stage.evaluate((element) => element.clientHeight);
+  expect(portraitStageHeight).toBeGreaterThan(300);
+  /** @brief PDF 页面是否完整处于阅读舞台内 (whether the PDF page is fully inside the reader stage). */
+  const pageFitsStage = () =>
+    page.evaluate(() => {
+      const stageElement = document.querySelector<HTMLElement>("[data-viewer-container]");
+      const pageElement = document.querySelector<HTMLElement>(".pdfViewer .page");
+      if (!stageElement || !pageElement) return false;
+      const stageBounds = stageElement.getBoundingClientRect();
+      const pageBounds = pageElement.getBoundingClientRect();
+      return (
+        pageBounds.left >= stageBounds.left - 2 &&
+        pageBounds.right <= stageBounds.right + 2 &&
+        pageBounds.width <= stageBounds.width + 2
+      );
+    });
+  await expect.poll(pageFitsStage).toBe(true);
+
+  const originalLink = toolbar.locator('a[target="_blank"]');
+  await originalLink.evaluate((element) =>
+    element.scrollIntoView({ block: "nearest", inline: "end" }),
+  );
+  await expect
+    .poll(() =>
+      originalLink.evaluate((element) => {
+        const item = element.getBoundingClientRect();
+        const controls = element.parentElement?.getBoundingClientRect();
+        return Boolean(controls && item.left >= controls.left - 1 && item.right <= controls.right + 1);
+      }),
+    )
+    .toBe(true);
+
+  await page.setViewportSize({ width: 640, height: 360 });
+  await expect
+    .poll(() => pdfPage.evaluate((element) => element.clientWidth))
+    .toBeGreaterThan(portraitPageWidth + 100);
+  await expect.poll(pageFitsStage).toBe(true);
   await expectNoHorizontalOverflow(page);
 });
 

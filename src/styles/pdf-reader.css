@@ -35,6 +35,7 @@
   z-index: 5;
   display: flex;
   align-items: center;
+  min-width: 0;
   gap: 0.75rem;
   min-height: var(--reader-bar-height);
   padding: 0.62rem 0.78rem;
@@ -92,6 +93,7 @@
 .pdf-reader__controls {
   display: flex;
   align-items: center;
+  min-width: 0;
   gap: 0.32rem;
 }
 
@@ -396,20 +398,25 @@
 
 @media (max-width: 760px) {
   .pdf-reader {
-    height: calc(var(--reader-viewport-height) - 1rem);
-    min-height: min(30rem, calc(var(--reader-viewport-height) - 1rem));
-    border-radius: var(--radius-medium);
+    height: 100%;
+    min-height: 0;
+    border-inline: 0;
+    border-radius: 0;
   }
 
   .pdf-reader__bar {
-    flex-wrap: wrap;
     gap: 0.42rem;
     padding: 0.48rem;
   }
 
+  .pdf-reader__back {
+    flex: none;
+    margin-inline-end: 0;
+  }
+
   .pdf-reader__controls {
-    order: 2;
-    width: 100%;
+    flex: 1 1 0;
+    width: auto;
     overflow-x: auto;
     padding-bottom: 0.12rem;
     scrollbar-width: none;
@@ -468,12 +475,10 @@
     padding-block: 0.3rem;
   }
 
-  .pdf-reader__controls,
   .pdf-reader__find {
     scrollbar-width: thin;
   }
 
-  .pdf-reader__controls::-webkit-scrollbar,
   .pdf-reader__find::-webkit-scrollbar {
     display: block;
     height: 0.3rem;
@@ -485,10 +490,18 @@
 }
 
 @media (max-width: 430px) {
-  .pdf-reader__zoom,
-  .pdf-reader__controls [data-action="zoom-out"],
-  .pdf-reader__controls [data-action="zoom-in"] {
+  .pdf-reader__zoom {
     display: none;
+  }
+}
+
+/** @brief 为触屏阅读器提供稳定的触控目标 (Provide stable touch targets for the reader). */
+@media (pointer: coarse) {
+  .pdf-reader__back,
+  .pdf-reader__controls button,
+  .pdf-reader__controls a {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
   }
 }
 

@@ -730,6 +730,44 @@ main.container > *:nth-child(3) {
   }
 }
 
+/**
+ * @brief 在移动端让文档阅读器独占可用视口 (Give document readers the available mobile viewport).
+ * @note 阅读器自身提供返回操作，省略站点级导航与页脚以避免重复占用高度 (The reader owns navigation back, so site chrome does not consume the reading viewport).
+ */
+@media (max-width: 760px) {
+  body.layout-reader {
+    overflow: hidden;
+  }
+
+  .layout-reader .site-wrapper {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    height: 100vh;
+    min-height: 0;
+  }
+
+  .layout-reader header.container,
+  .layout-reader footer.container {
+    display: none;
+  }
+
+  .layout-reader main.container {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+  }
+}
+
+@supports (height: 100dvh) {
+  @media (max-width: 760px) {
+    .layout-reader .site-wrapper {
+      height: 100dvh;
+    }
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   a:hover {
     color: var(--accent-text-hover);

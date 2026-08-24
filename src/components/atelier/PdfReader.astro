@@ -197,7 +197,25 @@ const copy = ATELIER_COPY[locale];
     let pdfDocument: PDFDocumentProxy | undefined;
     let findQuery = "";
     let readerReady = false;
+    /** @brief 合并容器重排的动画帧 (animation frame coalescing container reflows). */
+    let resizeFrame: number | undefined;
     const initialHash = location.hash.slice(1);
+
+    /**
+     * @brief 在适合宽度模式下响应移动端旋转与容器变宽 (Respond to rotation and container resizing while fit-to-width is active).
+     * @note 用户手动缩放后保留其数值比例，直到再次选择适合宽度 (Preserve a user's numeric zoom until fit-to-width is selected again).
+     */
+    const fitObserver = new ResizeObserver(() => {
+      if (!readerReady || pdfViewer.currentScaleValue !== "page-width") return;
+      if (resizeFrame !== undefined) cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => {
+        resizeFrame = undefined;
+        if (pdfViewer.currentScaleValue === "page-width") {
+          pdfViewer.currentScaleValue = "page-width";
+        }
+      });
+    });
+    fitObserver.observe(container);
 
     /** @brief 按动作名获取控件 (Get a control by action name).
      * @param action 动作名称 (action name).
