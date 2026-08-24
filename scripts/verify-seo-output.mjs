@@ -1,8 +1,10 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 /** @brief 构建产物目录 (build output directory) / Directory containing the static build output. */
-const OUTPUT_DIRECTORY = join(process.cwd(), "dist");
+const OUTPUT_DIRECTORY = process.env.BUILD_OUTPUT_DIRECTORY
+  ? resolve(process.env.BUILD_OUTPUT_DIRECTORY)
+  : join(process.cwd(), "dist");
 
 /** @brief 站点规范来源 (canonical origin) / Canonical site origin. */
 const SITE_ORIGIN = "https://blog.moesegfault.dev";

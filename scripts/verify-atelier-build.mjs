@@ -12,6 +12,8 @@ const CONTENT_FILE = path.join(ROOT, "src", "content", "atelier", `${FIXTURE_SLU
 const SOURCE_ROOT = path.join(ROOT, "src", "atelier", FIXTURE_SLUG);
 /** @brief 临时发布文件根目录 / Temporary release-asset root. */
 const ASSET_ROOT = path.join(ROOT, "public", "atelier-assets", FIXTURE_SLUG);
+/** @brief 与生产 dist 隔离的夹具输出目录 / Fixture output isolated from production dist. */
+const OUTPUT_ROOT = path.join(ROOT, ".atelier-fixture-dist");
 /** @brief 当前进程使用的 pnpm CLI / pnpm CLI used by the current process. */
 const PNPM_CLI = process.env.npm_execpath;
 
@@ -28,17 +30,20 @@ function assert(condition, message) {
 /**
  * @brief 串行运行 pnpm 脚本 / Run a pnpm script serially.
  * @param script package.json 脚本名 / package.json script name.
+ * @param args 传递给脚本的额外参数 / Additional arguments passed to the script.
+ * @param environment 附加环境变量 / Additional environment variables.
  * @return 无返回值 / No return value.
  */
-function runScript(script) {
+function runScript(script, args = [], environment = {}) {
   assert(PNPM_CLI, "npm_execpath is unavailable; run this verifier through pnpm");
   /** @brief pnpm 可为原生可执行文件或 JavaScript CLI / pnpm may be a native executable or JavaScript CLI. */
   const isNativeExecutable = /\.exe$/i.test(PNPM_CLI);
   const result = spawnSync(
     isNativeExecutable ? PNPM_CLI : process.execPath,
-    isNativeExecutable ? [script] : [PNPM_CLI, script],
+    isNativeExecutable ? [script, ...args] : [PNPM_CLI, script, ...args],
     {
       cwd: ROOT,
+      env: { ...process.env, ...environment },
       stdio: "inherit",
     },
   );
@@ -60,6 +65,7 @@ function writeFixture(filename, contents) {
 assert(!existsSync(CONTENT_FILE), `Refusing to overwrite ${CONTENT_FILE}`);
 assert(!existsSync(SOURCE_ROOT), `Refusing to overwrite ${SOURCE_ROOT}`);
 assert(!existsSync(ASSET_ROOT), `Refusing to overwrite ${ASSET_ROOT}`);
+assert(!existsSync(OUTPUT_ROOT), `Refusing to overwrite ${OUTPUT_ROOT}`);
 
 try {
   writeFixture(
@@ -104,8 +110,8 @@ This entry exists only while the integration build runs.
     "export const answer = 42;\n",
   );
 
-  runScript("build");
-  runScript("verify:seo");
+  runScript("build", ["--outDir", OUTPUT_ROOT]);
+  runScript("verify:seo", [], { BUILD_OUTPUT_DIRECTORY: OUTPUT_ROOT });
 
   /** @brief 必须由夹具生成的静态产物 / Static artifacts the fixture must generate. */
   const expectedOutputs = [
@@ -118,12 +124,12 @@ This entry exists only while the integration build runs.
     "atelier/__build_fixture__/2.0.0/source.zip",
   ];
   for (const output of expectedOutputs) {
-    assert(existsSync(path.join(ROOT, "dist", ...output.split("/"))), `Missing ${output}`);
+    assert(existsSync(path.join(OUTPUT_ROOT, ...output.split("/"))), `Missing ${output}`);
   }
 
   /** @brief 最新版本详情 HTML / Latest version-detail HTML. */
   const latestHtml = readFileSync(
-    path.join(ROOT, "dist", "atelier", FIXTURE_SLUG, "2.0.0", "index.html"),
+    path.join(OUTPUT_ROOT, "atelier", FIXTURE_SLUG, "2.0.0", "index.html"),
     "utf8",
   );
   assert(
@@ -144,8 +150,7 @@ This entry exists only while the integration build runs.
   assert(
     !existsSync(
       path.join(
-        ROOT,
-        "dist",
+        OUTPUT_ROOT,
         "atelier",
         FIXTURE_SLUG,
         "2.0.0",
@@ -156,8 +161,55 @@ This entry exists only while the integration build runs.
     ),
     "Missing local PDF still generated a reader route",
   );
+
+  /** @brief 历史版本详情 HTML / Historical release-detail HTML. */
+  const historicalDetail = readFileSync(
+    path.join(OUTPUT_ROOT, "atelier", FIXTURE_SLUG, "1.0.0", "index.html"),
+    "utf8",
+  );
+  assert(
+    historicalDetail.includes('name="robots" content="noindex, follow"'),
+    "Historical release is indexable despite being absent from the sitemap",
+  );
+  /** @brief 历史 PDF 阅读器 HTML / Historical PDF-reader HTML. */
+  const historicalReader = readFileSync(
+    path.join(
+      OUTPUT_ROOT,
+      "atelier",
+      FIXTURE_SLUG,
+      "1.0.0",
+      "read",
+      "paper",
+      "index.html",
+    ),
+    "utf8",
+  );
+  /** @brief 历史源码阅读器 HTML / Historical source-reader HTML. */
+  const historicalSource = readFileSync(
+    path.join(
+      OUTPUT_ROOT,
+      "atelier",
+      FIXTURE_SLUG,
+      "1.0.0",
+      "source",
+      "README",
+      "index.html",
+    ),
+    "utf8",
+  );
+  /** @brief 历史版本详情路径 / Historical release-detail path. */
+  const historicalDetailPath = `/atelier/${FIXTURE_SLUG}/1.0.0/`;
+  assert(
+    historicalReader.includes(`href="${historicalDetailPath}"`),
+    "Historical PDF reader loses its release context",
+  );
+  assert(
+    historicalSource.includes(`href="${historicalDetailPath}"`),
+    "Historical source reader loses its release context",
+  );
 } finally {
   rmSync(CONTENT_FILE, { force: true });
   rmSync(SOURCE_ROOT, { force: true, recursive: true });
   rmSync(ASSET_ROOT, { force: true, recursive: true });
+  rmSync(OUTPUT_ROOT, { force: true, recursive: true });
 }

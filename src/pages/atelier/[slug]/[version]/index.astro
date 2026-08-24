@@ -102,7 +102,7 @@ const structuredData = createAtelierWorkJsonLd({
   documentLocale="en"
   showLanguageSwitch={false}
   canonicalPath={canonicalPath}
-  robots={isLatestRelease ? "noindex, follow" : undefined}
+  robots="noindex, follow"
 >
   <WorkDetail entry={entry} release={displayRelease} sourcePath={sourcePath} sourceArchivePath={sourceArchivePath}>
     <Content />
