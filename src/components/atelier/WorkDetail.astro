@@ -1,6 +1,11 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { getAtelierPath, getLatestRelease } from "../../lib/atelier";
+import { ATELIER_COPY, type AtelierLocale } from "@i18n/atelier";
+import {
+  getAtelierPath,
+  getAtelierText,
+  getLatestRelease,
+} from "../../lib/atelier";
 import FileList from "./FileList.astro";
 
 /** @brief Atelier 条目的发布版本 / Release type inferred from an Atelier entry. */
@@ -8,13 +13,21 @@ type AtelierRelease = CollectionEntry<"atelier">["data"]["releases"][number];
 
 /** @brief 作品详情属性 / Work-detail properties. */
 interface Props {
+  locale: AtelierLocale;
   entry: CollectionEntry<"atelier">;
   release?: AtelierRelease;
   sourcePath?: string;
   sourceArchivePath?: string;
 }
 
-const { entry, release, sourcePath, sourceArchivePath } = Astro.props as Props;
+const { locale, entry, release, sourcePath, sourceArchivePath } =
+  Astro.props as Props;
+/** @brief 当前详情页文案 / Current localized detail-page copy. */
+const copy = ATELIER_COPY[locale];
+/** @brief 当前语言的作品标题 / Localized work title. */
+const title = getAtelierText(entry.data.title, locale);
+/** @brief 当前语言的作品摘要 / Localized work summary. */
+const summary = getAtelierText(entry.data.summary, locale);
 /** @brief 作品的最新发布版本 / Latest release of the work. */
 const latestRelease = getLatestRelease(entry.data.releases);
 /** @brief 当前是否展示最新版本 / Whether the selected release is current. */
@@ -22,13 +35,16 @@ const isLatest = Boolean(
   release && latestRelease && release.version === latestRelease.version,
 );
 /** @brief 作品详情的稳定地址 / Stable work-detail URL. */
-const workPath = getAtelierPath(entry.data.slug);
+const workPath = getAtelierPath(locale, entry.data.slug);
 /** @brief 作品事件日期格式器 / Work timeline date formatter. */
-const dateFormatter = new Intl.DateTimeFormat("en", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
+const dateFormatter = new Intl.DateTimeFormat(
+  locale === "zh" ? "zh-CN" : "en",
+  {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  },
+);
 /** @brief 按发布日期倒序的版本历史 / Release history ordered newest first. */
 const releaseHistory = [...entry.data.releases].sort(
   (left, right) => right.date.getTime() - left.date.getTime(),
@@ -36,9 +52,9 @@ const releaseHistory = [...entry.data.releases].sort(
 ---
 
 <div class="atelier-detail">
-  <nav class="atelier-breadcrumb" aria-label="Breadcrumb">
+  <nav class="atelier-breadcrumb" aria-label={copy.breadcrumb}>
     <ol>
-      <li><a href="/atelier/">Atelier</a></li>
+      <li><a href={`/${locale}/atelier/`}>{copy.atelier}</a></li>
       <li aria-current="page">{entry.data.title}</li>
     </ol>
   </nav>
@@ -49,34 +65,34 @@ const releaseHistory = [...entry.data.releases].sort(
         entry.data.cover ? (
           <img src={entry.data.cover} alt="" decoding="async" />
         ) : (
-          <span aria-hidden="true">{entry.data.title.trim().slice(0, 1).toLocaleUpperCase() || "A"}</span>
+          <span aria-hidden="true">{title.trim().slice(0, 1).toLocaleUpperCase() || "A"}</span>
         )
       }
     </div>
     <div class="atelier-detail__intro">
       <p class="atelier-eyebrow">Klee’s Atelier</p>
-      <h1 id="work-title">{entry.data.title}</h1>
-      <p class="atelier-detail__summary">{entry.data.summary}</p>
+      <h1 id="work-title">{title}</h1>
+      <p class="atelier-detail__summary">{summary}</p>
       <dl class="atelier-detail__facts">
         <div>
-          <dt>Published</dt>
+          <dt>{copy.published}</dt>
           <dd><time datetime={entry.data.published.toISOString()}>{dateFormatter.format(entry.data.published)}</time></dd>
         </div>
         {entry.data.updated && (
           <div>
-            <dt>Updated</dt>
+            <dt>{copy.updated}</dt>
             <dd><time datetime={entry.data.updated.toISOString()}>{dateFormatter.format(entry.data.updated)}</time></dd>
           </div>
         )}
         {latestRelease && (
           <div>
-            <dt>Latest release</dt>
+            <dt>{copy.latestRelease}</dt>
             <dd>v{latestRelease.version}</dd>
           </div>
         )}
       </dl>
       {entry.data.tags.length > 0 && (
-        <ul class="atelier-tags" aria-label="Work tags">
+        <ul class="atelier-tags" aria-label={copy.workTags}>
           {entry.data.tags.map((tag) => <li>{tag}</li>)}
         </ul>
       )}
@@ -86,38 +102,38 @@ const releaseHistory = [...entry.data.releases].sort(
   <div class="atelier-detail__layout">
     <div class="atelier-detail__main">
       <section class="atelier-panel atelier-description" aria-labelledby="about-this-work">
-        <h2 id="about-this-work">About this work</h2>
+        <h2 id="about-this-work">{copy.aboutWork}</h2>
         <div class="atelier-prose"><slot /></div>
       </section>
 
       <section class="atelier-panel" aria-labelledby="files-heading">
         <div class="atelier-section-heading">
           <div>
-            <p class="atelier-eyebrow">Release files</p>
+            <p class="atelier-eyebrow">{copy.releaseFiles}</p>
             <h2 id="files-heading">
-              {release ? `Version ${release.version}` : "No release yet"}
+              {release ? `${locale === "zh" ? "版本" : "Version"} ${release.version}` : copy.noRelease}
             </h2>
           </div>
-          {release && !isLatest && <a href={workPath}>View latest</a>}
+          {release && !isLatest && <a href={workPath}>{copy.viewLatest}</a>}
         </div>
         {release?.notes && <p class="atelier-release-note">{release.notes}</p>}
         {release && sourcePath && (
           <p class="atelier-source-actions">
-            <a class="atelier-button atelier-button--primary" href={sourcePath}>Browse source</a>
-            {sourceArchivePath && <a class="atelier-button" href={sourceArchivePath} download>Download source ZIP</a>}
+            <a class="atelier-button atelier-button--primary" href={sourcePath}>{copy.browseSource}</a>
+            {sourceArchivePath && <a class="atelier-button" href={sourceArchivePath} download>{copy.downloadSourceZip}</a>}
           </p>
         )}
         {release && release.files.length > 0 ? (
-          <FileList slug={entry.data.slug} version={release.version} files={release.files} />
+          <FileList locale={locale} slug={entry.data.slug} version={release.version} files={release.files} />
         ) : (
-          <p class="atelier-inline-empty">No downloadable files are listed for this release.</p>
+          <p class="atelier-inline-empty">{copy.noFiles}</p>
         )}
       </section>
     </div>
 
-    <aside class="atelier-detail__aside" aria-label="Work information">
+    <aside class="atelier-detail__aside" aria-label={copy.workInformation}>
       <section class="atelier-panel atelier-panel--compact">
-        <h2>Version history</h2>
+        <h2>{copy.versionHistory}</h2>
         {entry.data.releases.length > 0 ? (
           <ol class="version-list">
             {releaseHistory.map((item) => {
@@ -131,7 +147,7 @@ const releaseHistory = [...entry.data.releases].sort(
                     ) : (
                       <a href={versionUrl}>v{item.version}</a>
                     )}
-                    {item.version === latestRelease?.version && <span class="version-badge">Latest</span>}
+                    {item.version === latestRelease?.version && <span class="version-badge">{copy.latest}</span>}
                   </div>
                   <time datetime={item.date.toISOString()}>{dateFormatter.format(item.date)}</time>
                   {item.notes && <p>{item.notes}</p>}
@@ -140,27 +156,27 @@ const releaseHistory = [...entry.data.releases].sort(
             })}
           </ol>
         ) : (
-          <p class="atelier-inline-empty">No releases have been published yet.</p>
+          <p class="atelier-inline-empty">{copy.noReleases}</p>
         )}
       </section>
 
       <section class="atelier-panel atelier-panel--compact">
-        <h2>Links &amp; license</h2>
+        <h2>{copy.linksAndLicense}</h2>
         <dl class="atelier-link-list">
           <div>
-            <dt>License</dt>
-            <dd>{entry.data.license ?? "License not specified"}</dd>
+            <dt>{copy.license}</dt>
+            <dd>{entry.data.license ?? copy.licenseNotSpecified}</dd>
           </div>
           {entry.data.repository && (
             <div>
-              <dt>Repository</dt>
-              <dd><a href={entry.data.repository}>View repository</a></dd>
+              <dt>{copy.repository}</dt>
+              <dd><a href={entry.data.repository}>{copy.viewRepository}</a></dd>
             </div>
           )}
           {entry.data.relatedPost && (
             <div>
-              <dt>From the blog</dt>
-              <dd><a href={entry.data.relatedPost}>Read the related post</a></dd>
+              <dt>{copy.fromBlog}</dt>
+              <dd><a href={entry.data.relatedPost}>{copy.readRelatedPost}</a></dd>
             </div>
           )}
         </dl>

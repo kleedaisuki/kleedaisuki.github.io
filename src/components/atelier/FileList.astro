@@ -1,4 +1,5 @@
 ---
+import { ATELIER_COPY, type AtelierLocale } from "@i18n/atelier";
 import {
   formatFileSize,
   getFileCapability,
@@ -20,12 +21,15 @@ interface AtelierFile {
 
 /** @brief 文件列表属性 / File-list properties. */
 interface Props {
+  locale: AtelierLocale;
   slug: string;
   version: string;
   files: AtelierFile[];
 }
 
-const { slug, version, files } = Astro.props as Props;
+const { locale, slug, version, files } = Astro.props as Props;
+/** @brief 当前文件列表文案 / Current localized file-list copy. */
+const copy = ATELIER_COPY[locale];
 
 /** @brief 文件用途分组 / Purpose-oriented file group. */
 interface FileGroup {
@@ -63,10 +67,10 @@ function getGroup(file: AtelierFile): string {
 
 /** @brief 固定顺序的非空文件分组 / Non-empty file groups in stable order. */
 const groups: FileGroup[] = [
-  { id: "documents", label: "Documents", files: [] },
-  { id: "source", label: "Source", files: [] },
-  { id: "data", label: "Data", files: [] },
-  { id: "other", label: "Other downloads", files: [] },
+  { id: "documents", label: copy.documents, files: [] },
+  { id: "source", label: copy.sourceFiles, files: [] },
+  { id: "data", label: copy.data, files: [] },
+  { id: "other", label: copy.otherDownloads, files: [] },
 ];
 
 for (const file of files) {
@@ -93,10 +97,10 @@ for (const file of files) {
                   {file.description && <p class="file-item__description">{file.description}</p>}
                   <dl class="file-item__meta">
                     {file.mediaType && (
-                      <div><dt>Format</dt><dd>{file.mediaType}</dd></div>
+                      <div><dt>{copy.format}</dt><dd>{file.mediaType}</dd></div>
                     )}
                     {file.size !== undefined && (
-                      <div><dt>Size</dt><dd>{formatFileSize(file.size)}</dd></div>
+                      <div><dt>{copy.size}</dt><dd>{formatFileSize(file.size)}</dd></div>
                     )}
                     {file.checksum && (
                       <div class="file-item__checksum">
@@ -107,15 +111,15 @@ for (const file of files) {
                 </div>
                 <div class="file-item__actions">
                   {!isAvailable ? (
-                    <span class="atelier-inline-empty" role="status">File unavailable</span>
+                    <span class="atelier-inline-empty" role="status">{copy.fileUnavailable}</span>
                   ) : isPdf ? (
-                    <a class="atelier-button atelier-button--primary" href={getPdfReaderUrl(slug, version, file.id)}>
-                      Read online
+                    <a class="atelier-button atelier-button--primary" href={getPdfReaderUrl(locale, slug, version, file.id)}>
+                      {copy.readOnline}
                     </a>
                   ) : null}
                   {isAvailable && (
                     <a class="atelier-button" href={downloadUrl} download>
-                      Download
+                      {copy.download}
                     </a>
                   )}
                 </div>

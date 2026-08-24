@@ -1,0 +1,318 @@
+---
+import { getCollection } from "astro:content";
+import WorkCard from "@components/atelier/WorkCard.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import "@styles/atelier.css";
+import { asAtelierLocale, ATELIER_COPY, ATELIER_LOCALES } from "@i18n/atelier";
+import {
+  getAtelierActivityDate,
+  getAtelierPath,
+  getAtelierText,
+  getFileCapability,
+  getLatestRelease,
+  scanSourceFiles,
+} from "../../../lib/atelier";
+import {
+  createAtelierCollectionJsonLd,
+  getAbsoluteUrl,
+} from "../../../lib/seo";
+
+/** @brief 生成两种语言的 Atelier 目录 / Generate the Atelier catalogue for both locales. */
+export function getStaticPaths() {
+  return ATELIER_LOCALES.map((locale) => ({ params: { locale } }));
+}
+
+/** @brief 当前 Atelier 页面语言 / Current Atelier page locale. */
+const locale = asAtelierLocale(Astro.params.locale);
+/** @brief 当前 Atelier 界面文案 / Current localized Atelier copy. */
+const copy = ATELIER_COPY[locale];
+/** @brief 当前 Atelier 目录路径 / Current localized Atelier catalogue path. */
+const cataloguePath = `/${locale}/atelier/`;
+
+/** @brief Atelier 页面说明 / Atelier catalogue description. */
+const description = copy.catalogueDescription;
+/** @brief 公开作品，按最近活动时间排序 / Published works sorted by most recent activity. */
+const works = (await getCollection("atelier", ({ data }) => !data.draft)).sort(
+  (left, right) =>
+    getAtelierActivityDate(
+      right.data.published,
+      right.data.updated,
+      right.data.releases,
+    ).getTime() -
+    getAtelierActivityDate(
+      left.data.published,
+      left.data.updated,
+      left.data.releases,
+    ).getTime(),
+);
+
+/**
+ * @brief 为筛选器推导文件类型标签 / Derive a filter label from a file.
+ * @param file 发布文件 / Release file.
+ * @return 面向读者的类型 / Reader-facing type label.
+ */
+function getTypeLabel(
+  file: (typeof works)[number]["data"]["releases"][number]["files"][number],
+): string {
+  const path = file.path.toLocaleLowerCase();
+  const mediaType = file.mediaType?.toLocaleLowerCase() ?? "";
+  if (
+    mediaType.includes("csv") ||
+    mediaType.includes("json") ||
+    /\.(?:csv|json|parquet|tsv)$/.test(path)
+  ) {
+    return copy.data;
+  }
+  const capability = getFileCapability(file);
+  if (capability.kind === "pdf") return copy.papers;
+  if (capability.kind === "source") return copy.source;
+  if (capability.kind === "archive") return copy.archives;
+  return copy.downloads;
+}
+
+/** @brief 每项作品的目录展示模型 / Catalogue presentation model for each work. */
+const catalogueWorks = await Promise.all(
+  works.map(async (work) => {
+    const latest = getLatestRelease(work.data.releases);
+    const types = new Set(latest?.files.map(getTypeLabel) ?? []);
+    if (
+      latest &&
+      (await scanSourceFiles(work.data.slug, latest.version)).length > 0
+    ) {
+      types.add(copy.source);
+    }
+    return { work, latest, types: [...types] };
+  }),
+);
+/** @brief 动态文件类型筛选项 / Dynamic file-type filters. */
+const typeFilters = [
+  ...new Set(catalogueWorks.flatMap(({ types }) => types)),
+].sort();
+/** @brief 动态主题标签筛选项 / Dynamic topical-tag filters. */
+const tagFilters = [...new Set(works.flatMap((work) => work.data.tags))].sort(
+  (left, right) => left.localeCompare(right, "en"),
+);
+/** @brief Atelier 目录结构化数据 / Structured data for the Atelier catalogue. */
+const structuredData = createAtelierCollectionJsonLd({
+  url: getAbsoluteUrl(cataloguePath),
+  name: "Klee’s Atelier",
+  description,
+  items: works.map((work) => ({
+    url: getAbsoluteUrl(getAtelierPath(locale, work.data.slug)),
+    name: getAtelierText(work.data.title, locale),
+    description: getAtelierText(work.data.summary, locale),
+  })),
+});
+---
+
+<BaseLayout
+  pageTitle="Klee’s Atelier | kleedaisuki"
+  description={description}
+  structuredData={structuredData}
+  documentLocale={locale}
+>
+  <div
+    class="atelier-catalogue"
+    data-atelier-catalogue
+    data-showing-all={locale === "zh" ? "共显示 {count} 项作品。" : "Showing all {count} {noun}."}
+    data-showing-some={locale === "zh" ? "显示 {visible}/{total} 项作品。" : "Showing {visible} of {total} works."}
+  >
+    <header class="atelier-hero">
+      <p class="atelier-eyebrow">{copy.selectedWorks}</p>
+      <h1>Klee’s Atelier</h1>
+      <p class="atelier-hero__tagline">{copy.tagline}</p>
+      <p class="atelier-hero__description">{copy.heroDescription}</p>
+    </header>
+
+    {
+      works.length > 0 ? (
+        <>
+          {(typeFilters.length > 0 || tagFilters.length > 0) && (
+            <nav class="atelier-filters" aria-label={copy.filterWorks}>
+              {typeFilters.length > 0 && (
+                <div class="atelier-filter-group" data-filter-group="type">
+                  <span class="atelier-filter-group__label">{copy.type}</span>
+                  <div class="atelier-filter-group__options">
+                    <a href={cataloguePath} data-filter-value="" aria-current="true">{copy.allTypes}</a>
+                    {typeFilters.map((type) => (
+                      <a href={`?type=${encodeURIComponent(type.toLocaleLowerCase())}`} data-filter-value={type.toLocaleLowerCase()}>
+                        {type}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {tagFilters.length > 0 && (
+                <div class="atelier-filter-group" data-filter-group="tag">
+                  <span class="atelier-filter-group__label">{copy.tag}</span>
+                  <div class="atelier-filter-group__options">
+                    <a href={cataloguePath} data-filter-value="" aria-current="true">{copy.allTags}</a>
+                    {tagFilters.map((tag) => (
+                      <a href={`?tag=${encodeURIComponent(tag.toLocaleLowerCase())}`} data-filter-value={tag.toLocaleLowerCase()}>
+                        {tag}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </nav>
+          )}
+
+          <p class="atelier-results-status" role="status" aria-live="polite" data-results-status>
+            {locale === "zh" ? `共显示 ${works.length} 项作品。` : `Showing all ${works.length} ${works.length === 1 ? "work" : "works"}.`}
+          </p>
+          <div class="atelier-grid" data-work-grid>
+            {catalogueWorks.map(({ work, latest, types }) => (
+              <WorkCard
+                slug={work.data.slug}
+                locale={locale}
+                title={getAtelierText(work.data.title, locale)}
+                summary={getAtelierText(work.data.summary, locale)}
+                activityDate={getAtelierActivityDate(
+                  work.data.published,
+                  work.data.updated,
+                  work.data.releases,
+                )}
+                cover={work.data.cover}
+                version={latest?.version}
+                tags={work.data.tags}
+                types={types}
+              />
+            ))}
+          </div>
+          <section class="atelier-no-results" data-no-results hidden>
+            <span class="atelier-empty__mark" aria-hidden="true">✦</span>
+            <h2>{copy.noMatch}</h2>
+            <p>{copy.tryAnother}</p>
+            <a class="atelier-button" href={cataloguePath} data-clear-filters>{copy.clearFilters}</a>
+          </section>
+        </>
+      ) : (
+        <section class="atelier-empty">
+          <span class="atelier-empty__mark" aria-hidden="true">✦</span>
+          <h2>{copy.emptyTitle}</h2>
+          <p>{copy.emptyBody}</p>
+          <a class="atelier-button atelier-button--primary" href={`/${locale}/blog/`}>{copy.visitBlog}</a>
+        </section>
+      )
+    }
+  </div>
+
+  <script>
+    /** @brief 可由 URL 恢复的目录筛选状态 / Catalogue filter state restorable from the URL. */
+    interface FilterState {
+      type: string;
+      tag: string;
+    }
+
+    /** @brief Atelier 目录根节点 / Atelier catalogue root. */
+    const catalogue = document.querySelector<HTMLElement>("[data-atelier-catalogue]");
+
+    if (catalogue) {
+      catalogue.classList.add("atelier-catalogue--enhanced");
+
+      /** @brief 作品卡片集合 / Work-card collection. */
+      const cards = [...catalogue.querySelectorAll<HTMLElement>("[data-work-card]")];
+      /** @brief 无匹配结果区域 / No-match result panel. */
+      const noResults = catalogue.querySelector<HTMLElement>("[data-no-results]");
+      /** @brief 结果数量播报区域 / Result-count live region. */
+      const status = catalogue.querySelector<HTMLElement>("[data-results-status]");
+
+      /**
+       * @brief 从地址读取当前筛选 / Read the current filters from the address.
+       * @return 规范化筛选状态 / Normalized filter state.
+       */
+      const readState = (): FilterState => {
+        const params = new URLSearchParams(window.location.search);
+        return {
+          type: params.get("type")?.toLocaleLowerCase() ?? "",
+          tag: params.get("tag")?.toLocaleLowerCase() ?? "",
+        };
+      };
+
+      /**
+       * @brief 解析卡片的 JSON 数据列表 / Parse a card's JSON data list.
+       * @param card 作品卡片 / Work card.
+       * @param name data 属性名 / Data attribute name.
+       * @return 规范化字符串列表 / Normalized string list.
+       */
+      const readValues = (card: HTMLElement, name: "types" | "tags"): string[] => {
+        try {
+          return JSON.parse(card.dataset[name] ?? "[]");
+        } catch {
+          return [];
+        }
+      };
+
+      /**
+       * @brief 应用筛选并同步控件状态 / Apply filters and synchronize controls.
+       * @param state 筛选状态 / Filter state.
+       */
+      const applyFilters = (state: FilterState): void => {
+        let visibleCount = 0;
+        for (const card of cards) {
+          const typeMatch = !state.type || readValues(card, "types").includes(state.type);
+          const tagMatch = !state.tag || readValues(card, "tags").includes(state.tag);
+          card.hidden = !(typeMatch && tagMatch);
+          if (!card.hidden) visibleCount += 1;
+        }
+
+        for (const group of catalogue.querySelectorAll<HTMLElement>("[data-filter-group]")) {
+          const key = group.dataset.filterGroup as keyof FilterState;
+          for (const link of group.querySelectorAll<HTMLAnchorElement>("[data-filter-value]")) {
+            if ((link.dataset.filterValue ?? "") === state[key]) {
+              link.setAttribute("aria-current", "true");
+            } else {
+              link.removeAttribute("aria-current");
+            }
+          }
+        }
+
+        if (noResults) noResults.hidden = visibleCount !== 0;
+        if (status) {
+          const showingAll = catalogue.dataset.showingAll ?? "Showing all {count} {noun}.";
+          const showingSome = catalogue.dataset.showingSome ?? "Showing {visible} of {total} works.";
+          status.textContent = visibleCount === cards.length
+            ? showingAll
+                .replace("{count}", String(visibleCount))
+                .replace("{noun}", visibleCount === 1 ? "work" : "works")
+            : showingSome
+                .replace("{visible}", String(visibleCount))
+                .replace("{total}", String(cards.length));
+        }
+      };
+
+      /**
+       * @brief 写入可分享的筛选地址 / Write a shareable filter URL.
+       * @param state 筛选状态 / Filter state.
+       */
+      const writeState = (state: FilterState): void => {
+        const params = new URLSearchParams();
+        if (state.type) params.set("type", state.type);
+        if (state.tag) params.set("tag", state.tag);
+        const query = params.toString();
+        history.pushState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+        applyFilters(state);
+      };
+
+      for (const group of catalogue.querySelectorAll<HTMLElement>("[data-filter-group]")) {
+        const key = group.dataset.filterGroup as keyof FilterState;
+        group.addEventListener("click", (event) => {
+          const link = (event.target as Element).closest<HTMLAnchorElement>("[data-filter-value]");
+          if (!link) return;
+          event.preventDefault();
+          const state = readState();
+          state[key] = link.dataset.filterValue ?? "";
+          writeState(state);
+        });
+      }
+
+      catalogue.querySelector("[data-clear-filters]")?.addEventListener("click", (event) => {
+        event.preventDefault();
+        writeState({ type: "", tag: "" });
+      });
+      window.addEventListener("popstate", () => applyFilters(readState()));
+      applyFilters(readState());
+    }
+  </script>
+</BaseLayout>

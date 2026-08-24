@@ -3,13 +3,19 @@ import { getCollection } from "astro:content";
 import PdfReader from "@components/atelier/PdfReader.astro";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import {
+  ATELIER_COPY,
+  ATELIER_LOCALES,
+  type AtelierLocale,
+} from "@i18n/atelier";
+import {
   getAtelierPath,
   getAtelierReleasePath,
   enrichAtelierFile,
   getFileCapability,
+  getAtelierText,
   getLatestRelease,
   getReleaseFileUrl,
-} from "../../../../../lib/atelier";
+} from "../../../../../../lib/atelier";
 
 /** @brief 阅读器静态路由属性 (reader static route properties). */
 interface Props {
@@ -18,6 +24,7 @@ interface Props {
   pdfUrl: string;
   downloadName: string;
   backUrl: string;
+  locale: AtelierLocale;
 }
 
 /** @brief 为全部已发布 PDF 生成稳定阅读路由 (Generate stable reader routes for every published PDF).
@@ -42,38 +49,43 @@ export async function getStaticPaths() {
         file,
       );
       if (enrichedFile.available === false) return undefined;
-      return {
+      return ATELIER_LOCALES.map((locale) => ({
         params: {
+          locale,
           slug: work.data.slug,
           version: release.version,
           asset: file.id,
         },
         props: {
-          title: work.data.title,
+          title: getAtelierText(work.data.title, locale),
           version: release.version,
           pdfUrl: getReleaseFileUrl(work.data.slug, release.version, file),
           downloadName: file.path.split("/").at(-1) ?? `${file.id}.pdf`,
           backUrl:
             release.version === getLatestRelease(work.data.releases)?.version
-              ? getAtelierPath(work.data.slug)
-              : getAtelierReleasePath(work.data.slug, release.version),
+              ? getAtelierPath(locale, work.data.slug)
+              : getAtelierReleasePath(locale, work.data.slug, release.version),
+          locale,
         } satisfies Props,
-      };
+      }));
     }),
   );
-  return routes.filter((route) => route !== undefined);
+  return routes.flatMap((route) => route ?? []);
 }
 
-const { title, version, pdfUrl, downloadName, backUrl } = Astro.props;
+const { title, version, pdfUrl, downloadName, backUrl, locale } =
+  Astro.props as Props;
+/** @brief 当前阅读器文案 / Current localized reader copy. */
+const copy = ATELIER_COPY[locale];
 ---
 
 <BaseLayout
-  pageTitle={`${title} — PDF Reader`}
-  description={`Read ${title}, release ${version}, online.`}
+  pageTitle={`${title} — ${copy.pdfReader}`}
+  description={locale === "zh"
+    ? `在线阅读 ${title}，版本 ${version}。`
+    : `Read ${title}, release ${version}, online.`}
   robots="noindex, follow"
-  standalone
-  documentLocale="en"
-  showLanguageSwitch={false}
+  documentLocale={locale}
 >
   <PdfReader
     pdfUrl={pdfUrl}
@@ -81,5 +93,6 @@ const { title, version, pdfUrl, downloadName, backUrl } = Astro.props;
     title={title}
     version={version}
     backUrl={backUrl}
+    locale={locale}
   />
 </BaseLayout>

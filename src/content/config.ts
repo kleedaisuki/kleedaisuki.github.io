@@ -28,6 +28,12 @@ const atelierFile = z.object({
   checksum: z.string().optional(),
 });
 
+/** @brief 可共享实体的本地化文本 / Localized text for a shared artifact entity. */
+const atelierText = z.union([
+  z.string(),
+  z.object({ zh: z.string(), en: z.string() }),
+]);
+
 /** @brief Atelier 发布版本模式 / Atelier release schema. */
 const atelierRelease = z.object({
   version: z.string(),
@@ -36,14 +42,14 @@ const atelierRelease = z.object({
   files: z.array(atelierFile).default([]),
 });
 
-/** @brief 无语言分区的 Atelier 内容集合 / Locale-independent Atelier collection. */
+/** @brief 共享制品实体的 Atelier 内容集合 / Atelier collection of shared artifact entities. */
 const atelier = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/atelier" }),
   schema: z.object({
     draft: z.boolean().default(false),
     slug: z.string(),
-    title: z.string(),
-    summary: z.string(),
+    title: atelierText,
+    summary: atelierText,
     published: z.coerce.date(),
     updated: z.coerce.date().optional(),
     tags: z.array(z.string()).default([]),

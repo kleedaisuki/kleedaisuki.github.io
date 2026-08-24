@@ -13,12 +13,11 @@ const locale = Astro.props.locale ?? asLocale(Astro.currentLocale);
 /** @brief 当前路径的规范化表示 (normalized current pathname)。 */
 const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
 
-/** @brief 当前页面是否属于无语言分区的 Atelier (whether this page belongs to locale-independent Atelier)。 */
-const isAtelier =
-  currentPath === "/atelier" || currentPath.startsWith("/atelier/");
+/** @brief 当前页面是否属于本地化 Atelier (whether this page belongs to localized Atelier)。 */
+const isAtelier = /^\/(?:zh|en)\/atelier(?:\/|$)/.test(currentPath);
 
 /** @brief 站内链接的服务端回退语言 (SSR fallback locale for localized site links)。 */
-const linkLocale: Locale = isAtelier ? "zh" : locale;
+const linkLocale: Locale = locale;
 
 /** @brief 站内导航链接 (site navigation links)。 */
 const links = [
@@ -29,7 +28,11 @@ const links = [
     section: "about",
   },
   { href: `/${linkLocale}/blog/`, label: t("blog", locale), section: "blog" },
-  { href: "/atelier/", label: t("atelier", locale), section: "atelier" },
+  {
+    href: `/${linkLocale}/atelier/`,
+    label: t("atelier", locale),
+    section: "atelier",
+  },
 ];
 
 /**
@@ -72,11 +75,6 @@ const themeCopy =
     links.map(({ href, label, section }) => (
       <a
         href={href}
-        data-localized-path={
-          isAtelier && href !== "/atelier/"
-            ? href.replace(/^\/(?:zh|en)/, "")
-            : undefined
-        }
         aria-current={isCurrentPage(href, section) ? "page" : undefined}
       >
         {label}
@@ -132,21 +130,6 @@ const themeCopy =
     try {
       if (pageLocale === "zh" || pageLocale === "en") {
         localStorage.setItem(localeStorageKey, pageLocale);
-      } else if (location.pathname === "/atelier/" || location.pathname.startsWith("/atelier/")) {
-        const returnLocale = localStorage.getItem(localeStorageKey) === "en" ? "en" : "zh";
-        /** @brief 恢复全部本地化返回链接 / Restore every localized return link. */
-        const localizeReturnLinks = () => {
-          for (const link of document.querySelectorAll("[data-localized-path]")) {
-            const localizedPath = link.getAttribute("data-localized-path");
-            if (link instanceof HTMLAnchorElement && localizedPath) {
-              link.href = `/${returnLocale}${localizedPath}`;
-            }
-          }
-        };
-        localizeReturnLinks();
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", localizeReturnLinks, { once: true });
-        }
       }
     } catch {
       // 存储不可用时保留服务端渲染的中文返回路径 (keep the SSR Chinese return path when storage is unavailable)。

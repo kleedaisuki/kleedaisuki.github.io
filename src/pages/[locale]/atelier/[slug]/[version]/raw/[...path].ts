@@ -1,8 +1,9 @@
 import { getCollection } from "astro:content";
+import { ATELIER_LOCALES } from "@i18n/atelier";
 import {
   type AtelierSourceFile,
   scanSourceFiles,
-} from "../../../../../lib/atelier";
+} from "../../../../../../lib/atelier";
 
 /** @brief 原始源码端点属性 (raw source endpoint props) / Build-time properties for one raw source response. */
 interface Props {
@@ -22,14 +23,17 @@ export async function getStaticPaths() {
       work.data.releases.map(async (release) => {
         /** @brief 当前版本扫描结果 (release scan result) / Files in the current release. */
         const files = await scanSourceFiles(work.data.slug, release.version);
-        return files.map((file) => ({
-          params: {
-            slug: work.data.slug,
-            version: release.version,
-            path: file.path,
-          },
-          props: { file },
-        }));
+        return ATELIER_LOCALES.flatMap((locale) =>
+          files.map((file) => ({
+            params: {
+              locale,
+              slug: work.data.slug,
+              version: release.version,
+              path: file.path,
+            },
+            props: { file },
+          })),
+        );
       }),
     ),
   );

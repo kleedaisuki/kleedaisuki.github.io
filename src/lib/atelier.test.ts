@@ -12,6 +12,7 @@ import {
   getAtelierActivityDate,
   getAtelierPath,
   getAtelierReleasePath,
+  getAtelierText,
   getFileCapability,
   getLatestRelease,
   getPdfReaderUrl,
@@ -36,6 +37,11 @@ afterEach(async () => {
 });
 
 describe("Atelier release helpers", () => {
+  it("resolves localized metadata while preserving scalar compatibility", () => {
+    expect(getAtelierText("Shared", "zh")).toBe("Shared");
+    expect(getAtelierText({ zh: "中文", en: "English" }, "en")).toBe("English");
+  });
+
   it("selects the newest release by date without changing input order", () => {
     const releases: AtelierRelease[] = [
       { version: "2.0.0", date: new Date("2026-01-01"), files: [] },
@@ -105,9 +111,11 @@ describe("Atelier release helpers", () => {
 
 describe("Atelier URLs", () => {
   it("encodes slugs, versions, identifiers, and nested source paths", () => {
-    expect(getAtelierPath("lambda notes")).toBe("/atelier/lambda%20notes/");
-    expect(getAtelierReleasePath("lambda notes", "1.0 rc")).toBe(
-      "/atelier/lambda%20notes/1.0%20rc/",
+    expect(getAtelierPath("zh", "lambda notes")).toBe(
+      "/zh/atelier/lambda%20notes/",
+    );
+    expect(getAtelierReleasePath("en", "lambda notes", "1.0 rc")).toBe(
+      "/en/atelier/lambda%20notes/1.0%20rc/",
     );
     expect(
       getReleaseFileUrl("lambda notes", "1.0 rc", {
@@ -116,21 +124,23 @@ describe("Atelier URLs", () => {
         path: "papers/main zh.pdf",
       }),
     ).toBe("/atelier-assets/lambda%20notes/1.0%20rc/papers/main%20zh.pdf");
-    expect(getPdfReaderUrl("demo", "v1", "paper zh")).toBe(
-      "/atelier/demo/v1/read/paper%20zh/",
+    expect(getPdfReaderUrl("zh", "demo", "v1", "paper zh")).toBe(
+      "/zh/atelier/demo/v1/read/paper%20zh/",
     );
-    expect(getSourceBrowserUrl("demo", "v1")).toBe("/atelier/demo/v1/source/");
-    expect(getSourceBrowserUrl("demo", "v1", "src/main file.ts")).toBe(
-      "/atelier/demo/v1/source/src/main%20file.ts/",
+    expect(getSourceBrowserUrl("en", "demo", "v1")).toBe(
+      "/en/atelier/demo/v1/source/",
     );
-    expect(getSourceRawUrl("demo", "v1", "src/main.ts")).toBe(
-      "/atelier/demo/v1/raw/src/main.ts",
+    expect(getSourceBrowserUrl("en", "demo", "v1", "src/main file.ts")).toBe(
+      "/en/atelier/demo/v1/source/src/main%20file.ts/",
     );
-    expect(getSourceDownloadUrl("demo", "v1", "src/main.ts")).toBe(
-      "/atelier/demo/v1/raw/src/main.ts",
+    expect(getSourceRawUrl("zh", "demo", "v1", "src/main.ts")).toBe(
+      "/zh/atelier/demo/v1/raw/src/main.ts",
     );
-    expect(getSourceArchiveUrl("demo", "v1")).toBe(
-      "/atelier/demo/v1/source.zip",
+    expect(getSourceDownloadUrl("zh", "demo", "v1", "src/main.ts")).toBe(
+      "/zh/atelier/demo/v1/raw/src/main.ts",
+    );
+    expect(getSourceArchiveUrl("en", "demo", "v1")).toBe(
+      "/en/atelier/demo/v1/source.zip",
     );
   });
 

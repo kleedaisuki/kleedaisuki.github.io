@@ -1,4 +1,5 @@
 ---
+import { ATELIER_COPY, type AtelierLocale } from "@i18n/atelier";
 /** @brief 源码目录树节点 (source tree node) / Node in the source directory tree. */
 export interface SourceTreeNode {
   /** @brief 显示名称 (display name) / Human-readable node name. */
@@ -17,6 +18,7 @@ interface Props {
   activePath?: string;
   sourceBase: string;
   nested?: boolean;
+  locale: AtelierLocale;
 }
 
 /**
@@ -28,7 +30,15 @@ const encodeSourcePath = (path: string): string =>
   path.split("/").map(encodeURIComponent).join("/");
 
 /** @brief 当前目录树属性 (current tree properties) / Properties for this recursive render pass. */
-const { nodes, activePath, sourceBase, nested = false } = Astro.props as Props;
+const {
+  nodes,
+  activePath,
+  sourceBase,
+  locale,
+  nested = false,
+} = Astro.props as Props;
+/** @brief 当前源码树文案 / Current localized source-tree copy. */
+const copy = ATELIER_COPY[locale];
 
 /**
  * @brief 判断目录是否包含当前文件 (active-descendant test) / Return whether a directory contains the active file.
@@ -42,8 +52,8 @@ const containsActiveFile = (node: SourceTreeNode): boolean =>
 {
   !nested ? (
     <details class="source-tree-shell" open>
-      <summary>Source files</summary>
-      <nav aria-label="Source files" class="source-tree-panel">
+      <summary>{copy.sourceFiles}</summary>
+      <nav aria-label={copy.sourceFiles} class="source-tree-panel">
         <ul class="source-tree" role="list">
           {
             nodes.map((node) =>
@@ -58,6 +68,7 @@ const containsActiveFile = (node: SourceTreeNode): boolean =>
                       nodes={node.children ?? []}
                       activePath={activePath}
                       sourceBase={sourceBase}
+                      locale={locale}
                       nested
                     />
                   </details>
@@ -93,6 +104,7 @@ const containsActiveFile = (node: SourceTreeNode): boolean =>
                   nodes={node.children ?? []}
                   activePath={activePath}
                   sourceBase={sourceBase}
+                  locale={locale}
                   nested
                 />
               </details>

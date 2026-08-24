@@ -5,16 +5,25 @@ import WorkDetail from "@components/atelier/WorkDetail.astro";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import "@styles/atelier.css";
 import {
+  asAtelierLocale,
+  ATELIER_LOCALES,
+  type AtelierLocale,
+} from "@i18n/atelier";
+import {
   type AtelierRelease,
   enrichAtelierFile,
   getAtelierPath,
   getAtelierReleasePath,
+  getAtelierText,
   getLatestRelease,
   getSourceArchiveUrl,
   getSourceBrowserUrl,
   scanSourceFiles,
-} from "../../../../lib/atelier";
-import { createAtelierWorkJsonLd, getAbsoluteUrl } from "../../../../lib/seo";
+} from "../../../../../lib/atelier";
+import {
+  createAtelierWorkJsonLd,
+  getAbsoluteUrl,
+} from "../../../../../lib/seo";
 
 /**
  * @brief 生成全部公开历史版本页 / Generate every published version page.
@@ -22,19 +31,28 @@ import { createAtelierWorkJsonLd, getAbsoluteUrl } from "../../../../lib/seo";
  */
 export async function getStaticPaths() {
   const works = await getCollection("atelier", ({ data }) => !data.draft);
-  return works.flatMap((entry) =>
-    entry.data.releases.map((release) => ({
-      params: { slug: entry.data.slug, version: release.version },
-      props: { entry, release },
-    })),
+  return ATELIER_LOCALES.flatMap((locale) =>
+    works.flatMap((entry) =>
+      entry.data.releases.map((release) => ({
+        params: { locale, slug: entry.data.slug, version: release.version },
+        props: { entry, release, locale },
+      })),
+    ),
   );
 }
 
 /** @brief 当前历史版本页属性 / Current historical-release page props. */
-const { entry, release } = Astro.props as {
+const {
+  entry,
+  release,
+  locale: localeProp,
+} = Astro.props as {
   entry: CollectionEntry<"atelier">;
   release: AtelierRelease;
+  locale: AtelierLocale;
 };
+/** @brief 当前版本页语言 / Current release-page locale. */
+const locale = asAtelierLocale(localeProp);
 /** @brief 以真实静态文件信息补全历史版本 / Enrich the historical release with real static-file metadata. */
 const displayRelease = {
   ...release,
@@ -50,6 +68,7 @@ const sourceFiles = await scanSourceFiles(entry.data.slug, release.version);
 const sourcePath =
   sourceFiles.length > 0
     ? getSourceBrowserUrl(
+        locale,
         entry.data.slug,
         release.version,
         (
@@ -62,25 +81,29 @@ const sourcePath =
 /** @brief 当前历史版本源码 ZIP 地址 / Source ZIP URL for the selected release. */
 const sourceArchivePath =
   sourceFiles.length > 0
-    ? getSourceArchiveUrl(entry.data.slug, release.version)
+    ? getSourceArchiveUrl(locale, entry.data.slug, release.version)
     : undefined;
 /** @brief Markdown 作品说明 / Rendered Markdown work description. */
 const { Content } = await render(entry);
 /** @brief 历史版本稳定路径 / Stable historical-release path. */
-const releasePath = getAtelierReleasePath(entry.data.slug, release.version);
+const releasePath = getAtelierReleasePath(
+  locale,
+  entry.data.slug,
+  release.version,
+);
 /** @brief 当前页是否重复呈现最新版 / Whether this page duplicates the latest stable detail. */
 const isLatestRelease =
   release.version === getLatestRelease(entry.data.releases)?.version;
 /** @brief 当前版本页规范路径 / Canonical path for this release page. */
 const canonicalPath = isLatestRelease
-  ? getAtelierPath(entry.data.slug)
+  ? getAtelierPath(locale, entry.data.slug)
   : releasePath;
 /** @brief 当前版本结构化数据 / Structured data for the selected release. */
 const structuredData = createAtelierWorkJsonLd({
   url: getAbsoluteUrl(canonicalPath),
-  atelierUrl: getAbsoluteUrl("/atelier/"),
-  name: `${entry.data.title} — ${release.version}`,
-  description: entry.data.summary,
+  atelierUrl: getAbsoluteUrl(`/${locale}/atelier/`),
+  name: `${getAtelierText(entry.data.title, locale)} — ${release.version}`,
+  description: getAtelierText(entry.data.summary, locale),
   publishedAt: entry.data.published,
   modifiedAt: release.date,
   tags: entry.data.tags,
@@ -91,20 +114,18 @@ const structuredData = createAtelierWorkJsonLd({
 ---
 
 <BaseLayout
-  pageTitle={`${entry.data.title} ${release.version} | Klee’s Atelier`}
-  description={`${entry.data.summary} Version ${release.version}.`}
+  pageTitle={`${getAtelierText(entry.data.title, locale)} ${release.version} | Klee’s Atelier`}
+  description={`${getAtelierText(entry.data.summary, locale)} ${locale === "zh" ? "版本" : "Version"} ${release.version}.`}
   pageType="article"
   publishedTime={entry.data.published.toISOString()}
   modifiedTime={release.date.toISOString()}
   tags={entry.data.tags}
   structuredData={structuredData}
-  standalone
-  documentLocale="en"
-  showLanguageSwitch={false}
+  documentLocale={locale}
   canonicalPath={canonicalPath}
   robots="noindex, follow"
 >
-  <WorkDetail entry={entry} release={displayRelease} sourcePath={sourcePath} sourceArchivePath={sourceArchivePath}>
+  <WorkDetail locale={locale} entry={entry} release={displayRelease} sourcePath={sourcePath} sourceArchivePath={sourceArchivePath}>
     <Content />
   </WorkDetail>
 </BaseLayout>

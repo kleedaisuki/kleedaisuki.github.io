@@ -5,14 +5,20 @@ import WorkDetail from "@components/atelier/WorkDetail.astro";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import "@styles/atelier.css";
 import {
+  asAtelierLocale,
+  ATELIER_LOCALES,
+  type AtelierLocale,
+} from "@i18n/atelier";
+import {
   enrichAtelierFile,
   getAtelierPath,
+  getAtelierText,
   getLatestRelease,
   getSourceArchiveUrl,
   getSourceBrowserUrl,
   scanSourceFiles,
-} from "../../../lib/atelier";
-import { createAtelierWorkJsonLd, getAbsoluteUrl } from "../../../lib/seo";
+} from "../../../../lib/atelier";
+import { createAtelierWorkJsonLd, getAbsoluteUrl } from "../../../../lib/seo";
 
 /**
  * @brief 生成全部公开作品详情页 / Generate every published work detail page.
@@ -20,14 +26,21 @@ import { createAtelierWorkJsonLd, getAbsoluteUrl } from "../../../lib/seo";
  */
 export async function getStaticPaths() {
   const works = await getCollection("atelier", ({ data }) => !data.draft);
-  return works.map((entry) => ({
-    params: { slug: entry.data.slug },
-    props: { entry },
-  }));
+  return ATELIER_LOCALES.flatMap((locale) =>
+    works.map((entry) => ({
+      params: { locale, slug: entry.data.slug },
+      props: { entry, locale },
+    })),
+  );
 }
 
 /** @brief 当前作品条目 / Current work entry. */
-const { entry } = Astro.props as { entry: CollectionEntry<"atelier"> };
+const { entry, locale: localeProp } = Astro.props as {
+  entry: CollectionEntry<"atelier">;
+  locale: AtelierLocale;
+};
+/** @brief 当前详情页语言 / Current detail-page locale. */
+const locale = asAtelierLocale(localeProp);
 /** @brief 当前作品的最新版本 / Latest release for the current work. */
 const release = getLatestRelease(entry.data.releases);
 /** @brief 以真实静态文件信息补全当前版本 / Enrich the current release with real static-file metadata. */
@@ -49,6 +62,7 @@ const sourceFiles = release
 const sourcePath =
   release && sourceFiles.length > 0
     ? getSourceBrowserUrl(
+        locale,
         entry.data.slug,
         release.version,
         (
@@ -61,16 +75,16 @@ const sourcePath =
 /** @brief 当前版本源码 ZIP 地址 / Source ZIP URL for the current release. */
 const sourceArchivePath =
   release && sourceFiles.length > 0
-    ? getSourceArchiveUrl(entry.data.slug, release.version)
+    ? getSourceArchiveUrl(locale, entry.data.slug, release.version)
     : undefined;
 /** @brief Markdown 作品说明 / Rendered Markdown work description. */
 const { Content } = await render(entry);
 /** @brief 当前作品结构化数据 / Structured data for the current work. */
 const structuredData = createAtelierWorkJsonLd({
-  url: getAbsoluteUrl(getAtelierPath(entry.data.slug)),
-  atelierUrl: getAbsoluteUrl("/atelier/"),
-  name: entry.data.title,
-  description: entry.data.summary,
+  url: getAbsoluteUrl(getAtelierPath(locale, entry.data.slug)),
+  atelierUrl: getAbsoluteUrl(`/${locale}/atelier/`),
+  name: getAtelierText(entry.data.title, locale),
+  description: getAtelierText(entry.data.summary, locale),
   publishedAt: entry.data.published,
   modifiedAt: entry.data.updated,
   tags: entry.data.tags,
@@ -81,18 +95,16 @@ const structuredData = createAtelierWorkJsonLd({
 ---
 
 <BaseLayout
-  pageTitle={`${entry.data.title} | Klee’s Atelier`}
-  description={entry.data.summary}
+  pageTitle={`${getAtelierText(entry.data.title, locale)} | Klee’s Atelier`}
+  description={getAtelierText(entry.data.summary, locale)}
   pageType="article"
   publishedTime={entry.data.published.toISOString()}
   modifiedTime={entry.data.updated?.toISOString()}
   tags={entry.data.tags}
   structuredData={structuredData}
-  standalone
-  documentLocale="en"
-  showLanguageSwitch={false}
+  documentLocale={locale}
 >
-  <WorkDetail entry={entry} release={displayRelease} sourcePath={sourcePath} sourceArchivePath={sourceArchivePath}>
+  <WorkDetail locale={locale} entry={entry} release={displayRelease} sourcePath={sourcePath} sourceArchivePath={sourceArchivePath}>
     <Content />
   </WorkDetail>
 </BaseLayout>

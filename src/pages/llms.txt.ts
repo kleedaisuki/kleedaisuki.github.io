@@ -1,5 +1,6 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import type { BlogLocale } from "../lib/localized-blog";
+import { getAtelierPath, getAtelierText } from "../lib/atelier";
 import { getAbsoluteUrl, getPostPath, SITE } from "../lib/seo";
 
 /** @brief LLM 导航文档中的语言分组 (LLM navigation locale) / Locale metadata for the LLM navigation document. */
@@ -59,11 +60,15 @@ function formatPostEntry(post: CollectionEntry<"blog">): string {
 /**
  * @brief 格式化一条 Atelier 索引项 (Atelier index entry) / Format one Atelier work entry.
  * @param work 已发布的 Atelier 作品 / Published Atelier work.
+ * @param locale 目标语言 / Target locale.
  * @return Markdown 格式的规范详情页链接 / Markdown canonical detail-page link.
  */
-function formatAtelierEntry(work: CollectionEntry<"atelier">): string {
-  const url = getAbsoluteUrl(`/atelier/${encodeURIComponent(work.data.slug)}/`);
-  return `- [${escapeMarkdownLinkLabel(work.data.title)}](${url}): ${normalizeSummary(work.data.summary)}`;
+function formatAtelierEntry(
+  work: CollectionEntry<"atelier">,
+  locale: BlogLocale,
+): string {
+  const url = getAbsoluteUrl(getAtelierPath(locale, work.data.slug));
+  return `- [${escapeMarkdownLinkLabel(getAtelierText(work.data.title, locale))}](${url}): ${normalizeSummary(getAtelierText(work.data.summary, locale))}`;
 }
 
 /**
@@ -84,26 +89,28 @@ export async function GET(): Promise<Response> {
     "## Start here",
     `- [Chinese home](${getAbsoluteUrl("/zh/")})`,
     `- [English home](${getAbsoluteUrl("/en/")})`,
-    `- [Atelier](${getAbsoluteUrl("/atelier/")}): Locale-independent documents, source code, and other published works.`,
+    `- [Chinese Atelier](${getAbsoluteUrl("/zh/atelier/")}): Shared artifacts with a Chinese interface.`,
+    `- [English Atelier](${getAbsoluteUrl("/en/atelier/")}): The same artifacts with an English interface.`,
     `- [Author on GitHub](${SITE.authorUrl})`,
     `- [All-language RSS feed](${getAbsoluteUrl("/rss.xml")})`,
     `- [XML sitemap](${getAbsoluteUrl("/sitemap-index.xml")})`,
     "",
   ];
 
-  lines.push("## Atelier works (locale-independent canonical HTML)");
-  lines.push(
-    `- [Atelier index](${getAbsoluteUrl("/atelier/")}): Documents, source code, and downloadable releases.`,
+  const sortedWorks = works.sort(
+    (left, right) =>
+      right.data.published.valueOf() - left.data.published.valueOf(),
   );
-  lines.push(
-    ...works
-      .sort(
-        (left, right) =>
-          right.data.published.valueOf() - left.data.published.valueOf(),
-      )
-      .map(formatAtelierEntry),
-    "",
-  );
+  for (const locale of ["zh", "en"] as const) {
+    lines.push(`## ${locale === "zh" ? "Chinese" : "English"} Atelier works`);
+    lines.push(
+      `- [Atelier index](${getAbsoluteUrl(`/${locale}/atelier/`)}): Documents, source code, and downloadable releases.`,
+    );
+    lines.push(
+      ...sortedWorks.map((work) => formatAtelierEntry(work, locale)),
+      "",
+    );
+  }
 
   for (const section of LLM_LOCALE_SECTIONS) {
     const localePosts = posts

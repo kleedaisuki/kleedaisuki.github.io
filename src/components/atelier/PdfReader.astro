@@ -1,9 +1,12 @@
 ---
 import "pdfjs-dist/web/pdf_viewer.css";
 import "@styles/pdf-reader.css";
+import { ATELIER_COPY, type AtelierLocale } from "@i18n/atelier";
 
 /** @brief PDF 阅读器属性 (PDF reader properties). */
 interface Props {
+  /** @brief 阅读器界面语言 (reader interface locale). */
+  locale: AtelierLocale;
   /** @brief PDF 文件地址 (PDF file URL). */
   pdfUrl: string;
   /** @brief 下载文件名 (download filename). */
@@ -16,18 +19,26 @@ interface Props {
   backUrl: string;
 }
 
-const { pdfUrl, downloadName, title, version, backUrl } = Astro.props;
+const { locale, pdfUrl, downloadName, title, version, backUrl } =
+  Astro.props as Props;
+/** @brief 当前阅读器文案 / Current localized reader copy. */
+const copy = ATELIER_COPY[locale];
 ---
 
 <section
   class="pdf-reader"
   data-pdf-reader
   data-pdf-url={pdfUrl}
-  aria-label={`${title} PDF reader`}
+  data-error-message={locale === "zh" ? "无法打开这个 PDF" : "Unable to open this PDF"}
+  data-opening={copy.openingDocument}
+  data-preparing={copy.preparingReader}
+  data-no-matches={locale === "zh" ? "没有匹配项" : "No matches"}
+  data-match-pattern={locale === "zh" ? "第 {current} 项，共 {total} 项" : "{current} of {total}"}
+  aria-label={`${title} ${copy.pdfReader}`}
 >
   <header class="pdf-reader__bar">
-    <a class="pdf-reader__back" href={backUrl} aria-label="Back to work details">
-      <span aria-hidden="true">←</span><span class="pdf-reader__back-label">Back</span>
+    <a class="pdf-reader__back" href={backUrl} aria-label={copy.backToDetails}>
+      <span aria-hidden="true">←</span><span class="pdf-reader__back-label">{copy.back}</span>
     </a>
 
     <div class="pdf-reader__identity">
@@ -35,84 +46,84 @@ const { pdfUrl, downloadName, title, version, backUrl } = Astro.props;
       <span>PDF · {version}</span>
     </div>
 
-    <div class="pdf-reader__controls" role="toolbar" aria-label="PDF controls">
-      <button type="button" data-action="outline" aria-expanded="false" title="Table of contents">
-        <span aria-hidden="true">☰</span><span class="pdf-reader__button-label">Contents</span>
+    <div class="pdf-reader__controls" role="toolbar" aria-label={copy.pdfControls}>
+      <button type="button" data-action="outline" aria-expanded="false" title={copy.tableOfContents}>
+        <span aria-hidden="true">☰</span><span class="pdf-reader__button-label">{copy.contents}</span>
       </button>
-      <button type="button" data-action="previous" title="Previous page" disabled>
-        <span aria-hidden="true">‹</span><span class="sr-only">Previous page</span>
+      <button type="button" data-action="previous" title={copy.previousPage} disabled>
+        <span aria-hidden="true">‹</span><span class="sr-only">{copy.previousPage}</span>
       </button>
       <label class="pdf-reader__page">
-        <span class="sr-only">Page number</span>
+        <span class="sr-only">{copy.pageNumber}</span>
         <input data-page-input type="number" min="1" value="1" inputmode="numeric" />
         <span aria-hidden="true">/</span>
         <output data-page-count>—</output>
       </label>
-      <button type="button" data-action="next" title="Next page" disabled>
-        <span aria-hidden="true">›</span><span class="sr-only">Next page</span>
+      <button type="button" data-action="next" title={copy.nextPage} disabled>
+        <span aria-hidden="true">›</span><span class="sr-only">{copy.nextPage}</span>
       </button>
       <span class="pdf-reader__divider" aria-hidden="true"></span>
-      <button type="button" data-action="zoom-out" title="Zoom out" disabled>
-        <span aria-hidden="true">−</span><span class="sr-only">Zoom out</span>
+      <button type="button" data-action="zoom-out" title={copy.zoomOut} disabled>
+        <span aria-hidden="true">−</span><span class="sr-only">{copy.zoomOut}</span>
       </button>
       <output class="pdf-reader__zoom" data-zoom>100%</output>
-      <button type="button" data-action="zoom-in" title="Zoom in" disabled>
-        <span aria-hidden="true">+</span><span class="sr-only">Zoom in</span>
+      <button type="button" data-action="zoom-in" title={copy.zoomIn} disabled>
+        <span aria-hidden="true">+</span><span class="sr-only">{copy.zoomIn}</span>
       </button>
-      <button type="button" data-action="fit" title="Fit to width" disabled>
-        <span aria-hidden="true">↔</span><span class="pdf-reader__button-label">Fit width</span>
+      <button type="button" data-action="fit" title={copy.fitWidth} disabled>
+        <span aria-hidden="true">↔</span><span class="pdf-reader__button-label">{copy.fitWidth}</span>
       </button>
-      <button type="button" data-action="find" aria-expanded="false" title="Find in document">
-        <span aria-hidden="true">⌕</span><span class="pdf-reader__button-label">Find</span>
+      <button type="button" data-action="find" aria-expanded="false" title={copy.findInDocument}>
+        <span aria-hidden="true">⌕</span><span class="pdf-reader__button-label">{copy.find}</span>
       </button>
-      <a href={pdfUrl} download={downloadName} title="Download PDF">
-        <span aria-hidden="true">⇩</span><span class="pdf-reader__button-label">Download</span>
+      <a href={pdfUrl} download={downloadName} title={copy.download}>
+        <span aria-hidden="true">⇩</span><span class="pdf-reader__button-label">{copy.download}</span>
       </a>
-      <a href={pdfUrl} target="_blank" rel="noopener" title="Open original PDF">
-        <span aria-hidden="true">↗</span><span class="pdf-reader__button-label">Original</span>
+      <a href={pdfUrl} target="_blank" rel="noopener" title={copy.openOriginal}>
+        <span aria-hidden="true">↗</span><span class="pdf-reader__button-label">{copy.original}</span>
       </a>
     </div>
   </header>
 
   <form class="pdf-reader__find" data-find-form hidden role="search">
     <label>
-      <span class="sr-only">Find in document</span>
-      <input data-find-input type="search" autocomplete="off" placeholder="Find in document…" />
+      <span class="sr-only">{copy.findInDocument}</span>
+      <input data-find-input type="search" autocomplete="off" placeholder={copy.findInDocument} />
     </label>
     <output data-find-status aria-live="polite"></output>
-    <button type="button" data-action="find-previous" title="Previous match">↑</button>
-    <button type="button" data-action="find-next" title="Next match">↓</button>
-    <button type="button" data-action="find-close" title="Close search">×</button>
+    <button type="button" data-action="find-previous" title={copy.previousMatch}>↑</button>
+    <button type="button" data-action="find-next" title={copy.nextMatch}>↓</button>
+    <button type="button" data-action="find-close" title={copy.closeSearch}>×</button>
   </form>
 
   <div class="pdf-reader__body">
-    <aside class="pdf-reader__outline" data-outline-panel hidden aria-label="Table of contents">
+    <aside class="pdf-reader__outline" data-outline-panel hidden aria-label={copy.tableOfContents}>
       <div class="pdf-reader__outline-heading">
-        <strong>Contents</strong>
-        <button type="button" data-action="outline-close" title="Close table of contents">×</button>
+        <strong>{copy.contents}</strong>
+        <button type="button" data-action="outline-close" title={copy.closeContents}>×</button>
       </div>
       <nav data-outline-list></nav>
-      <p data-outline-empty hidden>This document has no table of contents.</p>
+      <p data-outline-empty hidden>{copy.noContents}</p>
     </aside>
 
-    <div class="pdf-reader__stage" data-viewer-container tabindex="0" aria-label="PDF document">
+    <div class="pdf-reader__stage" data-viewer-container tabindex="0" aria-label={copy.pdfDocument}>
       <div class="pdfViewer" data-pdf-viewer></div>
     </div>
 
     <div class="pdf-reader__status" data-load-status role="status" aria-live="polite">
       <div class="pdf-reader__spinner" aria-hidden="true"></div>
-      <strong data-status-title>Opening document…</strong>
+      <strong data-status-title>{copy.openingDocument}</strong>
       <progress data-progress max="100"></progress>
-      <span data-status-detail>Preparing the reader</span>
-      <button type="button" data-action="retry" hidden>Try again</button>
+      <span data-status-detail>{copy.preparingReader}</span>
+      <button type="button" data-action="retry" hidden>{copy.tryAgain}</button>
     </div>
   </div>
 
   <noscript>
     <p class="pdf-reader__noscript">
-      JavaScript is required for the online reader.
-      <a href={pdfUrl}>Open the original PDF</a> or
-      <a href={pdfUrl} download={downloadName}>download it</a>.
+      {copy.javascriptRequired}
+      <a href={pdfUrl}>{copy.openOriginal}</a> {copy.or}
+      <a href={pdfUrl} download={downloadName}>{copy.downloadIt}</a>.
     </p>
   </noscript>
 </section>
@@ -139,10 +150,11 @@ const { pdfUrl, downloadName, title, version, backUrl } = Astro.props;
 
   /** @brief 将未知异常转换为可读信息 (Convert an unknown exception into readable text).
    * @param error 未知异常 (unknown exception).
+   * @param fallback 本地化回退信息 (localized fallback message).
    * @return 可展示的信息 (displayable message).
    */
-  function errorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : "The document could not be opened.";
+  function errorMessage(error: unknown, fallback: string): string {
+    return error instanceof Error ? error.message : fallback;
   }
 
   /** @brief 初始化一个页面内 PDF 阅读器 (Initialize one in-page PDF reader).
@@ -167,6 +179,11 @@ const { pdfUrl, downloadName, title, version, backUrl } = Astro.props;
     const outlinePanel = root.querySelector<HTMLElement>("[data-outline-panel]")!;
     const outlineList = root.querySelector<HTMLElement>("[data-outline-list]")!;
     const outlineEmpty = root.querySelector<HTMLElement>("[data-outline-empty]")!;
+    const openingMessage = root.dataset.opening ?? "Opening document…";
+    const preparingMessage = root.dataset.preparing ?? "Preparing the reader";
+    const errorFallback = root.dataset.errorMessage ?? "Unable to open this PDF";
+    const noMatchesMessage = root.dataset.noMatches ?? "No matches";
+    const matchPattern = root.dataset.matchPattern ?? "{current} of {total}";
 
     if (!pdfUrl) return;
 
@@ -289,8 +306,8 @@ const { pdfUrl, downloadName, title, version, backUrl } = Astro.props;
       retry.hidden = true;
       progress.hidden = false;
       progress.removeAttribute("value");
-      statusTitle.textContent = "Opening document…";
-      statusDetail.textContent = "Preparing the reader";
+      statusTitle.textContent = openingMessage;
+      statusDetail.textContent = preparingMessage;
       root.classList.remove("pdf-reader--error", "pdf-reader--ready");
 
       try {
@@ -329,8 +346,8 @@ const { pdfUrl, downloadName, title, version, backUrl } = Astro.props;
           actionControl("outline")?.setAttribute("disabled", "");
         }
       } catch (error) {
-        statusTitle.textContent = "Unable to open this PDF";
-        statusDetail.textContent = errorMessage(error);
+        statusTitle.textContent = errorFallback;
+        statusDetail.textContent = errorMessage(error, errorFallback);
         progress.hidden = true;
         retry.hidden = false;
         root.classList.add("pdf-reader--error");
@@ -355,8 +372,10 @@ const { pdfUrl, downloadName, title, version, backUrl } = Astro.props;
     eventBus.on("scalechanging", () => updateControls());
     eventBus.on("updatefindmatchescount", ({ matchesCount }: { matchesCount: { current: number; total: number } }) => {
       findStatus.value = matchesCount.total
-        ? `${matchesCount.current} of ${matchesCount.total}`
-        : findQuery ? "No matches" : "";
+        ? matchPattern
+            .replace("{current}", String(matchesCount.current))
+            .replace("{total}", String(matchesCount.total))
+        : findQuery ? noMatchesMessage : "";
     });
 
     root.addEventListener("click", (event) => {

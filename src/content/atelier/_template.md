@@ -4,8 +4,12 @@
 # Copy this file and remove draft; the body becomes the work description.
 draft: true
 slug: example-work
-title: Example work
-summary: A concise description shown in the Atelier catalogue.
+title:
+  zh: 示例作品
+  en: Example work
+summary:
+  zh: 展示在 Atelier 目录中的简短说明。
+  en: A concise description shown in the Atelier catalogue.
 published: 2026-01-01
 tags: [paper, code]
 license: License not specified
@@ -23,7 +27,9 @@ releases:
         description: The primary document.
 ---
 
-Write the durable description, reproduction notes, citations, and usage guidance here.
+中文与英文入口共享这一份正文；需要时可在正文中分别提供两种语言的说明。
+
+The Chinese and English routes share this body. Add separate localized sections here when needed.
 
 Place release files under `public/atelier-assets/<slug>/<version>/`. Place browsable
 source under `src/atelier/<slug>/<version>/source/`; the site generates raw-file

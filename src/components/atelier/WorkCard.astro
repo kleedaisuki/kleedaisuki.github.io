@@ -1,6 +1,10 @@
 ---
+import type { AtelierLocale } from "@i18n/atelier";
+import { getAtelierPath } from "../../lib/atelier";
+
 /** @brief Atelier 卡片属性 / Atelier work-card properties. */
 interface Props {
+  locale: AtelierLocale;
   slug: string;
   title: string;
   summary: string;
@@ -11,8 +15,17 @@ interface Props {
   types: string[];
 }
 
-const { slug, title, summary, activityDate, cover, version, tags, types } =
-  Astro.props as Props;
+const {
+  locale,
+  slug,
+  title,
+  summary,
+  activityDate,
+  cover,
+  version,
+  tags,
+  types,
+} = Astro.props as Props;
 
 /** @brief 稳定的占位符字母 / Stable placeholder monogram. */
 const monogram = title.trim().slice(0, 1).toLocaleUpperCase() || "A";
@@ -36,7 +49,7 @@ const monogram = title.trim().slice(0, 1).toLocaleUpperCase() || "A";
   <div class="atelier-card__body">
     <div class="atelier-card__meta">
       <time datetime={activityDate.toISOString()}>
-        {activityDate.toLocaleDateString("en", {
+        {activityDate.toLocaleDateString(locale === "zh" ? "zh-CN" : "en", {
           year: "numeric",
           month: "short",
           day: "numeric",
@@ -44,11 +57,14 @@ const monogram = title.trim().slice(0, 1).toLocaleUpperCase() || "A";
       </time>
       {version && <span>v{version}</span>}
     </div>
-    <h2><a href={`/atelier/${encodeURIComponent(slug)}/`}>{title}</a></h2>
+    <h2><a href={getAtelierPath(locale, slug)}>{title}</a></h2>
     <p>{summary}</p>
     {
       (types.length > 0 || tags.length > 0) && (
-        <ul class="atelier-card__chips" aria-label="Work formats and tags">
+        <ul
+          class="atelier-card__chips"
+          aria-label={locale === "zh" ? "作品格式与标签" : "Work formats and tags"}
+        >
           {types.map((type) => <li class="atelier-chip atelier-chip--type">{type}</li>)}
           {tags.map((tag) => <li class="atelier-chip">{tag}</li>)}
         </ul>

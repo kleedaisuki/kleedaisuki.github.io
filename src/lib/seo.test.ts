@@ -52,15 +52,15 @@ describe("SEO helpers", () => {
     expect(serialized).toContain("\\u003c/script\\u003e");
   });
 
-  it("describes the locale-independent Atelier as a collection page", () => {
-    const url = getAbsoluteUrl("/atelier/");
+  it("describes a localized Atelier view as a collection page", () => {
+    const url = getAbsoluteUrl("/en/atelier/");
     const data = createAtelierCollectionJsonLd({
       url,
       name: "Atelier",
       description: "Published documents and source code.",
       items: [
         {
-          url: getAbsoluteUrl("/atelier/example/"),
+          url: getAbsoluteUrl("/en/atelier/example/"),
           name: "Example",
           description: "An example work.",
         },
@@ -76,10 +76,10 @@ describe("SEO helpers", () => {
   });
 
   it("describes an Atelier detail as a CreativeWork with breadcrumbs", () => {
-    const url = getAbsoluteUrl("/atelier/example/");
+    const url = getAbsoluteUrl("/en/atelier/example/");
     const data = createAtelierWorkJsonLd({
       url,
-      atelierUrl: getAbsoluteUrl("/atelier/"),
+      atelierUrl: getAbsoluteUrl("/en/atelier/"),
       name: "Example",
       description: "An example work.",
       publishedAt: new Date("2026-08-24T00:00:00.000Z"),

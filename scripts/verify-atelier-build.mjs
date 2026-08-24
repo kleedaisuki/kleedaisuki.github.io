@@ -115,13 +115,15 @@ This entry exists only while the integration build runs.
 
   /** @brief 必须由夹具生成的静态产物 / Static artifacts the fixture must generate. */
   const expectedOutputs = [
-    "atelier/__build_fixture__/index.html",
-    "atelier/__build_fixture__/1.0.0/index.html",
-    "atelier/__build_fixture__/2.0.0/index.html",
-    "atelier/__build_fixture__/2.0.0/read/paper/index.html",
-    "atelier/__build_fixture__/2.0.0/source/src/main.ts/index.html",
-    "atelier/__build_fixture__/2.0.0/raw/src/main.ts",
-    "atelier/__build_fixture__/2.0.0/source.zip",
+    "zh/atelier/__build_fixture__/index.html",
+    "en/atelier/__build_fixture__/index.html",
+    "zh/atelier/__build_fixture__/1.0.0/index.html",
+    "en/atelier/__build_fixture__/2.0.0/index.html",
+    "zh/atelier/__build_fixture__/2.0.0/read/paper/index.html",
+    "en/atelier/__build_fixture__/2.0.0/read/paper/index.html",
+    "en/atelier/__build_fixture__/2.0.0/source/src/main.ts/index.html",
+    "en/atelier/__build_fixture__/2.0.0/raw/src/main.ts",
+    "en/atelier/__build_fixture__/2.0.0/source.zip",
   ];
   for (const output of expectedOutputs) {
     assert(existsSync(path.join(OUTPUT_ROOT, ...output.split("/"))), `Missing ${output}`);
@@ -129,7 +131,7 @@ This entry exists only while the integration build runs.
 
   /** @brief 最新版本详情 HTML / Latest version-detail HTML. */
   const latestHtml = readFileSync(
-    path.join(OUTPUT_ROOT, "atelier", FIXTURE_SLUG, "2.0.0", "index.html"),
+    path.join(OUTPUT_ROOT, "en", "atelier", FIXTURE_SLUG, "2.0.0", "index.html"),
     "utf8",
   );
   assert(
@@ -138,7 +140,7 @@ This entry exists only while the integration build runs.
   );
   assert(
     latestHtml.includes(
-      `rel="canonical" href="https://blog.moesegfault.dev/atelier/${FIXTURE_SLUG}/"`,
+      `rel="canonical" href="https://blog.moesegfault.dev/en/atelier/${FIXTURE_SLUG}/"`,
     ),
     "Latest version does not canonicalize to the stable work URL",
   );
@@ -151,6 +153,7 @@ This entry exists only while the integration build runs.
     !existsSync(
       path.join(
         OUTPUT_ROOT,
+        "en",
         "atelier",
         FIXTURE_SLUG,
         "2.0.0",
@@ -164,7 +167,7 @@ This entry exists only while the integration build runs.
 
   /** @brief 历史版本详情 HTML / Historical release-detail HTML. */
   const historicalDetail = readFileSync(
-    path.join(OUTPUT_ROOT, "atelier", FIXTURE_SLUG, "1.0.0", "index.html"),
+    path.join(OUTPUT_ROOT, "en", "atelier", FIXTURE_SLUG, "1.0.0", "index.html"),
     "utf8",
   );
   assert(
@@ -175,6 +178,7 @@ This entry exists only while the integration build runs.
   const historicalReader = readFileSync(
     path.join(
       OUTPUT_ROOT,
+      "en",
       "atelier",
       FIXTURE_SLUG,
       "1.0.0",
@@ -188,6 +192,7 @@ This entry exists only while the integration build runs.
   const historicalSource = readFileSync(
     path.join(
       OUTPUT_ROOT,
+      "en",
       "atelier",
       FIXTURE_SLUG,
       "1.0.0",
@@ -198,7 +203,7 @@ This entry exists only while the integration build runs.
     "utf8",
   );
   /** @brief 历史版本详情路径 / Historical release-detail path. */
-  const historicalDetailPath = `/atelier/${FIXTURE_SLUG}/1.0.0/`;
+  const historicalDetailPath = `/en/atelier/${FIXTURE_SLUG}/1.0.0/`;
   assert(
     historicalReader.includes(`href="${historicalDetailPath}"`),
     "Historical PDF reader loses its release context",

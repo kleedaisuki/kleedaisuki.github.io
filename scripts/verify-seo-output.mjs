@@ -135,11 +135,17 @@ function verifySitemap() {
     "Sitemap is missing the English home page",
   );
   assert(
-    sitemap.includes(`<loc>${SITE_ORIGIN}/atelier/</loc>`),
-    "Sitemap is missing the Atelier collection",
+    !sitemap.includes(`<loc>${SITE_ORIGIN}/atelier/</loc>`),
+    "The noindex Atelier locale redirect must not appear in the sitemap",
   );
+  for (const locale of ["zh", "en"]) {
+    assert(
+      sitemap.includes(`<loc>${SITE_ORIGIN}/${locale}/atelier/</loc>`),
+      `Sitemap is missing the ${locale} Atelier collection`,
+    );
+  }
   assert(
-    !/<loc>[^<]*\/atelier\/[^<]+\/(?:read|reader|source|raw)(?:\/|<)/.test(
+    !/<loc>[^<]*\/(?:zh|en)\/atelier\/[^<]+\/(?:read|reader|source|raw)(?:\/|<)/.test(
       sitemap,
     ),
     "Sitemap includes an Atelier reader, source, or raw-resource route",
@@ -156,7 +162,7 @@ function getAtelierCapabilityPaths(html) {
   for (const match of html.matchAll(/href="([^"]+)"/g)) {
     const pathname = new URL(match[1], SITE_ORIGIN).pathname;
     if (
-      /^\/atelier\/[^/]+\/(?:[^/]+\/)?(?:read|reader|source)(?:\/|$)/.test(
+      /^\/(?:zh|en)\/atelier\/[^/]+\/[^/]+\/(?:read|reader|source)(?:\/|$)/.test(
         pathname,
       )
     ) {
@@ -176,81 +182,95 @@ function pageOutputPath(pathname) {
 }
 
 /**
- * @brief 验证 Atelier 独立内容域 (Atelier standalone-content contract) / Verify the standalone Atelier output contract.
+ * @brief 验证 Atelier 双语视图 (localized Atelier contract) / Verify both localized Atelier views.
  * @return 无返回值 / No return value.
  * @note 正式空态没有详情目录；此时索引页本身即为完整有效产物。
  */
 function verifyAtelier() {
-  const indexPath = join("atelier", "index.html");
-  const index = readOutputFile(indexPath);
-  assert(/<html lang="en"/.test(index), "Atelier must declare English as its document language");
-  assert(!index.includes('hreflang='), "Atelier must not emit hreflang alternates");
+  const redirect = readOutputFile(join("atelier", "index.html"));
   assert(
-    !/rel="alternate" type="application\/rss\+xml"/.test(index),
-    "Atelier must not emit a localized RSS alternate",
-  );
-  assert(!index.includes('class="lang-switch"'), "Atelier must not render a language switcher");
-  assert(/<h1[^>]*>\s*Klee(?:’|&#39;|')s Atelier\s*<\/h1>/.test(index), "Atelier has no visible catalogue H1");
-  const collectionJsonLd = parseJsonLd(index, indexPath);
-  const collectionGraph = collectionJsonLd["@graph"];
-  assert(
-    Array.isArray(collectionGraph) &&
-      collectionGraph.some((item) => item?.["@type"] === "CollectionPage"),
-    "Atelier JSON-LD has no CollectionPage",
+    /<meta name="robots" content="noindex">/.test(redirect),
+    "Atelier locale redirect must be noindex",
   );
 
-  const atelierDirectory = join(OUTPUT_DIRECTORY, "atelier");
-  const workDirectories = readdirSync(atelierDirectory, { withFileTypes: true })
-    .filter(
-      (entry) =>
-        entry.isDirectory() &&
-        existsSync(join(atelierDirectory, entry.name, "index.html")),
-    )
-    .map((entry) => entry.name);
-
-  if (workDirectories.length === 0) {
+  for (const locale of ["zh", "en"]) {
+    const indexPath = join(locale, "atelier", "index.html");
+    const index = readOutputFile(indexPath);
     assert(
-      index.includes("The atelier is being prepared."),
-      "The empty Atelier catalogue has no intentional empty state",
+      new RegExp(`<html lang="${locale}"`).test(index),
+      `Atelier has the wrong document language: ${indexPath}`,
     );
-  }
-
-  for (const slug of workDirectories) {
-    const workDirectory = join(atelierDirectory, slug);
-    const detailPaths = [join("atelier", slug, "index.html")];
-    detailPaths.push(
-      ...readdirSync(workDirectory, { withFileTypes: true })
-        .filter(
-          (entry) =>
-            entry.isDirectory() &&
-            existsSync(join(workDirectory, entry.name, "index.html")),
-        )
-        .map((entry) => join("atelier", slug, entry.name, "index.html")),
+    assert(index.includes('hreflang="zh"'), `Atelier lacks zh hreflang: ${indexPath}`);
+    assert(index.includes('hreflang="en"'), `Atelier lacks en hreflang: ${indexPath}`);
+    assert(
+      /rel="alternate" type="application\/rss\+xml"/.test(index),
+      `Atelier lacks localized RSS discovery: ${indexPath}`,
+    );
+    assert(index.includes('class="lang-switch"'), `Atelier lacks a language switcher: ${indexPath}`);
+    assert(
+      /<h1[^>]*>\s*Klee(?:’|&#39;|')s Atelier\s*<\/h1>/.test(index),
+      `Atelier has no visible catalogue H1: ${indexPath}`,
+    );
+    const collectionJsonLd = parseJsonLd(index, indexPath);
+    const collectionGraph = collectionJsonLd["@graph"];
+    assert(
+      Array.isArray(collectionGraph) &&
+        collectionGraph.some((item) => item?.["@type"] === "CollectionPage"),
+      `Atelier JSON-LD has no CollectionPage: ${indexPath}`,
     );
 
-    for (const detailPath of detailPaths) {
-      const detail = readOutputFile(detailPath);
-      const detailJsonLd = parseJsonLd(detail, detailPath);
-      const detailGraph = detailJsonLd["@graph"];
-      assert(
-        Array.isArray(detailGraph) &&
-          detailGraph.some((item) => item?.["@type"] === "CreativeWork") &&
-          detailGraph.some((item) => item?.["@type"] === "BreadcrumbList"),
-        `Atelier detail JSON-LD is incomplete: ${detailPath}`,
-      );
-      assert(!detail.includes('hreflang='), `Atelier detail emits hreflang: ${detailPath}`);
-      assert(
-        !detail.includes('class="lang-switch"'),
-        `Atelier detail renders a language switcher: ${detailPath}`,
+    const atelierDirectory = join(OUTPUT_DIRECTORY, locale, "atelier");
+    const workDirectories = readdirSync(atelierDirectory, { withFileTypes: true })
+      .filter(
+        (entry) =>
+          entry.isDirectory() &&
+          existsSync(join(atelierDirectory, entry.name, "index.html")),
+      )
+      .map((entry) => entry.name);
+    if (workDirectories.length === 0) {
+      /** @brief 当前语言的正式空态标题 / Intentional empty-state title for the locale. */
+      const emptyTitle = locale === "zh" ? "工坊正在准备中。" : "The atelier is being prepared.";
+      assert(index.includes(emptyTitle), `Localized Atelier has no intentional empty state: ${locale}`);
+    }
+
+    for (const slug of workDirectories) {
+      const workDirectory = join(atelierDirectory, slug);
+      const detailPaths = [join(locale, "atelier", slug, "index.html")];
+      detailPaths.push(
+        ...readdirSync(workDirectory, { withFileTypes: true })
+          .filter(
+            (entry) =>
+              entry.isDirectory() &&
+              existsSync(join(workDirectory, entry.name, "index.html")),
+          )
+          .map((entry) => join(locale, "atelier", slug, entry.name, "index.html")),
       );
 
-      for (const capabilityPath of getAtelierCapabilityPaths(detail)) {
-        const capabilityOutput = pageOutputPath(capabilityPath);
-        const capability = readOutputFile(capabilityOutput);
+      for (const detailPath of detailPaths) {
+        const detail = readOutputFile(detailPath);
+        const detailJsonLd = parseJsonLd(detail, detailPath);
+        const detailGraph = detailJsonLd["@graph"];
         assert(
-          /<meta name="robots" content="[^"]*noindex[^"]*">/.test(capability),
-          `Atelier capability page is not noindex: ${capabilityOutput}`,
+          Array.isArray(detailGraph) &&
+            detailGraph.some((item) => item?.["@type"] === "CreativeWork") &&
+            detailGraph.some((item) => item?.["@type"] === "BreadcrumbList"),
+          `Atelier detail JSON-LD is incomplete: ${detailPath}`,
         );
+        assert(detail.includes('hreflang="zh"'), `Atelier detail lacks zh hreflang: ${detailPath}`);
+        assert(detail.includes('hreflang="en"'), `Atelier detail lacks en hreflang: ${detailPath}`);
+        assert(
+          detail.includes('class="lang-switch"'),
+          `Atelier detail lacks a language switcher: ${detailPath}`,
+        );
+
+        for (const capabilityPath of getAtelierCapabilityPaths(detail)) {
+          const capabilityOutput = pageOutputPath(capabilityPath);
+          const capability = readOutputFile(capabilityOutput);
+          assert(
+            /<meta name="robots" content="[^"]*noindex[^"]*">/.test(capability),
+            `Atelier capability page is not noindex: ${capabilityOutput}`,
+          );
+        }
       }
     }
   }
@@ -306,7 +326,8 @@ function verifyDiscoveryEntries() {
   const llms = readOutputFile("llms.txt");
   assert(llms.includes(`${SITE_ORIGIN}/zh/blog/`), "llms.txt is missing the Chinese archive");
   assert(llms.includes(`${SITE_ORIGIN}/en/blog/`), "llms.txt is missing the English archive");
-  assert(llms.includes(`${SITE_ORIGIN}/atelier/`), "llms.txt is missing Atelier");
+  assert(llms.includes(`${SITE_ORIGIN}/zh/atelier/`), "llms.txt is missing Chinese Atelier");
+  assert(llms.includes(`${SITE_ORIGIN}/en/atelier/`), "llms.txt is missing English Atelier");
   readOutputFile("rss.xml");
 }
 

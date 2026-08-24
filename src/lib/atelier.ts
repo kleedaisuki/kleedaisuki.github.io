@@ -3,6 +3,7 @@ import type { Dirent } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { strToU8, zipSync } from "fflate";
+import type { AtelierLocale } from "../i18n/atelier";
 
 /** @brief Atelier 中一个可下载文件的元数据 / Metadata for one downloadable Atelier file. */
 export interface AtelierFile {
@@ -15,6 +16,22 @@ export interface AtelierFile {
   checksum?: string;
   /** @brief 构建期确认的可用状态 / Availability confirmed at build time. */
   available?: boolean;
+}
+
+/** @brief 单值或双语 Atelier 文本 / Scalar or bilingual Atelier text. */
+export type AtelierText = string | Readonly<Record<AtelierLocale, string>>;
+
+/**
+ * @brief 解析共享制品的本地化文本 / Resolve localized text for a shared artifact.
+ * @param value 单值或双语文本 / Scalar or bilingual text.
+ * @param locale 目标语言 / Target locale.
+ * @return 当前语言的展示文本 / Display text for the target locale.
+ */
+export function getAtelierText(
+  value: AtelierText,
+  locale: AtelierLocale,
+): string {
+  return typeof value === "string" ? value : value[locale];
 }
 
 /** @brief Atelier 的一个不可变发布版本 / One immutable Atelier release. */
@@ -208,25 +225,32 @@ export function formatFileSize(bytes?: number): string {
 
 /**
  * @brief 生成 Atelier 详情页 URL / Build an Atelier detail URL.
+ * @param locale 页面语言 / Page locale.
  * @param slug Atelier 标识 / Atelier slug.
  * @return 站内详情页 URL / Internal detail URL.
  */
-export function getAtelierPath(slug: string): string {
-  return `/atelier/${encodeSegment(slug)}/`;
+export function getAtelierPath(locale: AtelierLocale, slug: string): string {
+  return `/${locale}/atelier/${encodeSegment(slug)}/`;
 }
 
 /**
  * @brief 生成不可变版本详情 URL / Build an immutable release-detail URL.
+ * @param locale 页面语言 / Page locale.
  * @param slug Atelier 标识 / Atelier slug.
  * @param version 发布版本 / Release version.
  * @return 版本化详情页 URL / Versioned detail-page URL.
  */
-export function getAtelierReleasePath(slug: string, version: string): string {
-  return `${getAtelierPath(slug)}${encodeSegment(version)}/`;
+export function getAtelierReleasePath(
+  locale: AtelierLocale,
+  slug: string,
+  version: string,
+): string {
+  return `${getAtelierPath(locale, slug)}${encodeSegment(version)}/`;
 }
 
 /**
  * @brief 解析发布文件的公开 URL / Resolve a release file's public URL.
+ * @param locale 页面语言 / Page locale.
  * @param slug Atelier 标识 / Atelier slug.
  * @param version 发布版本 / Release version.
  * @param file 文件元数据 / File metadata.
@@ -292,79 +316,97 @@ export async function enrichAtelierFile(
  * @return PDF 阅读页 URL / PDF reader URL.
  */
 export function getPdfReaderUrl(
+  locale: AtelierLocale,
   slug: string,
   version: string,
   fileId: string,
 ): string {
-  return `/atelier/${encodeSegment(slug)}/${encodeSegment(version)}/read/${encodeSegment(fileId)}/`;
+  return `/${locale}/atelier/${encodeSegment(slug)}/${encodeSegment(version)}/read/${encodeSegment(fileId)}/`;
 }
 
 /**
  * @brief 生成源码树首页 URL / Build a source browser root URL.
+ * @param locale 页面语言 / Page locale.
  * @param slug Atelier 标识 / Atelier slug.
  * @param version 发布版本 / Release version.
  * @return 源码树首页 URL / Source browser root URL.
  */
-export function getSourceBrowserUrl(slug: string, version: string): string;
+export function getSourceBrowserUrl(
+  locale: AtelierLocale,
+  slug: string,
+  version: string,
+): string;
 /**
  * @brief 生成源码文件阅读页 URL / Build a source file reader URL.
+ * @param locale 页面语言 / Page locale.
  * @param slug Atelier 标识 / Atelier slug.
  * @param version 发布版本 / Release version.
  * @param sourcePath 源码相对路径 / Source-relative path.
  * @return 源码阅读页 URL / Source reader URL.
  */
 export function getSourceBrowserUrl(
+  locale: AtelierLocale,
   slug: string,
   version: string,
   sourcePath: string,
 ): string;
 export function getSourceBrowserUrl(
+  locale: AtelierLocale,
   slug: string,
   version: string,
   sourcePath?: string,
 ): string {
-  const root = `/atelier/${encodeSegment(slug)}/${encodeSegment(version)}/source/`;
+  const root = `/${locale}/atelier/${encodeSegment(slug)}/${encodeSegment(version)}/source/`;
   return sourcePath ? `${root}${encodePath(sourcePath)}/` : root;
 }
 
 /**
  * @brief 生成源码原始内容 URL / Build a raw source URL.
+ * @param locale 页面语言 / Page locale.
  * @param slug Atelier 标识 / Atelier slug.
  * @param version 发布版本 / Release version.
  * @param sourcePath 源码相对路径 / Source-relative path.
  * @return 原始内容 URL / Raw content URL.
  */
 export function getSourceRawUrl(
+  locale: AtelierLocale,
   slug: string,
   version: string,
   sourcePath: string,
 ): string {
-  return `/atelier/${encodeSegment(slug)}/${encodeSegment(version)}/raw/${encodePath(sourcePath)}`;
+  return `/${locale}/atelier/${encodeSegment(slug)}/${encodeSegment(version)}/raw/${encodePath(sourcePath)}`;
 }
 
 /**
  * @brief 生成单个源码文件下载 URL / Build a single-source-file download URL.
+ * @param locale 页面语言 / Page locale.
  * @param slug Atelier 标识 / Atelier slug.
  * @param version 发布版本 / Release version.
  * @param sourcePath 源码相对路径 / Source-relative path.
  * @return 文件下载 URL / File download URL.
  */
 export function getSourceDownloadUrl(
+  locale: AtelierLocale,
   slug: string,
   version: string,
   sourcePath: string,
 ): string {
-  return getSourceRawUrl(slug, version, sourcePath);
+  return getSourceRawUrl(locale, slug, version, sourcePath);
 }
 
 /**
  * @brief 生成版本化源码 ZIP 下载 URL / Build a versioned source ZIP download URL.
+ * @param locale 页面语言 / Page locale.
  * @param slug Atelier 标识 / Atelier slug.
  * @param version 发布版本 / Release version.
  * @return ZIP 下载 URL / ZIP download URL.
  */
-export function getSourceArchiveUrl(slug: string, version: string): string {
-  return `/atelier/${encodeSegment(slug)}/${encodeSegment(version)}/source.zip`;
+export function getSourceArchiveUrl(
+  locale: AtelierLocale,
+  slug: string,
+  version: string,
+): string {
+  return `/${locale}/atelier/${encodeSegment(slug)}/${encodeSegment(version)}/source.zip`;
 }
 
 /**
