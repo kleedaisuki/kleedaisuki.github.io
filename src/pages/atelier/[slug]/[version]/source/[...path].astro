@@ -1,0 +1,129 @@
+---
+import SourceTree from "@components/atelier/SourceTree.astro";
+import SourceViewer from "@components/atelier/SourceViewer.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import "@styles/source-browser.css";
+import { type CollectionEntry, getCollection } from "astro:content";
+import { codeToHtml } from "shiki";
+import {
+  type AtelierSourceDirectory,
+  type AtelierSourceFile,
+  buildSourceTree,
+  formatFileSize,
+  getAtelierPath,
+  getSourceArchiveUrl,
+  getSourceBrowserUrl,
+  getSourceRawUrl,
+  scanSourceFiles,
+} from "../../../../../lib/atelier";
+
+/** @brief 构建期允许直接高亮的最大源码大小 (maximum directly highlighted source size) / Maximum source size highlighted at build time. */
+const MAX_PREVIEW_BYTES = 512 * 1024;
+
+/** @brief 源码页静态路由属性 (source page static props) / Build-time properties for one source-file route. */
+interface Props {
+  work: CollectionEntry<"atelier">;
+  version: string;
+  files: AtelierSourceFile[];
+  file: AtelierSourceFile;
+}
+
+/**
+ * @brief 展开全部已发布源码文件路由 (published source-file routes) / Materialize every source-file route for non-draft works.
+ * @return Astro 静态路由描述 / Astro static route descriptors.
+ */
+export async function getStaticPaths() {
+  /** @brief 所有公开 Atelier 条目 (published Atelier entries) / All non-draft Atelier entries. */
+  const works = await getCollection("atelier", ({ data }) => !data.draft);
+  /** @brief 所有版本化源码深链接 (versioned source deep links) / All versioned source-file routes. */
+  const routes = await Promise.all(
+    works.flatMap((work) =>
+      work.data.releases.map(async (release) => {
+        /** @brief 当前版本的扫描文件 (scanned release files) / Files scanned for this release. */
+        const files = await scanSourceFiles(work.data.slug, release.version);
+        return files.map((file) => ({
+          params: {
+            slug: work.data.slug,
+            version: release.version,
+            path: file.path,
+          },
+          props: { work, version: release.version, files, file },
+        }));
+      }),
+    ),
+  );
+  return routes.flat();
+}
+
+/** @brief 当前源码路由属性 (current source route props) / Properties selected for this generated page. */
+const { work, version, files, file } = Astro.props as Props;
+/** @brief 当前版本的嵌套源码树 (nested source tree) / Directory tree shared by navigation and the selected file. */
+const tree: AtelierSourceDirectory = buildSourceTree(files);
+/** @brief 当前文件能否直接预览 (source preview eligibility) / Whether the file is suitable for build-time highlighting. */
+const canPreview = file.content !== undefined && file.size <= MAX_PREVIEW_BYTES;
+/** @brief Shiki 双主题高亮 HTML (dual-theme Shiki HTML) / Build-time highlighted markup, absent for non-previewable files. */
+const highlightedHtml = canPreview
+  ? await codeToHtml(file.content ?? "", {
+      lang: file.language,
+      themes: { light: "github-light", dark: "github-dark" },
+      defaultColor: false,
+    })
+  : undefined;
+/** @brief 源码浏览器版本根路径 (versioned source browser root) / Root URL for source files in this release. */
+const sourceBase = getSourceBrowserUrl(work.data.slug, version).replace(
+  /\/$/,
+  "",
+);
+/** @brief 当前文件原始下载路径 (current raw-file URL) / Raw-file endpoint for this source file. */
+const rawUrl = getSourceRawUrl(work.data.slug, version, file.path);
+/** @brief 当前版本源码包路径 (current source archive URL) / Complete ZIP endpoint for this release. */
+const archiveUrl = getSourceArchiveUrl(work.data.slug, version);
+/** @brief 不可预览状态说明 (preview-unavailable explanation) / Natural explanation shown instead of a broken viewer. */
+const previewNote =
+  file.content === undefined
+    ? "This file is not a text format. Its metadata and download remain available."
+    : "This file is too large for an inline preview. Download it to inspect the complete content.";
+/** @brief 页面标题 (page title) / Browser and social title for the source view. */
+const pageTitle = `${file.path} · ${work.data.title} · Klee's Atelier`;
+---
+
+<BaseLayout
+  pageTitle={pageTitle}
+  description={`Browse ${file.path} from ${work.data.title}, release ${version}.`}
+  robots="noindex, follow"
+  showLanguageSwitch={false}
+  documentLocale="en"
+  standalone
+>
+  <div class="source-browser">
+    <nav class="source-browser__breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/atelier/">Atelier</a></li>
+        <li><a href={getAtelierPath(work.data.slug)}>{work.data.title}</a></li>
+        <li>Source · {version}</li>
+      </ol>
+    </nav>
+
+    <header class="source-browser__intro">
+      <h1>Source browser</h1>
+      <p>{work.data.title} · release {version}</p>
+    </header>
+
+    <div class="source-browser__workspace">
+      <SourceTree
+        nodes={tree.children}
+        activePath={file.path}
+        sourceBase={sourceBase}
+      />
+      <SourceViewer
+        path={file.path}
+        sizeLabel={formatFileSize(file.size)}
+        language={file.language}
+        rawUrl={rawUrl}
+        archiveUrl={archiveUrl}
+        highlightedHtml={highlightedHtml}
+        previewNote={previewNote}
+      />
+    </div>
+  </div>
+</BaseLayout>

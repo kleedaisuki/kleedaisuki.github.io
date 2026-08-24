@@ -1,0 +1,107 @@
+---
+/** @brief 源码查看器属性 (source viewer properties) / Properties accepted by the source viewer. */
+interface Props {
+  path: string;
+  sizeLabel: string;
+  language: string;
+  rawUrl: string;
+  archiveUrl: string;
+  highlightedHtml?: string;
+  previewNote?: string;
+}
+
+/** @brief 当前源码文件显示数据 (current source display data) / Display data for the selected source file. */
+const {
+  path,
+  sizeLabel,
+  language,
+  rawUrl,
+  archiveUrl,
+  highlightedHtml,
+  previewNote = "Preview unavailable for this file.",
+} = Astro.props as Props;
+---
+
+<article class="source-viewer" data-source-viewer>
+  <header class="source-viewer__header">
+    <div>
+      <p class="source-viewer__eyebrow">{language} · {sizeLabel}</p>
+      <h2>{path}</h2>
+    </div>
+    <div class="source-viewer__actions">
+      {
+        highlightedHtml && (
+          <button type="button" data-copy-source aria-live="polite">
+            Copy
+          </button>
+        )
+      }
+      <a href={rawUrl} download>Download file</a>
+      <a href={archiveUrl} download>Download ZIP</a>
+    </div>
+  </header>
+
+  {
+    highlightedHtml ? (
+      <div class="source-viewer__code" data-source-code set:html={highlightedHtml} />
+    ) : (
+      <div class="source-viewer__unavailable">
+        <p>{previewNote}</p>
+        <dl>
+          <div>
+            <dt>Path</dt>
+            <dd>{path}</dd>
+          </div>
+          <div>
+            <dt>Type</dt>
+            <dd>{language}</dd>
+          </div>
+          <div>
+            <dt>Size</dt>
+            <dd>{sizeLabel}</dd>
+          </div>
+        </dl>
+        <a class="source-viewer__download" href={rawUrl} download>
+          Download this file
+        </a>
+      </div>
+    )
+  }
+</article>
+
+<script>
+  /**
+   * @brief 初始化源码复制操作 (source copy action) / Wire copy buttons to their adjacent highlighted source.
+   * @return 无返回值 / No return value.
+   */
+  const initializeSourceCopy = (): void => {
+    /** @brief 当前页源码查看器 (current source viewer) / Source viewer on the current page. */
+    const viewer = document.querySelector<HTMLElement>("[data-source-viewer]");
+    /** @brief 源码复制按钮 (source copy button) / Copy button belonging to the current viewer. */
+    const button = viewer?.querySelector<HTMLButtonElement>("[data-copy-source]");
+    /** @brief 高亮源码代码节点 (highlighted code node) / Code element emitted by Shiki. */
+    const code = viewer?.querySelector<HTMLElement>("[data-source-code] code");
+
+    if (!button || !code || button.dataset.copyInitialized === "true") return;
+    button.dataset.copyInitialized = "true";
+
+    button.addEventListener("click", async () => {
+      /** @brief 复制前的按钮文案 (original button label) / Button label restored after feedback. */
+      const originalLabel = button.textContent ?? "Copy";
+
+      try {
+        await navigator.clipboard.writeText(code.innerText);
+        button.textContent = "Copied";
+      } catch {
+        button.textContent = "Copy unavailable";
+      }
+
+      window.setTimeout(() => {
+        button.textContent = originalLabel;
+      }, 1800);
+    });
+  };
+
+  document.addEventListener("astro:page-load", initializeSourceCopy);
+  initializeSourceCopy();
+</script>
