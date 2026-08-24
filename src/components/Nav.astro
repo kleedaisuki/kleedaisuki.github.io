@@ -134,11 +134,18 @@ const themeCopy =
         localStorage.setItem(localeStorageKey, pageLocale);
       } else if (location.pathname === "/atelier/" || location.pathname.startsWith("/atelier/")) {
         const returnLocale = localStorage.getItem(localeStorageKey) === "en" ? "en" : "zh";
-        for (const link of document.querySelectorAll("[data-localized-path]")) {
-          const localizedPath = link.getAttribute("data-localized-path");
-          if (link instanceof HTMLAnchorElement && localizedPath) {
-            link.href = `/${returnLocale}${localizedPath}`;
+        /** @brief 恢复全部本地化返回链接 / Restore every localized return link. */
+        const localizeReturnLinks = () => {
+          for (const link of document.querySelectorAll("[data-localized-path]")) {
+            const localizedPath = link.getAttribute("data-localized-path");
+            if (link instanceof HTMLAnchorElement && localizedPath) {
+              link.href = `/${returnLocale}${localizedPath}`;
+            }
           }
+        };
+        localizeReturnLinks();
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", localizeReturnLinks, { once: true });
         }
       }
     } catch {
