@@ -11,6 +11,8 @@ import {
   buildSourceTree,
   formatFileSize,
   getAtelierPath,
+  getAtelierReleasePath,
+  getLatestRelease,
   getSourceArchiveUrl,
   getSourceBrowserUrl,
   getSourceRawUrl,
@@ -78,6 +80,11 @@ const sourceBase = getSourceBrowserUrl(work.data.slug, version).replace(
 const rawUrl = getSourceRawUrl(work.data.slug, version, file.path);
 /** @brief 当前版本源码包路径 (current source archive URL) / Complete ZIP endpoint for this release. */
 const archiveUrl = getSourceArchiveUrl(work.data.slug, version);
+/** @brief 保留当前版本语境的详情路径 / Detail path preserving the current release context. */
+const detailUrl =
+  version === getLatestRelease(work.data.releases)?.version
+    ? getAtelierPath(work.data.slug)
+    : getAtelierReleasePath(work.data.slug, version);
 /** @brief 不可预览状态说明 (preview-unavailable explanation) / Natural explanation shown instead of a broken viewer. */
 const previewNote =
   file.content === undefined
@@ -99,7 +106,7 @@ const pageTitle = `${file.path} · ${work.data.title} · Klee's Atelier`;
     <nav class="source-browser__breadcrumb" aria-label="Breadcrumb">
       <ol>
         <li><a href="/atelier/">Atelier</a></li>
-        <li><a href={getAtelierPath(work.data.slug)}>{work.data.title}</a></li>
+        <li><a href={detailUrl}>{work.data.title}</a></li>
         <li>Source · {version}</li>
       </ol>
     </nav>

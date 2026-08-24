@@ -29,6 +29,8 @@ interface LayoutProps {
   documentLocale?: BlogLocale;
   /** @brief 页面是否属于无语言分区的独立内容域 (whether the page belongs to a locale-independent standalone area). */
   standalone?: boolean;
+  /** @brief 可选的规范 URL 覆盖 (optional canonical URL override). */
+  canonicalPath?: string;
 }
 
 const pathname = Astro.url.pathname;
@@ -63,10 +65,6 @@ if (m) {
   xDefaultUrl = alternates.find((alternate) => alternate.locale === "zh")?.url;
 }
 
-const canonical = new URL(
-  Astro.url.pathname,
-  Astro.site ?? "https://blog.moesegfault.dev",
-).toString();
 const {
   pageTitle = SITE.name,
   description = SITE.defaultDescription[siteLocale],
@@ -79,7 +77,12 @@ const {
   showLanguageSwitch = true,
   documentLocale = siteLocale,
   standalone = false,
+  canonicalPath,
 } = Astro.props as LayoutProps;
+const canonical = new URL(
+  canonicalPath ?? Astro.url.pathname,
+  Astro.site ?? "https://blog.moesegfault.dev",
+).toString();
 /** @brief Atelier 使用独立内容语言且不参与站点国际化路由 (Atelier uses an independent document language outside site i18n routing). */
 const isLocaleIndependent =
   standalone || pathname === "/atelier/" || pathname.startsWith("/atelier/");

@@ -18,6 +18,7 @@ const PDFJS_ASSET_VERSION = "6.2.108";
 const isIndexableSitemapPage = (page) => {
   const pathname = new URL(page).pathname;
   if (pathname === "/") return false;
+  if (/^\/atelier\/[^/]+\/[^/]+\/?$/.test(pathname)) return false;
 
   return !/^\/atelier\/[^/]+\/(?:[^/]+\/)?(?:read|reader|source|raw)(?:\/|$)/.test(
     pathname,

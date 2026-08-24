@@ -15,6 +15,7 @@ interface AtelierFile {
   description?: string;
   size?: number;
   checksum?: string;
+  available?: boolean;
 }
 
 /** @brief 文件列表属性 / File-list properties. */
@@ -41,9 +42,9 @@ interface FileGroup {
 function getGroup(file: AtelierFile): string {
   const mediaType = file.mediaType?.toLocaleLowerCase() ?? "";
   const path = file.path.toLocaleLowerCase();
+  const capability = getFileCapability(file);
 
-  if (mediaType === "application/pdf" || path.endsWith(".pdf"))
-    return "documents";
+  if (capability.kind === "pdf") return "documents";
   if (
     mediaType.startsWith("text/") ||
     /\.(?:c|cc|cpp|cs|css|go|h|hpp|html|java|js|jsx|kt|md|py|rs|sh|ts|tsx)$/.test(
@@ -83,6 +84,7 @@ for (const file of files) {
             const capability = getFileCapability(file);
             const downloadUrl = getReleaseFileUrl(slug, version, file);
             const isPdf = capability.kind === "pdf";
+            const isAvailable = file.available !== false;
 
             return (
               <li class="file-item">
@@ -104,14 +106,18 @@ for (const file of files) {
                   </dl>
                 </div>
                 <div class="file-item__actions">
-                  {isPdf && (
+                  {!isAvailable ? (
+                    <span class="atelier-inline-empty" role="status">File unavailable</span>
+                  ) : isPdf ? (
                     <a class="atelier-button atelier-button--primary" href={getPdfReaderUrl(slug, version, file.id)}>
                       Read online
                     </a>
+                  ) : null}
+                  {isAvailable && (
+                    <a class="atelier-button" href={downloadUrl} download>
+                      Download
+                    </a>
                   )}
-                  <a class="atelier-button" href={downloadUrl} download>
-                    Download
-                  </a>
                 </div>
               </li>
             );

@@ -2,7 +2,14 @@
 import { getCollection } from "astro:content";
 import PdfReader from "@components/atelier/PdfReader.astro";
 import BaseLayout from "@layouts/BaseLayout.astro";
-import { getAtelierPath, getReleaseFileUrl } from "../../../../../lib/atelier";
+import {
+  getAtelierPath,
+  getAtelierReleasePath,
+  enrichAtelierFile,
+  getFileCapability,
+  getLatestRelease,
+  getReleaseFileUrl,
+} from "../../../../../lib/atelier";
 
 /** @brief 阅读器静态路由属性 (reader static route properties). */
 interface Props {
@@ -19,30 +26,42 @@ interface Props {
 export async function getStaticPaths() {
   const works = await getCollection("atelier", ({ data }) => !data.draft);
 
-  return works.flatMap((work) =>
+  const candidates = works.flatMap((work) =>
     work.data.releases.flatMap((release) =>
       release.files
-        .filter(
-          (file) =>
-            file.mediaType === "application/pdf" ||
-            file.path.toLowerCase().endsWith(".pdf"),
-        )
-        .map((file) => ({
-          params: {
-            slug: work.data.slug,
-            version: release.version,
-            asset: file.id,
-          },
-          props: {
-            title: work.data.title,
-            version: release.version,
-            pdfUrl: getReleaseFileUrl(work.data.slug, release.version, file),
-            downloadName: file.path.split("/").at(-1) ?? `${file.id}.pdf`,
-            backUrl: getAtelierPath(work.data.slug),
-          } satisfies Props,
-        })),
+        .filter((file) => getFileCapability(file).kind === "pdf")
+        .map((file) => ({ work, release, file })),
     ),
   );
+
+  const routes = await Promise.all(
+    candidates.map(async ({ work, release, file }) => {
+      const enrichedFile = await enrichAtelierFile(
+        work.data.slug,
+        release.version,
+        file,
+      );
+      if (enrichedFile.available === false) return undefined;
+      return {
+        params: {
+          slug: work.data.slug,
+          version: release.version,
+          asset: file.id,
+        },
+        props: {
+          title: work.data.title,
+          version: release.version,
+          pdfUrl: getReleaseFileUrl(work.data.slug, release.version, file),
+          downloadName: file.path.split("/").at(-1) ?? `${file.id}.pdf`,
+          backUrl:
+            release.version === getLatestRelease(work.data.releases)?.version
+              ? getAtelierPath(work.data.slug)
+              : getAtelierReleasePath(work.data.slug, release.version),
+        } satisfies Props,
+      };
+    }),
+  );
+  return routes.filter((route) => route !== undefined);
 }
 
 const { title, version, pdfUrl, downloadName, backUrl } = Astro.props;

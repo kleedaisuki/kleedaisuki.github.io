@@ -122,9 +122,7 @@ const releaseHistory = [...entry.data.releases].sort(
           <ol class="version-list">
             {releaseHistory.map((item) => {
               const selected = release?.version === item.version;
-              const versionUrl = item.version === latestRelease?.version
-                ? workPath
-                : `${workPath}${encodeURIComponent(item.version)}/`;
+              const versionUrl = `${workPath}${encodeURIComponent(item.version)}/`;
               return (
                 <li class:list={{ "version-list__item--current": selected }}>
                   <div>

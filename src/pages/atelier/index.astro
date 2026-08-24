@@ -4,6 +4,7 @@ import WorkCard from "@components/atelier/WorkCard.astro";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import "@styles/atelier.css";
 import {
+  getAtelierActivityDate,
   getFileCapability,
   getLatestRelease,
   scanSourceFiles,
@@ -15,8 +16,16 @@ const description = "Papers, code, and small experiments by Klee.";
 /** @brief 公开作品，按最近活动时间排序 / Published works sorted by most recent activity. */
 const works = (await getCollection("atelier", ({ data }) => !data.draft)).sort(
   (left, right) =>
-    (right.data.updated ?? right.data.published).getTime() -
-    (left.data.updated ?? left.data.published).getTime(),
+    getAtelierActivityDate(
+      right.data.published,
+      right.data.updated,
+      right.data.releases,
+    ).getTime() -
+    getAtelierActivityDate(
+      left.data.published,
+      left.data.updated,
+      left.data.releases,
+    ).getTime(),
 );
 
 /**
@@ -105,9 +114,9 @@ const structuredData = createAtelierCollectionJsonLd({
                 <div class="atelier-filter-group" data-filter-group="type">
                   <span class="atelier-filter-group__label">Type</span>
                   <div class="atelier-filter-group__options">
-                    <a href="/atelier/" data-filter-value="" aria-pressed="true">All</a>
+                    <a href="/atelier/" data-filter-value="" aria-current="true">All types</a>
                     {typeFilters.map((type) => (
-                      <a href={`?type=${encodeURIComponent(type.toLocaleLowerCase())}`} data-filter-value={type.toLocaleLowerCase()} aria-pressed="false">
+                      <a href={`?type=${encodeURIComponent(type.toLocaleLowerCase())}`} data-filter-value={type.toLocaleLowerCase()}>
                         {type}
                       </a>
                     ))}
@@ -118,9 +127,9 @@ const structuredData = createAtelierCollectionJsonLd({
                 <div class="atelier-filter-group" data-filter-group="tag">
                   <span class="atelier-filter-group__label">Tag</span>
                   <div class="atelier-filter-group__options">
-                    <a href="/atelier/" data-filter-value="" aria-pressed="true">All</a>
+                    <a href="/atelier/" data-filter-value="" aria-current="true">All tags</a>
                     {tagFilters.map((tag) => (
-                      <a href={`?tag=${encodeURIComponent(tag.toLocaleLowerCase())}`} data-filter-value={tag.toLocaleLowerCase()} aria-pressed="false">
+                      <a href={`?tag=${encodeURIComponent(tag.toLocaleLowerCase())}`} data-filter-value={tag.toLocaleLowerCase()}>
                         {tag}
                       </a>
                     ))}
@@ -139,8 +148,11 @@ const structuredData = createAtelierCollectionJsonLd({
                 slug={work.data.slug}
                 title={work.data.title}
                 summary={work.data.summary}
-                published={work.data.published}
-                updated={work.data.updated}
+                activityDate={getAtelierActivityDate(
+                  work.data.published,
+                  work.data.updated,
+                  work.data.releases,
+                )}
                 cover={work.data.cover}
                 version={latest?.version}
                 tags={work.data.tags}
@@ -160,7 +172,7 @@ const structuredData = createAtelierCollectionJsonLd({
           <span class="atelier-empty__mark" aria-hidden="true">✦</span>
           <h2>The atelier is being prepared.</h2>
           <p>There are no public works on the shelf yet. Writing continues in the blog.</p>
-          <a class="atelier-button atelier-button--primary" href="/zh/blog/">Visit the blog</a>
+          <a class="atelier-button atelier-button--primary" href="/zh/blog/" data-localized-path="blog/">Visit the blog</a>
         </section>
       )
     }
@@ -228,7 +240,11 @@ const structuredData = createAtelierCollectionJsonLd({
         for (const group of catalogue.querySelectorAll<HTMLElement>("[data-filter-group]")) {
           const key = group.dataset.filterGroup as keyof FilterState;
           for (const link of group.querySelectorAll<HTMLAnchorElement>("[data-filter-value]")) {
-            link.setAttribute("aria-pressed", String((link.dataset.filterValue ?? "") === state[key]));
+            if ((link.dataset.filterValue ?? "") === state[key]) {
+              link.setAttribute("aria-current", "true");
+            } else {
+              link.removeAttribute("aria-current");
+            }
           }
         }
 

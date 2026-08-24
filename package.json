@@ -11,6 +11,7 @@
     "check": "astro check",
     "test": "vitest run",
     "verify:seo": "node scripts/verify-seo-output.mjs",
+    "verify:atelier": "node scripts/verify-atelier-build.mjs",
     "test:watch": "vitest",
     "lint": "biome lint .",
     "format": "biome format --write .",

@@ -4,28 +4,16 @@ interface Props {
   slug: string;
   title: string;
   summary: string;
-  published: Date;
-  updated?: Date;
+  activityDate: Date;
   cover?: string;
   version?: string;
   tags: string[];
   types: string[];
 }
 
-const {
-  slug,
-  title,
-  summary,
-  published,
-  updated,
-  cover,
-  version,
-  tags,
-  types,
-} = Astro.props as Props;
+const { slug, title, summary, activityDate, cover, version, tags, types } =
+  Astro.props as Props;
 
-/** @brief 卡片所展示的日期 / Date displayed on the card. */
-const displayDate = updated ?? published;
 /** @brief 稳定的占位符字母 / Stable placeholder monogram. */
 const monogram = title.trim().slice(0, 1).toLocaleUpperCase() || "A";
 ---
@@ -47,8 +35,8 @@ const monogram = title.trim().slice(0, 1).toLocaleUpperCase() || "A";
   </div>
   <div class="atelier-card__body">
     <div class="atelier-card__meta">
-      <time datetime={displayDate.toISOString()}>
-        {displayDate.toLocaleDateString("en", {
+      <time datetime={activityDate.toISOString()}>
+        {activityDate.toLocaleDateString("en", {
           year: "numeric",
           month: "short",
           day: "numeric",

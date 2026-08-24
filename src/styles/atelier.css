@@ -139,7 +139,7 @@
     color var(--motion-fast) var(--ease-standard);
 }
 
-.atelier-filter-group a[aria-pressed="true"],
+.atelier-filter-group a[aria-current="true"],
 .atelier-button--primary {
   border-color: var(--interactive-color);
   background: var(--interactive-color);

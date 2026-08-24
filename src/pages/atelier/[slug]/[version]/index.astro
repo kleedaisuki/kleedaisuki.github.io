@@ -8,6 +8,8 @@ import {
   type AtelierRelease,
   enrichAtelierFile,
   getAtelierPath,
+  getAtelierReleasePath,
+  getLatestRelease,
   getSourceArchiveUrl,
   getSourceBrowserUrl,
   scanSourceFiles,
@@ -65,10 +67,17 @@ const sourceArchivePath =
 /** @brief Markdown 作品说明 / Rendered Markdown work description. */
 const { Content } = await render(entry);
 /** @brief 历史版本稳定路径 / Stable historical-release path. */
-const releasePath = `${getAtelierPath(entry.data.slug)}${encodeURIComponent(release.version)}/`;
+const releasePath = getAtelierReleasePath(entry.data.slug, release.version);
+/** @brief 当前页是否重复呈现最新版 / Whether this page duplicates the latest stable detail. */
+const isLatestRelease =
+  release.version === getLatestRelease(entry.data.releases)?.version;
+/** @brief 当前版本页规范路径 / Canonical path for this release page. */
+const canonicalPath = isLatestRelease
+  ? getAtelierPath(entry.data.slug)
+  : releasePath;
 /** @brief 当前版本结构化数据 / Structured data for the selected release. */
 const structuredData = createAtelierWorkJsonLd({
-  url: getAbsoluteUrl(releasePath),
+  url: getAbsoluteUrl(canonicalPath),
   atelierUrl: getAbsoluteUrl("/atelier/"),
   name: `${entry.data.title} — ${release.version}`,
   description: entry.data.summary,
@@ -92,6 +101,8 @@ const structuredData = createAtelierWorkJsonLd({
   standalone
   documentLocale="en"
   showLanguageSwitch={false}
+  canonicalPath={canonicalPath}
+  robots={isLatestRelease ? "noindex, follow" : undefined}
 >
   <WorkDetail entry={entry} release={displayRelease} sourcePath={sourcePath} sourceArchivePath={sourceArchivePath}>
     <Content />

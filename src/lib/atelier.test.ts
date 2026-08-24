@@ -9,7 +9,9 @@ import {
   createSourceArchive,
   enrichAtelierFile,
   formatFileSize,
+  getAtelierActivityDate,
   getAtelierPath,
+  getAtelierReleasePath,
   getFileCapability,
   getLatestRelease,
   getPdfReaderUrl,
@@ -54,13 +56,27 @@ describe("Atelier release helpers", () => {
     expect(getLatestRelease(releases)?.version).toBe("first");
   });
 
+  it("uses release dates when computing recent activity", () => {
+    const published = new Date("2025-01-01");
+    const updated = new Date("2025-06-01");
+    const releases: AtelierRelease[] = [
+      { version: "1.0.0", date: new Date("2025-02-01"), files: [] },
+      { version: "2.0.0", date: new Date("2026-01-01"), files: [] },
+    ];
+
+    expect(getAtelierActivityDate(published, updated, releases)).toEqual(
+      new Date("2026-01-01"),
+    );
+    expect(getAtelierActivityDate(published, undefined, [])).toEqual(published);
+  });
+
   it("derives capabilities from MIME type first and extension as fallback", () => {
     expect(
       getFileCapability({
         id: "paper",
         label: "Paper",
         path: "paper.bin",
-        mediaType: "application/pdf",
+        mediaType: "Application/PDF; charset=binary",
       }),
     ).toEqual({ kind: "pdf", canRead: true, canDownload: true });
     expect(
@@ -90,6 +106,9 @@ describe("Atelier release helpers", () => {
 describe("Atelier URLs", () => {
   it("encodes slugs, versions, identifiers, and nested source paths", () => {
     expect(getAtelierPath("lambda notes")).toBe("/atelier/lambda%20notes/");
+    expect(getAtelierReleasePath("lambda notes", "1.0 rc")).toBe(
+      "/atelier/lambda%20notes/1.0%20rc/",
+    );
     expect(
       getReleaseFileUrl("lambda notes", "1.0 rc", {
         id: "paper",
@@ -163,7 +182,10 @@ describe("Atelier URLs", () => {
       size: 42,
       checksum: "provided",
     };
-    expect(await enrichAtelierFile("demo", "v1", remote, root)).toEqual(remote);
+    expect(await enrichAtelierFile("demo", "v1", remote, root)).toEqual({
+      ...remote,
+      available: true,
+    });
     expect(
       await enrichAtelierFile(
         "demo",
@@ -171,7 +193,7 @@ describe("Atelier URLs", () => {
         { id: "missing", label: "Missing", path: "missing.zip", size: 7 },
         root,
       ),
-    ).toMatchObject({ size: 7 });
+    ).toMatchObject({ size: 7, available: false });
   });
 });
 

@@ -317,11 +317,17 @@ const { pdfUrl, downloadName, title, version, backUrl } = Astro.props;
         findController.setDocument(pdfDocument);
         pdfViewer.setDocument(pdfDocument);
 
-        const outline = await pdfDocument.getOutline();
-        outlineList.replaceChildren();
-        outlineEmpty.hidden = Boolean(outline?.length);
-        renderOutline(outline, outlineList);
-        actionControl("outline")?.toggleAttribute("disabled", !outline?.length);
+        try {
+          const outline = await pdfDocument.getOutline();
+          outlineList.replaceChildren();
+          outlineEmpty.hidden = Boolean(outline?.length);
+          renderOutline(outline, outlineList);
+          actionControl("outline")?.toggleAttribute("disabled", !outline?.length);
+        } catch {
+          outlineList.replaceChildren();
+          outlineEmpty.hidden = false;
+          actionControl("outline")?.setAttribute("disabled", "");
+        }
       } catch (error) {
         statusTitle.textContent = "Unable to open this PDF";
         statusDetail.textContent = errorMessage(error);
@@ -341,7 +347,6 @@ const { pdfUrl, downloadName, title, version, backUrl } = Astro.props;
         actionControl(action)?.removeAttribute("disabled");
       }
       updateControls();
-      container.focus({ preventScroll: true });
     });
     eventBus.on("pagechanging", ({ pageNumber }: { pageNumber: number }) => {
       updateControls();

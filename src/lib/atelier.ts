@@ -13,6 +13,8 @@ export interface AtelierFile {
   description?: string;
   size?: number;
   checksum?: string;
+  /** @brief 构建期确认的可用状态 / Availability confirmed at build time. */
+  available?: boolean;
 }
 
 /** @brief Atelier 的一个不可变发布版本 / One immutable Atelier release. */
@@ -138,6 +140,25 @@ export function getLatestRelease(
 }
 
 /**
+ * @brief 计算作品最近活动时间 / Compute the most recent activity date for a work.
+ * @param published 作品首次发布日期 / Initial publication date.
+ * @param updated 可选的说明页更新时间 / Optional descriptive-content update date.
+ * @param releases 全部制品版本 / All artifact releases.
+ * @return 发布、更新与版本日期中的最大值 / Latest date across publication, update, and releases.
+ */
+export function getAtelierActivityDate(
+  published: Date,
+  updated: Date | undefined,
+  releases: readonly AtelierRelease[],
+): Date {
+  return releases.reduce(
+    (latest, release) =>
+      release.date.getTime() > latest.getTime() ? release.date : latest,
+    updated && updated.getTime() > published.getTime() ? updated : published,
+  );
+}
+
+/**
  * @brief 从 MIME 类型与扩展名推导展示能力 / Derive presentation capabilities from MIME type and extension.
  * @param file 文件元数据 / File metadata.
  * @return 稳定的能力描述 / Stable capability descriptor.
@@ -195,6 +216,16 @@ export function getAtelierPath(slug: string): string {
 }
 
 /**
+ * @brief 生成不可变版本详情 URL / Build an immutable release-detail URL.
+ * @param slug Atelier 标识 / Atelier slug.
+ * @param version 发布版本 / Release version.
+ * @return 版本化详情页 URL / Versioned detail-page URL.
+ */
+export function getAtelierReleasePath(slug: string, version: string): string {
+  return `${getAtelierPath(slug)}${encodeSegment(version)}/`;
+}
+
+/**
  * @brief 解析发布文件的公开 URL / Resolve a release file's public URL.
  * @param slug Atelier 标识 / Atelier slug.
  * @param version 发布版本 / Release version.
@@ -218,7 +249,7 @@ export function getReleaseFileUrl(
  * @param version 发布版本 / Release version.
  * @param file 清单中的文件元数据 / File metadata from the manifest.
  * @param publicRoot 站点 public 根目录 / Site public root.
- * @return 丰富后的副本；非本地或暂缺文件保留清单值 / Enriched copy; non-local or absent files retain manifest values.
+ * @return 带真实元数据和可用状态的副本 / Copy with real metadata and availability state.
  */
 export async function enrichAtelierFile(
   slug: string,
@@ -227,7 +258,7 @@ export async function enrichAtelierFile(
   publicRoot = path.resolve("public"),
 ): Promise<AtelierFile> {
   if (/^https?:\/\//i.test(file.path) || file.path.startsWith("/")) {
-    return { ...file };
+    return { ...file, available: true };
   }
   const absolutePath = path.join(
     publicRoot,
@@ -239,9 +270,16 @@ export async function enrichAtelierFile(
   try {
     const data = await readFile(absolutePath);
     const checksum = createHash("sha256").update(data).digest("hex");
-    return { ...file, size: data.byteLength, checksum: `sha256:${checksum}` };
+    return {
+      ...file,
+      size: data.byteLength,
+      checksum: `sha256:${checksum}`,
+      available: true,
+    };
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return { ...file };
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return { ...file, available: false };
+    }
     throw error;
   }
 }
