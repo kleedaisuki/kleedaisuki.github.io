@@ -1,21 +1,59 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 
-// 明确告诉 Astro：我的内容集合就叫 blog，位置在 src/content/blog
+/** @brief 博客内容集合 / Blog content collection. */
 const blog = defineCollection({
-    // 支持多语言目录：src/content/blog/zh/** 与 src/content/blog/en/**
-    loader: glob({ pattern: "**/*.md", base: "./src/content/blog" }),
-    schema: z.object({
-        title: z.string(),
-        description: z.string(),
-        date: z.coerce.date(),              // 字符串强转为 Date
-        updated: z.coerce.date().optional(), // 仅在内容实质更新时填写
-        draft: z.boolean().default(false),
-        locale: z.enum(["zh", "en"]),
-        slug: z.string(),                    // 允许中英不同 slug
-        tags: z.array(z.string()).optional(),
-        pair: z.string().optional(), 
-    }),
+  loader: glob({ pattern: "**/*.md", base: "./src/content/blog" }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    date: z.coerce.date(),
+    updated: z.coerce.date().optional(),
+    draft: z.boolean().default(false),
+    locale: z.enum(["zh", "en"]),
+    slug: z.string(),
+    tags: z.array(z.string()).optional(),
+    pair: z.string().optional(),
+  }),
 });
 
-export const collections = { blog };
+/** @brief Atelier 文件描述模式 / Atelier file descriptor schema. */
+const atelierFile = z.object({
+  id: z.string(),
+  label: z.string(),
+  path: z.string(),
+  mediaType: z.string().optional(),
+  description: z.string().optional(),
+  size: z.number().nonnegative().optional(),
+  checksum: z.string().optional(),
+});
+
+/** @brief Atelier 发布版本模式 / Atelier release schema. */
+const atelierRelease = z.object({
+  version: z.string(),
+  date: z.coerce.date(),
+  notes: z.string().optional(),
+  files: z.array(atelierFile).default([]),
+});
+
+/** @brief 无语言分区的 Atelier 内容集合 / Locale-independent Atelier collection. */
+const atelier = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/atelier" }),
+  schema: z.object({
+    draft: z.boolean().default(false),
+    slug: z.string(),
+    title: z.string(),
+    summary: z.string(),
+    published: z.coerce.date(),
+    updated: z.coerce.date().optional(),
+    tags: z.array(z.string()).default([]),
+    license: z.string().optional(),
+    repository: z.string().url().optional(),
+    relatedPost: z.string().optional(),
+    cover: z.string().optional(),
+    releases: z.array(atelierRelease).default([]),
+  }),
+});
+
+/** @brief Astro 可发现的全部内容集合 / All Astro-discoverable content collections. */
+export const collections = { blog, atelier };
