@@ -1,0 +1,66 @@
+---
+import { getCollection } from "astro:content";
+import PdfReader from "@components/atelier/PdfReader.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getAtelierPath, getReleaseFileUrl } from "../../../../../lib/atelier";
+
+/** @brief 阅读器静态路由属性 (reader static route properties). */
+interface Props {
+  title: string;
+  version: string;
+  pdfUrl: string;
+  downloadName: string;
+  backUrl: string;
+}
+
+/** @brief 为全部已发布 PDF 生成稳定阅读路由 (Generate stable reader routes for every published PDF).
+ * @return Astro 静态路径列表 (Astro static path list).
+ */
+export async function getStaticPaths() {
+  const works = await getCollection("atelier", ({ data }) => !data.draft);
+
+  return works.flatMap((work) =>
+    work.data.releases.flatMap((release) =>
+      release.files
+        .filter(
+          (file) =>
+            file.mediaType === "application/pdf" ||
+            file.path.toLowerCase().endsWith(".pdf"),
+        )
+        .map((file) => ({
+          params: {
+            slug: work.data.slug,
+            version: release.version,
+            asset: file.id,
+          },
+          props: {
+            title: work.data.title,
+            version: release.version,
+            pdfUrl: getReleaseFileUrl(work.data.slug, release.version, file),
+            downloadName: file.path.split("/").at(-1) ?? `${file.id}.pdf`,
+            backUrl: getAtelierPath(work.data.slug),
+          } satisfies Props,
+        })),
+    ),
+  );
+}
+
+const { title, version, pdfUrl, downloadName, backUrl } = Astro.props;
+---
+
+<BaseLayout
+  pageTitle={`${title} — PDF Reader`}
+  description={`Read ${title}, release ${version}, online.`}
+  robots="noindex, follow"
+  standalone
+  documentLocale="en"
+  showLanguageSwitch={false}
+>
+  <PdfReader
+    pdfUrl={pdfUrl}
+    downloadName={downloadName}
+    title={title}
+    version={version}
+    backUrl={backUrl}
+  />
+</BaseLayout>

@@ -1,0 +1,414 @@
+---
+import "pdfjs-dist/web/pdf_viewer.css";
+import "@styles/pdf-reader.css";
+
+/** @brief PDF 阅读器属性 (PDF reader properties). */
+interface Props {
+  /** @brief PDF 文件地址 (PDF file URL). */
+  pdfUrl: string;
+  /** @brief 下载文件名 (download filename). */
+  downloadName: string;
+  /** @brief 制品标题 (work title). */
+  title: string;
+  /** @brief 发布版本 (release version). */
+  version: string;
+  /** @brief 返回详情页地址 (work detail URL). */
+  backUrl: string;
+}
+
+const { pdfUrl, downloadName, title, version, backUrl } = Astro.props;
+---
+
+<section
+  class="pdf-reader"
+  data-pdf-reader
+  data-pdf-url={pdfUrl}
+  aria-label={`${title} PDF reader`}
+>
+  <header class="pdf-reader__bar">
+    <a class="pdf-reader__back" href={backUrl} aria-label="Back to work details">
+      <span aria-hidden="true">←</span><span class="pdf-reader__back-label">Back</span>
+    </a>
+
+    <div class="pdf-reader__identity">
+      <strong>{title}</strong>
+      <span>PDF · {version}</span>
+    </div>
+
+    <div class="pdf-reader__controls" role="toolbar" aria-label="PDF controls">
+      <button type="button" data-action="outline" aria-expanded="false" title="Table of contents">
+        <span aria-hidden="true">☰</span><span class="pdf-reader__button-label">Contents</span>
+      </button>
+      <button type="button" data-action="previous" title="Previous page" disabled>
+        <span aria-hidden="true">‹</span><span class="sr-only">Previous page</span>
+      </button>
+      <label class="pdf-reader__page">
+        <span class="sr-only">Page number</span>
+        <input data-page-input type="number" min="1" value="1" inputmode="numeric" />
+        <span aria-hidden="true">/</span>
+        <output data-page-count>—</output>
+      </label>
+      <button type="button" data-action="next" title="Next page" disabled>
+        <span aria-hidden="true">›</span><span class="sr-only">Next page</span>
+      </button>
+      <span class="pdf-reader__divider" aria-hidden="true"></span>
+      <button type="button" data-action="zoom-out" title="Zoom out" disabled>
+        <span aria-hidden="true">−</span><span class="sr-only">Zoom out</span>
+      </button>
+      <output class="pdf-reader__zoom" data-zoom>100%</output>
+      <button type="button" data-action="zoom-in" title="Zoom in" disabled>
+        <span aria-hidden="true">+</span><span class="sr-only">Zoom in</span>
+      </button>
+      <button type="button" data-action="fit" title="Fit to width" disabled>
+        <span aria-hidden="true">↔</span><span class="pdf-reader__button-label">Fit width</span>
+      </button>
+      <button type="button" data-action="find" aria-expanded="false" title="Find in document">
+        <span aria-hidden="true">⌕</span><span class="pdf-reader__button-label">Find</span>
+      </button>
+      <a href={pdfUrl} download={downloadName} title="Download PDF">
+        <span aria-hidden="true">⇩</span><span class="pdf-reader__button-label">Download</span>
+      </a>
+      <a href={pdfUrl} target="_blank" rel="noopener" title="Open original PDF">
+        <span aria-hidden="true">↗</span><span class="pdf-reader__button-label">Original</span>
+      </a>
+    </div>
+  </header>
+
+  <form class="pdf-reader__find" data-find-form hidden role="search">
+    <label>
+      <span class="sr-only">Find in document</span>
+      <input data-find-input type="search" autocomplete="off" placeholder="Find in document…" />
+    </label>
+    <output data-find-status aria-live="polite"></output>
+    <button type="button" data-action="find-previous" title="Previous match">↑</button>
+    <button type="button" data-action="find-next" title="Next match">↓</button>
+    <button type="button" data-action="find-close" title="Close search">×</button>
+  </form>
+
+  <div class="pdf-reader__body">
+    <aside class="pdf-reader__outline" data-outline-panel hidden aria-label="Table of contents">
+      <div class="pdf-reader__outline-heading">
+        <strong>Contents</strong>
+        <button type="button" data-action="outline-close" title="Close table of contents">×</button>
+      </div>
+      <nav data-outline-list></nav>
+      <p data-outline-empty hidden>This document has no table of contents.</p>
+    </aside>
+
+    <div class="pdf-reader__stage" data-viewer-container tabindex="0" aria-label="PDF document">
+      <div class="pdfViewer" data-pdf-viewer></div>
+    </div>
+
+    <div class="pdf-reader__status" data-load-status role="status" aria-live="polite">
+      <div class="pdf-reader__spinner" aria-hidden="true"></div>
+      <strong data-status-title>Opening document…</strong>
+      <progress data-progress max="100"></progress>
+      <span data-status-detail>Preparing the reader</span>
+      <button type="button" data-action="retry" hidden>Try again</button>
+    </div>
+  </div>
+
+  <noscript>
+    <p class="pdf-reader__noscript">
+      JavaScript is required for the online reader.
+      <a href={pdfUrl}>Open the original PDF</a> or
+      <a href={pdfUrl} download={downloadName}>download it</a>.
+    </p>
+  </noscript>
+</section>
+
+<script>
+  import {
+    GlobalWorkerOptions,
+    getDocument,
+    type PDFDocumentProxy,
+    type PDFDocumentLoadingTask,
+  } from "pdfjs-dist";
+  import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+  import {
+    EventBus,
+    PDFFindController,
+    PDFLinkService,
+    PDFViewer,
+  } from "pdfjs-dist/web/pdf_viewer.mjs";
+
+  GlobalWorkerOptions.workerSrc = workerUrl;
+
+  /** @brief PDF.js 辅助资源根目录 (PDF.js auxiliary asset root). */
+  const assetRoot = "/_pdfjs/6.2.108/";
+
+  /** @brief 将未知异常转换为可读信息 (Convert an unknown exception into readable text).
+   * @param error 未知异常 (unknown exception).
+   * @return 可展示的信息 (displayable message).
+   */
+  function errorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : "The document could not be opened.";
+  }
+
+  /** @brief 初始化一个页面内 PDF 阅读器 (Initialize one in-page PDF reader).
+   * @param root 阅读器根元素 (reader root element).
+   * @return 无返回值 (no return value).
+   */
+  function initializeReader(root: HTMLElement): void {
+    const pdfUrl = root.dataset.pdfUrl;
+    const container = root.querySelector<HTMLElement>("[data-viewer-container]")!;
+    const viewerElement = root.querySelector<HTMLElement>("[data-pdf-viewer]")!;
+    const status = root.querySelector<HTMLElement>("[data-load-status]")!;
+    const statusTitle = root.querySelector<HTMLElement>("[data-status-title]")!;
+    const statusDetail = root.querySelector<HTMLElement>("[data-status-detail]")!;
+    const progress = root.querySelector<HTMLProgressElement>("[data-progress]")!;
+    const retry = root.querySelector<HTMLButtonElement>("[data-action='retry']")!;
+    const pageInput = root.querySelector<HTMLInputElement>("[data-page-input]")!;
+    const pageCount = root.querySelector<HTMLOutputElement>("[data-page-count]")!;
+    const zoomOutput = root.querySelector<HTMLOutputElement>("[data-zoom]")!;
+    const findForm = root.querySelector<HTMLFormElement>("[data-find-form]")!;
+    const findInput = root.querySelector<HTMLInputElement>("[data-find-input]")!;
+    const findStatus = root.querySelector<HTMLOutputElement>("[data-find-status]")!;
+    const outlinePanel = root.querySelector<HTMLElement>("[data-outline-panel]")!;
+    const outlineList = root.querySelector<HTMLElement>("[data-outline-list]")!;
+    const outlineEmpty = root.querySelector<HTMLElement>("[data-outline-empty]")!;
+
+    if (!pdfUrl) return;
+
+    const eventBus = new EventBus();
+    const linkService = new PDFLinkService({ eventBus });
+    const findController = new PDFFindController({ eventBus, linkService });
+    const pdfViewer = new PDFViewer({
+      container: container as HTMLDivElement,
+      viewer: viewerElement as HTMLDivElement,
+      eventBus,
+      linkService,
+      findController,
+      imageResourcesPath: `${assetRoot}images/`,
+      removePageBorders: false,
+    });
+
+    linkService.setViewer(pdfViewer);
+    let loadingTask: PDFDocumentLoadingTask | undefined;
+    let pdfDocument: PDFDocumentProxy | undefined;
+    let findQuery = "";
+    let readerReady = false;
+    const initialHash = location.hash.slice(1);
+
+    /** @brief 按动作名获取控件 (Get a control by action name).
+     * @param action 动作名称 (action name).
+     * @return 匹配的按钮或链接 (matching button or link).
+     */
+    const actionControl = (action: string) =>
+      root.querySelector<HTMLElement>(`[data-action='${action}']`);
+
+    /** @brief 更新翻页与缩放控件状态 (Update paging and zoom control state). */
+    function updateControls(): void {
+      const page = pdfViewer.currentPageNumber;
+      const pages = pdfDocument?.numPages ?? 0;
+      pageInput.value = String(page || 1);
+      pageInput.max = String(pages || 1);
+      pageCount.value = pages ? String(pages) : "—";
+      actionControl("previous")?.toggleAttribute("disabled", page <= 1);
+      actionControl("next")?.toggleAttribute("disabled", !pages || page >= pages);
+      const scale = pdfViewer.currentScale || 1;
+      zoomOutput.value = `${Math.round(scale * 100)}%`;
+    }
+
+    /** @brief 同步当前页到地址哈希 (Synchronize current page to the URL hash).
+     * @param page 当前页码 (current page number).
+     */
+    function syncHash(page: number): void {
+      const next = `${location.pathname}${location.search}#page=${page}`;
+      history.replaceState(history.state, "", next);
+    }
+
+    /** @brief 构建可递归展开的 PDF 目录 (Build the recursive PDF outline).
+     * @param items PDF.js 目录节点 (PDF.js outline nodes).
+     * @param parent 要追加节点的容器 (container receiving nodes).
+     */
+    function renderOutline(items: Awaited<ReturnType<PDFDocumentProxy["getOutline"]>>, parent: HTMLElement): void {
+      if (!items) return;
+      const list = document.createElement("ol");
+      for (const item of items) {
+        const row = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = item.title;
+        button.addEventListener("click", () => {
+          if (item.dest) void linkService.goToDestination(item.dest);
+          if (matchMedia("(max-width: 760px)").matches) toggleOutline(false);
+        });
+        row.append(button);
+        if (item.items.length) renderOutline(item.items, row);
+        list.append(row);
+      }
+      parent.append(list);
+    }
+
+    /** @brief 开关目录侧栏 (Toggle the outline sidebar).
+     * @param force 指定显示状态 (forced visibility state).
+     */
+    function toggleOutline(force?: boolean): void {
+      const expanded = force ?? outlinePanel.hidden;
+      outlinePanel.hidden = !expanded;
+      actionControl("outline")?.setAttribute("aria-expanded", String(expanded));
+    }
+
+    /** @brief 开关文档查找栏 (Toggle the document find bar).
+     * @param force 指定显示状态 (forced visibility state).
+     */
+    function toggleFind(force?: boolean): void {
+      const expanded = force ?? findForm.hidden;
+      findForm.hidden = !expanded;
+      actionControl("find")?.setAttribute("aria-expanded", String(expanded));
+      if (expanded) findInput.focus();
+    }
+
+    /** @brief 向 PDF.js 派发查找请求 (Dispatch a find request to PDF.js).
+     * @param previous 是否查找上一个匹配项 (whether to find the previous match).
+     * @param again 是否继续现有查找 (whether to continue an existing search).
+     */
+    function runFind(previous = false, again = false): void {
+      findQuery = findInput.value.trim();
+      if (!findQuery) {
+        findStatus.value = "";
+        return;
+      }
+      eventBus.dispatch("find", {
+        source: root,
+        type: again ? "again" : "",
+        query: findQuery,
+        caseSensitive: false,
+        entireWord: false,
+        highlightAll: true,
+        findPrevious: previous,
+        matchDiacritics: true,
+      });
+    }
+
+    /** @brief 打开或重新打开 PDF 文档 (Open or reopen the PDF document). */
+    async function openDocument(): Promise<void> {
+      readerReady = false;
+      status.hidden = false;
+      retry.hidden = true;
+      progress.hidden = false;
+      progress.removeAttribute("value");
+      statusTitle.textContent = "Opening document…";
+      statusDetail.textContent = "Preparing the reader";
+      root.classList.remove("pdf-reader--error", "pdf-reader--ready");
+
+      try {
+        await loadingTask?.destroy();
+        loadingTask = getDocument({
+          url: pdfUrl,
+          cMapUrl: `${assetRoot}cmaps/`,
+          cMapPacked: true,
+          standardFontDataUrl: `${assetRoot}standard_fonts/`,
+          wasmUrl: `${assetRoot}wasm/`,
+          iccUrl: `${assetRoot}iccs/`,
+        });
+        loadingTask.onProgress = ({ loaded, total }: { loaded: number; total: number }) => {
+          if (total > 0) {
+            progress.value = Math.min(100, Math.round((loaded / total) * 100));
+            statusDetail.textContent = `${progress.value}%`;
+          } else {
+            progress.removeAttribute("value");
+            statusDetail.textContent = `${Math.round(loaded / 1024)} KiB received`;
+          }
+        };
+        pdfDocument = await loadingTask.promise;
+        linkService.setDocument(pdfDocument);
+        findController.setDocument(pdfDocument);
+        pdfViewer.setDocument(pdfDocument);
+
+        const outline = await pdfDocument.getOutline();
+        outlineList.replaceChildren();
+        outlineEmpty.hidden = Boolean(outline?.length);
+        renderOutline(outline, outlineList);
+        actionControl("outline")?.toggleAttribute("disabled", !outline?.length);
+      } catch (error) {
+        statusTitle.textContent = "Unable to open this PDF";
+        statusDetail.textContent = errorMessage(error);
+        progress.hidden = true;
+        retry.hidden = false;
+        root.classList.add("pdf-reader--error");
+      }
+    }
+
+    eventBus.on("pagesinit", () => {
+      pdfViewer.currentScaleValue = "page-width";
+      if (initialHash) linkService.setHash(initialHash);
+      readerReady = true;
+      status.hidden = true;
+      root.classList.add("pdf-reader--ready");
+      for (const action of ["zoom-out", "zoom-in", "fit"]) {
+        actionControl(action)?.removeAttribute("disabled");
+      }
+      updateControls();
+      container.focus({ preventScroll: true });
+    });
+    eventBus.on("pagechanging", ({ pageNumber }: { pageNumber: number }) => {
+      updateControls();
+      if (readerReady) syncHash(pageNumber);
+    });
+    eventBus.on("scalechanging", () => updateControls());
+    eventBus.on("updatefindmatchescount", ({ matchesCount }: { matchesCount: { current: number; total: number } }) => {
+      findStatus.value = matchesCount.total
+        ? `${matchesCount.current} of ${matchesCount.total}`
+        : findQuery ? "No matches" : "";
+    });
+
+    root.addEventListener("click", (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLElement>("[data-action]");
+      const action = target?.dataset.action;
+      if (!action) return;
+      if (action === "previous" && pdfViewer.currentPageNumber > 1) pdfViewer.currentPageNumber -= 1;
+      if (action === "next" && pdfDocument && pdfViewer.currentPageNumber < pdfDocument.numPages) pdfViewer.currentPageNumber += 1;
+      if (action === "zoom-out") pdfViewer.currentScale = Math.max(0.25, pdfViewer.currentScale / 1.15);
+      if (action === "zoom-in") pdfViewer.currentScale = Math.min(5, pdfViewer.currentScale * 1.15);
+      if (action === "fit") pdfViewer.currentScaleValue = "page-width";
+      if (action === "find") toggleFind();
+      if (action === "find-close") toggleFind(false);
+      if (action === "find-next") runFind(false, true);
+      if (action === "find-previous") runFind(true, true);
+      if (action === "outline") toggleOutline();
+      if (action === "outline-close") toggleOutline(false);
+      if (action === "retry") void openDocument();
+    });
+    pageInput.addEventListener("change", () => {
+      const page = Math.max(1, Math.min(pdfDocument?.numPages ?? 1, Number(pageInput.value) || 1));
+      pdfViewer.currentPageNumber = page;
+      updateControls();
+    });
+    findForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      runFind(false, findQuery === findInput.value.trim());
+    });
+    findInput.addEventListener("input", () => runFind());
+    window.addEventListener("hashchange", () => linkService.setHash(location.hash.slice(1)));
+    root.addEventListener("keydown", (event) => {
+      const typing = event.target instanceof HTMLInputElement;
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f") {
+        event.preventDefault();
+        toggleFind(true);
+      } else if (event.key === "Escape") {
+        if (!findForm.hidden) toggleFind(false);
+        else if (!outlinePanel.hidden) toggleOutline(false);
+      } else if (!typing && (event.key === "PageDown" || event.key === "ArrowRight")) {
+        event.preventDefault();
+        actionControl("next")?.click();
+      } else if (!typing && (event.key === "PageUp" || event.key === "ArrowLeft")) {
+        event.preventDefault();
+        actionControl("previous")?.click();
+      } else if (!typing && (event.key === "+" || event.key === "=")) {
+        event.preventDefault();
+        actionControl("zoom-in")?.click();
+      } else if (!typing && event.key === "-") {
+        event.preventDefault();
+        actionControl("zoom-out")?.click();
+      }
+    });
+
+    void openDocument();
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-pdf-reader]")) {
+    initializeReader(root);
+  }
+</script>

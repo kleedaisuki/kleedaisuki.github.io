@@ -1,0 +1,479 @@
+/**
+ * @brief Atelier PDF 阅读器视觉系统 (Atelier PDF reader visual system).
+ * @note 保留 PDF.js 的布局约定，并用站点令牌统一工具栏与状态层。
+ * Keep PDF.js layout contracts while styling chrome and states with site tokens.
+ */
+
+.pdf-reader {
+  --reader-bar-height: 4.2rem;
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  width: 100%;
+  height: min(100dvh, 68rem);
+  min-height: 38rem;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-large);
+  background: color-mix(in srgb, var(--surface-muted) 82%, var(--bg-color));
+  box-shadow: var(--shadow-md);
+}
+
+.pdf-reader__bar {
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: var(--reader-bar-height);
+  padding: 0.62rem 0.78rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--surface-strong) 92%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.pdf-reader__back,
+.pdf-reader__controls button,
+.pdf-reader__controls a,
+.pdf-reader__find button,
+.pdf-reader__outline-heading button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.38rem;
+  min-height: 2.35rem;
+  padding: 0.42rem 0.68rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.72rem;
+  color: var(--text-color);
+  background: var(--surface-elevated);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    background var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+.pdf-reader__back:hover,
+.pdf-reader__controls button:hover:not(:disabled),
+.pdf-reader__controls a:hover,
+.pdf-reader__find button:hover,
+.pdf-reader__outline-heading button:hover {
+  color: var(--on-accent);
+  background: var(--interactive-color);
+  transform: translateY(-1px);
+}
+
+.pdf-reader__controls button:focus-visible,
+.pdf-reader__controls a:focus-visible,
+.pdf-reader__back:focus-visible,
+.pdf-reader__find button:focus-visible,
+.pdf-reader__outline button:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.pdf-reader__controls button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.pdf-reader__identity {
+  display: grid;
+  min-width: 8rem;
+  margin-right: auto;
+  line-height: 1.2;
+}
+
+.pdf-reader__identity strong {
+  max-width: 28ch;
+  overflow: hidden;
+  color: var(--heading-color);
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pdf-reader__identity span {
+  margin-top: 0.22rem;
+  color: var(--text-soft);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+}
+
+.pdf-reader__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.32rem;
+}
+
+.pdf-reader__controls > button,
+.pdf-reader__controls > a {
+  flex: none;
+}
+
+.pdf-reader__divider {
+  width: 1px;
+  height: 1.65rem;
+  margin-inline: 0.1rem;
+  background: var(--border-subtle);
+}
+
+.pdf-reader__page {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--text-soft);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.pdf-reader__page input {
+  width: 3.2rem;
+  min-height: 2.2rem;
+  padding: 0.3rem 0.2rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.62rem;
+  color: var(--text-color);
+  background: var(--surface-strong);
+  font: inherit;
+  text-align: center;
+  appearance: textfield;
+}
+
+.pdf-reader__page input::-webkit-inner-spin-button,
+.pdf-reader__page input::-webkit-outer-spin-button {
+  appearance: none;
+}
+
+.pdf-reader__zoom {
+  min-width: 3.6rem;
+  color: var(--text-soft);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.pdf-reader__find {
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.42rem;
+  min-height: 3.25rem;
+  padding: 0.45rem 0.78rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-muted);
+}
+
+.pdf-reader__find[hidden],
+.pdf-reader__outline[hidden],
+.pdf-reader__status[hidden] {
+  display: none;
+}
+
+.pdf-reader__find label {
+  flex: 0 1 21rem;
+}
+
+.pdf-reader__find input {
+  width: 100%;
+  min-height: 2.35rem;
+  padding: 0.42rem 0.72rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.72rem;
+  color: var(--text-color);
+  background: var(--surface-strong);
+  font: inherit;
+}
+
+.pdf-reader__find output {
+  min-width: 5.7rem;
+  color: var(--text-soft);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.pdf-reader__body {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pdf-reader__stage {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  background:
+    radial-gradient(circle at 50% 0%, var(--accent-wash), transparent 34rem),
+    color-mix(in srgb, var(--bg-accent) 32%, var(--surface-muted));
+  scrollbar-color: var(--border-color) transparent;
+  overscroll-behavior: contain;
+}
+
+.pdf-reader__stage:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: -3px;
+}
+
+.pdf-reader .pdfViewer {
+  padding-block: 1.4rem 3rem;
+}
+
+.pdf-reader .pdfViewer .page {
+  margin: 0 auto 1.25rem;
+  border: 0;
+  border-radius: 0.2rem;
+  box-shadow: 0 14px 38px rgba(56, 30, 18, 0.22);
+}
+
+:root[data-theme="dark"] .pdf-reader .pdfViewer .page {
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.48);
+}
+
+.pdf-reader__outline {
+  z-index: 3;
+  width: min(21rem, 42%);
+  height: 100%;
+  overflow: auto;
+  border-right: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--surface-strong) 96%, transparent);
+  box-shadow: 12px 0 28px var(--shadow-color);
+  overscroll-behavior: contain;
+}
+
+.pdf-reader__outline-heading {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-strong);
+}
+
+.pdf-reader__outline nav {
+  padding: 0.5rem 0.62rem 1.5rem;
+}
+
+.pdf-reader__outline ol {
+  margin: 0;
+  padding-left: 0.82rem;
+  list-style: none;
+}
+
+.pdf-reader__outline button {
+  width: 100%;
+  padding: 0.42rem 0.52rem;
+  border: 0;
+  border-radius: 0.58rem;
+  color: var(--text-color);
+  background: transparent;
+  font: inherit;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pdf-reader__outline nav button:hover {
+  color: var(--accent-text-hover);
+  background: var(--accent-wash);
+}
+
+.pdf-reader__outline > p {
+  padding: 1rem;
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+
+.pdf-reader__status {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.72rem;
+  padding: 2rem;
+  color: var(--text-soft);
+  background: color-mix(in srgb, var(--surface-muted) 94%, transparent);
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+
+.pdf-reader__status strong {
+  color: var(--heading-color);
+  font-size: 1.05rem;
+}
+
+.pdf-reader__status progress {
+  width: min(18rem, 76%);
+  accent-color: var(--accent-color);
+}
+
+.pdf-reader__status > button {
+  min-height: 2.4rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  color: var(--on-accent);
+  background: var(--interactive-color);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pdf-reader__spinner {
+  width: 2.15rem;
+  aspect-ratio: 1;
+  border: 3px solid var(--border-subtle);
+  border-top-color: var(--accent-color);
+  border-radius: 50%;
+  animation: pdf-reader-spin 0.8s linear infinite;
+}
+
+.pdf-reader--error .pdf-reader__spinner {
+  animation: none;
+  border-color: var(--accent-berry);
+}
+
+.pdf-reader__noscript {
+  position: absolute;
+  inset: auto 1rem 1rem;
+  z-index: 8;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-small);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes pdf-reader-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (max-width: 960px) {
+  .pdf-reader__button-label,
+  .pdf-reader__back-label,
+  .pdf-reader__divider {
+    display: none;
+  }
+
+  .pdf-reader__identity strong {
+    max-width: 18ch;
+  }
+
+  .pdf-reader__controls button,
+  .pdf-reader__controls a,
+  .pdf-reader__back {
+    width: 2.35rem;
+    padding-inline: 0.42rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .pdf-reader {
+    height: calc(100dvh - 1rem);
+    min-height: 30rem;
+    border-radius: var(--radius-medium);
+  }
+
+  .pdf-reader__bar {
+    flex-wrap: wrap;
+    gap: 0.42rem;
+    padding: 0.48rem;
+  }
+
+  .pdf-reader__identity {
+    min-width: 0;
+  }
+
+  .pdf-reader__identity strong {
+    max-width: 48vw;
+  }
+
+  .pdf-reader__controls {
+    order: 2;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.12rem;
+    scrollbar-width: none;
+  }
+
+  .pdf-reader__controls::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pdf-reader__page {
+    flex: none;
+  }
+
+  .pdf-reader__outline {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: min(88%, 22rem);
+  }
+
+  .pdf-reader__find {
+    justify-content: stretch;
+    padding: 0.42rem;
+  }
+
+  .pdf-reader__find label {
+    min-width: 7rem;
+  }
+
+  .pdf-reader__find output {
+    min-width: 4rem;
+  }
+
+  .pdf-reader .pdfViewer {
+    padding-block: 0.7rem 2rem;
+  }
+}
+
+@media (max-width: 430px) {
+  .pdf-reader__zoom,
+  .pdf-reader__controls [data-action="zoom-out"],
+  .pdf-reader__controls [data-action="zoom-in"] {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdf-reader__spinner {
+    animation-duration: 1.8s;
+  }
+
+  .pdf-reader__back,
+  .pdf-reader__controls button,
+  .pdf-reader__controls a,
+  .pdf-reader__find button,
+  .pdf-reader__outline-heading button {
+    transition: none;
+  }
+}
