@@ -316,7 +316,7 @@ export function getSourceDownloadUrl(
   version: string,
   sourcePath: string,
 ): string {
-  return `/atelier/${encodeSegment(slug)}/${encodeSegment(version)}/download/${encodePath(sourcePath)}`;
+  return getSourceRawUrl(slug, version, sourcePath);
 }
 
 /**

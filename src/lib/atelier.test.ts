@@ -108,7 +108,7 @@ describe("Atelier URLs", () => {
       "/atelier/demo/v1/raw/src/main.ts",
     );
     expect(getSourceDownloadUrl("demo", "v1", "src/main.ts")).toBe(
-      "/atelier/demo/v1/download/src/main.ts",
+      "/atelier/demo/v1/raw/src/main.ts",
     );
     expect(getSourceArchiveUrl("demo", "v1")).toBe(
       "/atelier/demo/v1/source.zip",
