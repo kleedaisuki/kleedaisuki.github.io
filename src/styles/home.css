@@ -17,6 +17,7 @@
   border-radius: var(--radius-large);
   background: linear-gradient(155deg, var(--studio-paper), var(--accent-wash));
   box-shadow: var(--shadow-md);
+  animation: studio-enter 260ms var(--ease-emphasized) both;
 }
 
 .studio-hero::after {
@@ -111,6 +112,11 @@
   gap: clamp(1rem, 3vw, 1.5rem);
 }
 
+/* @brief 将首屏入口作为单一动画组呈现 / Present the above-the-fold doors as one animation group. */
+.studio-doors {
+  animation: studio-enter 260ms 70ms var(--ease-emphasized) both;
+}
+
 .studio-door {
   position: relative;
   display: grid;
@@ -177,11 +183,24 @@
 }
 
 .studio-door__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   justify-self: start;
   margin-block-start: 1.6rem;
-  border-bottom: 1px solid currentColor;
+  padding: 0.5rem 0.72rem;
+  border: 1px solid color-mix(in srgb, var(--accent-color) 56%, transparent);
+  border-radius: var(--radius-small);
+  background: color-mix(in srgb, var(--accent-wash) 72%, transparent);
   color: var(--accent-text);
   font-weight: 700;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
+}
+
+.studio-door__action > span {
+  transition: transform var(--motion-fast) var(--ease-emphasized);
 }
 
 .studio-section-heading {
@@ -212,6 +231,10 @@
   border-radius: var(--radius-medium);
   background: var(--studio-paper);
   box-shadow: var(--shadow-sm);
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-emphasized);
 }
 
 .studio-track__heading {
@@ -240,9 +263,17 @@
 
 .studio-track__heading > a {
   flex: none;
+  padding: 0.42rem 0.65rem;
+  border-radius: var(--radius-small);
+  background: var(--accent-wash);
   color: var(--accent-text);
   font-size: 0.88rem;
   font-weight: 700;
+  text-decoration: none;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-emphasized);
 }
 
 .studio-list {
@@ -262,7 +293,10 @@
   gap: 0.65rem;
   padding: 1.25rem 1.35rem;
   color: inherit;
-  transition: background-color var(--motion-fast) var(--ease-standard);
+  text-decoration: none;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-base) var(--ease-emphasized);
 }
 
 .studio-list__body {
@@ -311,7 +345,9 @@
   gap: clamp(1.5rem, 5vw, 4rem);
   align-items: center;
   padding: clamp(1.5rem, 4vw, 2.5rem);
-  border-block: 1px solid var(--studio-rule);
+  border: 1px solid var(--studio-rule);
+  border-radius: var(--radius-medium);
+  background: color-mix(in srgb, var(--studio-paper) 72%, transparent);
 }
 
 .studio-materials ul {
@@ -340,16 +376,74 @@
   .studio-door:hover {
     border-color: var(--accent-color);
     box-shadow: var(--shadow-md);
-    transform: translateY(-0.28rem);
+    transform: translateY(-0.125rem);
+  }
+
+  .studio-door:hover .studio-door__action {
+    border-color: var(--accent-color);
+    background: var(--accent-wash);
+  }
+
+  .studio-door:hover .studio-door__action > span,
+  .studio-track__heading > a:hover {
+    transform: translateX(0.18rem);
+  }
+
+  .studio-track:hover,
+  .studio-track:focus-within {
+    border-color: color-mix(
+      in srgb,
+      var(--accent-color) 72%,
+      var(--studio-rule)
+    );
+    box-shadow: var(--shadow-md);
+    transform: translateY(-0.125rem);
   }
 
   .studio-list a:hover {
     background: var(--accent-wash);
+    transform: translateY(-0.125rem);
   }
 
   .studio-list a:hover h4 {
     color: var(--accent-strong);
   }
+}
+
+.studio-door:active,
+.studio-track:active,
+.studio-list a:active {
+  transform: scale(0.99);
+}
+
+.studio-door:focus-visible,
+.studio-track:focus-within {
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-0.125rem);
+}
+
+.studio-door:focus-visible .studio-door__action {
+  border-color: var(--accent-color);
+  background: var(--accent-wash);
+}
+
+.studio-door:focus-visible .studio-door__action > span {
+  transform: translateX(0.18rem);
+}
+
+.studio-list a:focus-visible {
+  background: var(--accent-wash);
+  transform: translateY(-0.125rem);
+}
+
+.studio-list a:focus-visible h4 {
+  color: var(--accent-strong);
+}
+
+.studio-track__heading > a:focus-visible {
+  background: var(--accent-wash);
+  transform: translateX(0.18rem);
 }
 
 .studio-door:focus-visible,
@@ -375,7 +469,7 @@
   }
 
   .studio-materials {
-    padding-inline: 0;
+    padding-inline: 1.3rem;
   }
 }
 
@@ -395,7 +489,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .studio-hero,
+  .studio-doors {
+    animation: none;
+  }
+
   .studio-door,
+  .studio-door__action,
+  .studio-door__action > span,
+  .studio-track,
+  .studio-track__heading > a,
   .studio-list a,
   .studio-list h4 {
     transition: none;
@@ -403,5 +506,31 @@
 
   .studio-door:hover {
     transform: none;
+  }
+
+  .studio-track:hover,
+  .studio-track:focus-within,
+  .studio-list a:hover,
+  .studio-door:focus-visible,
+  .studio-door:active,
+  .studio-track:active,
+  .studio-list a:active,
+  .studio-door:hover .studio-door__action > span,
+  .studio-door:focus-visible .studio-door__action > span,
+  .studio-track__heading > a:hover {
+    transform: none;
+  }
+}
+
+/* @brief 提供克制的首屏进入动画 / Provide a restrained above-the-fold entrance animation. */
+@keyframes studio-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.375rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
