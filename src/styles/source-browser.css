@@ -85,7 +85,13 @@
   align-items: baseline;
   min-width: 0;
   padding: 0.36rem 0.48rem;
-  border-radius: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
 }
 
 .source-tree summary {
@@ -116,6 +122,12 @@
 .source-tree a[aria-current="page"] {
   color: var(--on-accent);
   background: var(--interactive-color);
+}
+
+/** @brief 为源码树的链接与展开项提供一致的键盘焦点 (Provide consistent keyboard focus for source-tree links and disclosure rows). */
+.source-tree :is(a, summary):focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .source-viewer {
@@ -162,7 +174,7 @@
   min-height: 2.25rem;
   padding: 0.38rem 0.68rem;
   border: 1px solid var(--border-color);
-  border-radius: 999px;
+  border-radius: var(--radius-small);
   background: var(--surface-strong);
   color: var(--accent-text);
   font: inherit;
@@ -171,6 +183,18 @@
   line-height: 1.2;
   text-decoration: none;
   cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+/** @brief 为源码操作按钮提供清晰且即时的键盘焦点 (Provide clear and immediate keyboard focus for source actions). */
+.source-viewer__actions :is(a, button):focus-visible,
+.source-viewer__download:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .source-viewer__code {
@@ -294,6 +318,8 @@
   .source-tree a:hover,
   .source-tree summary:hover {
     background: var(--accent-wash);
+    border-color: var(--border-subtle);
+    transform: translateY(-1px);
   }
 
   .source-viewer__actions a:hover,
@@ -301,11 +327,37 @@
   .source-viewer__download:hover {
     color: var(--on-accent);
     background: var(--interactive-color);
+    border-color: var(--interactive-color);
+    transform: translateY(-1px);
   }
+}
+
+/** @brief 为源码树和操作控件提供九十毫秒轻压状态 (Provide a ninety-millisecond press state for source-tree and action controls). */
+:where(
+  .source-tree a,
+  .source-tree summary,
+  .source-viewer__actions a,
+  .source-viewer__actions button,
+  .source-viewer__download
+):active {
+  transform: translateY(1px) scale(0.98);
+  transition-duration: 90ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .source-tree__chevron {
     transition: none;
+  }
+
+  /** @brief 减少动态时取消控件位移并保留即时状态色 (Remove control displacement while retaining immediate state colors under reduced motion). */
+  :where(
+    .source-tree a,
+    .source-tree summary,
+    .source-viewer__actions a,
+    .source-viewer__actions button,
+    .source-viewer__download
+  ) {
+    transform: none;
+    transition-duration: 0.01ms;
   }
 }

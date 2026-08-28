@@ -57,7 +57,7 @@
   min-height: 2.35rem;
   padding: 0.42rem 0.68rem;
   border: 1px solid var(--border-subtle);
-  border-radius: 0.72rem;
+  border-radius: var(--radius-small);
   color: var(--text-color);
   background: var(--surface-elevated);
   font: inherit;
@@ -68,7 +68,8 @@
   cursor: pointer;
   transition:
     color var(--motion-fast) var(--ease-standard),
-    background var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
     transform var(--motion-fast) var(--ease-standard);
 }
 
@@ -123,7 +124,7 @@
   min-height: 2.2rem;
   padding: 0.3rem 0.2rem;
   border: 1px solid var(--border-subtle);
-  border-radius: 0.62rem;
+  border-radius: var(--radius-small);
   color: var(--text-color);
   background: var(--surface-strong);
   font: inherit;
@@ -172,7 +173,7 @@
   min-height: 2.35rem;
   padding: 0.42rem 0.72rem;
   border: 1px solid var(--border-subtle);
-  border-radius: 0.72rem;
+  border-radius: var(--radius-small);
   color: var(--text-color);
   background: var(--surface-strong);
   font: inherit;
@@ -262,7 +263,7 @@
   width: 100%;
   padding: 0.42rem 0.52rem;
   border: 0;
-  border-radius: 0.58rem;
+  border-radius: var(--radius-small);
   color: var(--text-color);
   background: transparent;
   font: inherit;
@@ -270,6 +271,10 @@
   line-height: 1.35;
   text-align: left;
   cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
 }
 
 .pdf-reader__outline > p {
@@ -309,12 +314,17 @@
   min-height: 2.4rem;
   padding: 0.45rem 0.9rem;
   border: 1px solid var(--border-color);
-  border-radius: 999px;
+  border-radius: var(--radius-small);
   color: var(--on-accent);
   background: var(--interactive-color);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
 }
 
 .pdf-reader__spinner {
@@ -369,7 +379,8 @@
   .pdf-reader__controls button:hover:not(:disabled),
   .pdf-reader__controls a:hover,
   .pdf-reader__find button:hover,
-  .pdf-reader__outline-heading button:hover {
+  .pdf-reader__outline-heading button:hover,
+  .pdf-reader__status > button:hover {
     color: var(--on-accent);
     background: var(--interactive-color);
     transform: translateY(-1px);
@@ -378,7 +389,22 @@
   .pdf-reader__outline nav button:hover {
     color: var(--accent-text-hover);
     background: var(--accent-wash);
+    transform: translateY(-1px);
   }
+}
+
+/** @brief 为阅读器内所有操作控件统一轻压反馈 (Unify press feedback for every reader action control). */
+:where(
+  .pdf-reader__back,
+  .pdf-reader__controls button,
+  .pdf-reader__controls a,
+  .pdf-reader__find button,
+  .pdf-reader__outline-heading button,
+  .pdf-reader__outline nav button,
+  .pdf-reader__status > button
+):active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+  transition-duration: 90ms;
 }
 
 @media (max-width: 960px) {
@@ -507,14 +533,17 @@
 
 @media (prefers-reduced-motion: reduce) {
   .pdf-reader__spinner {
-    animation-duration: 1.8s;
+    animation: none;
   }
 
   .pdf-reader__back,
   .pdf-reader__controls button,
   .pdf-reader__controls a,
   .pdf-reader__find button,
-  .pdf-reader__outline-heading button {
-    transition: none;
+  .pdf-reader__outline-heading button,
+  .pdf-reader__outline nav button,
+  .pdf-reader__status > button {
+    transform: none;
+    transition-duration: 0.01ms;
   }
 }

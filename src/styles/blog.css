@@ -38,6 +38,7 @@
       var(--surface-muted, var(--surface-color))
     );
   box-shadow: var(--shadow-md, 0 15px 28px var(--shadow-color));
+  animation: blog-reveal var(--motion-slow) var(--ease-emphasized) both;
 }
 
 .blog-header::before {
@@ -64,18 +65,6 @@
   text-wrap: balance;
 }
 
-.blog-title::after {
-  content: "";
-  position: absolute;
-  right: 12%;
-  bottom: -0.5rem;
-  left: 12%;
-  height: 0.22rem;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent-gold), var(--accent-berry));
-  opacity: 0.76;
-}
-
 .blog-description {
   max-width: 62ch;
   margin: 1.1rem auto 0;
@@ -100,9 +89,24 @@
   background: var(--surface-color);
   box-shadow: var(--shadow-sm, 0 8px 18px var(--shadow-color));
   transition:
-    transform var(--motion-fast, 180ms) ease,
-    border-color var(--motion-fast, 180ms) ease,
-    box-shadow var(--motion-fast, 180ms) ease;
+    transform var(--motion-fast, 160ms) var(--ease-standard),
+    border-color var(--motion-fast, 160ms) var(--ease-standard),
+    box-shadow var(--motion-fast, 160ms) var(--ease-standard),
+    background-color var(--motion-fast, 160ms) var(--ease-standard);
+  animation: blog-reveal var(--motion-slow) var(--ease-emphasized) both;
+}
+
+/** @brief 为前几篇文章添加克制的进入节奏 (Add a restrained entrance rhythm to the first few posts). */
+.post-item:nth-child(2) {
+  animation-delay: 55ms;
+}
+
+.post-item:nth-child(3) {
+  animation-delay: 110ms;
+}
+
+.post-item:nth-child(n + 4) {
+  animation-delay: 165ms;
 }
 
 .post-item::before {
@@ -112,13 +116,13 @@
   bottom: 1.2rem;
   left: 0;
   width: 0.24rem;
-  border-radius: 0 999px 999px 0;
+  border-radius: 0 var(--radius-small) var(--radius-small) 0;
   background: linear-gradient(180deg, var(--accent-gold), var(--accent-color));
 }
 
 @media (hover: hover) and (pointer: fine) {
   .post-item:hover {
-    transform: translateY(-0.22rem);
+    transform: translateY(-2px);
     border-color: color-mix(
       in srgb,
       var(--accent-color) 62%,
@@ -129,12 +133,19 @@
 }
 
 .post-item:focus-within {
+  transform: translateY(-2px);
   border-color: color-mix(
     in srgb,
     var(--accent-color) 68%,
     var(--border-subtle, var(--border-color))
   );
   box-shadow: var(--shadow-md, 0 14px 24px var(--shadow-color));
+}
+
+/** @brief 点击文章卡片时提供短促而稳定的轻压反馈 (Provide brief, stable press feedback when activating a post card). */
+.post-item:active {
+  transform: translateY(1px) scale(0.995);
+  transition-duration: 90ms;
 }
 
 .post-content {
@@ -166,7 +177,7 @@
       var(--accent-color) 26%,
       var(--border-subtle, var(--border-color))
     );
-  border-radius: 999px;
+  border-radius: var(--radius-small);
   background: color-mix(
     in srgb,
     var(--accent-wash, var(--accent-faint)) 68%,
@@ -184,24 +195,13 @@
 
 .post-title a {
   color: var(--heading-color);
-  text-decoration-line: underline;
-  text-decoration-color: color-mix(
-    in srgb,
-    var(--accent-color) 44%,
-    transparent
-  );
-  text-decoration-thickness: 0.12em;
-  text-decoration-skip-ink: auto;
-  text-underline-offset: 0.18em;
-  transition:
-    color var(--motion-fast, 180ms) ease,
-    text-decoration-color var(--motion-fast, 180ms) ease;
+  text-decoration: none;
+  transition: color var(--motion-fast, 160ms) var(--ease-standard);
 }
 
 .post-title a:hover,
 .post-title a:focus-visible {
   color: var(--accent-text-hover, var(--accent-text, var(--accent-strong)));
-  text-decoration-color: currentcolor;
 }
 
 .post-description {
@@ -230,7 +230,7 @@
       var(--border-subtle, var(--border-color)) 86%,
       var(--accent-color)
     );
-  border-radius: 999px;
+  border-radius: var(--radius-small);
   background: color-mix(
     in srgb,
     var(--accent-wash, var(--accent-faint)) 72%,
@@ -266,20 +266,12 @@
 
 .post-breadcrumb a {
   color: var(--text-soft);
-  text-decoration: underline;
-  text-decoration-color: color-mix(
-    in srgb,
-    var(--accent-color) 36%,
-    transparent
-  );
-  text-decoration-thickness: 0.1em;
-  text-underline-offset: 0.16em;
+  text-decoration: none;
 }
 
 .post-breadcrumb a:hover,
 .post-breadcrumb a:focus-visible {
   color: var(--accent-text-hover, var(--accent-text, var(--accent-strong)));
-  text-decoration-color: currentcolor;
 }
 
 .post-header {
@@ -345,19 +337,12 @@
 .post-byline a {
   color: inherit;
   font-weight: 700;
-  text-decoration: underline;
-  text-decoration-color: color-mix(
-    in srgb,
-    var(--accent-color) 42%,
-    transparent
-  );
-  text-underline-offset: 0.16em;
+  text-decoration: none;
 }
 
 .post-byline a:hover,
 .post-byline a:focus-visible {
   color: var(--accent-text-hover, var(--accent-text, var(--accent-strong)));
-  text-decoration-color: currentcolor;
 }
 
 .prose {
@@ -379,8 +364,6 @@
 
 .prose h2 {
   margin-top: clamp(2.5rem, 6vw, 3.5rem);
-  padding-bottom: 0.48rem;
-  border-bottom: 1px solid var(--border-subtle, var(--border-color));
 }
 
 .prose h3 {
@@ -411,6 +394,19 @@
 .prose :is(p, li) > a:hover,
 .prose :is(p, li) > a:focus-visible {
   text-decoration-color: currentcolor;
+}
+
+/** @brief 定义博客内容的短距离淡入动画 (Define the blog content's short-distance reveal animation). */
+@keyframes blog-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .prose :is(pre, blockquote, figure, table) {
@@ -525,10 +521,13 @@
     animation: none;
   }
 
+  .blog-header,
   .post-item,
   .post-title a,
   .post-breadcrumb a,
   .post-byline a {
     transition-duration: 0.01ms;
+    animation: none;
+    transform: none;
   }
 }
