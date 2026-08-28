@@ -694,12 +694,10 @@ img {
 }
 
 /** @brief 为全站圆角控件提供一致的轻压反馈 (Provide consistent press feedback for rounded site controls). */
-:where(
-  .site-wordmark,
-  .site-nav__links a,
-  .theme-toggle,
-  .lang-switch a
-):active {
+.site-wordmark:active,
+.site-nav__links a:active,
+.theme-toggle:active,
+.lang-switch a:active {
   transform: translateY(1px) scale(0.98);
   transition-duration: 90ms;
 }
