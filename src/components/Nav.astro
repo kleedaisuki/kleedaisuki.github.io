@@ -38,7 +38,7 @@ const links = [
   },
   {
     href: "https://me.moesegfault.dev",
-    label: "About ↗",
+    label: locale === "zh" ? "关于 ↗" : "About ↗",
     section: "external",
     rel: "me external",
     index: "03",
@@ -68,14 +68,14 @@ const themeCopy =
   locale === "en"
     ? {
         navigation: "Primary navigation",
-        brandNote: "Editorial workshop",
+        brandNote: "Writing and making",
         toggle: "Toggle light and dark theme",
         light: "Light",
         switchToDark: "Switch to dark theme",
       }
     : {
         navigation: "主导航",
-        brandNote: "编辑与制作工作室",
+        brandNote: "写作与制作",
         toggle: "切换日间与夜间主题",
         light: "日间",
         switchToDark: "切换至夜间主题",

@@ -111,8 +111,8 @@ const structuredData = createAtelierCollectionJsonLd({
   <div
     class="atelier-catalogue"
     data-atelier-catalogue
-    data-showing-all={locale === "zh" ? "共陈列 {count} 件制品。" : "Showing all {count} {noun}."}
-    data-showing-some={locale === "zh" ? "陈列 {visible}/{total} 件制品。" : "Showing {visible} of {total} artifacts."}
+    data-showing-all={locale === "zh" ? "共展示 {count} 件作品。" : "Showing all {count} {noun}."}
+    data-showing-some={locale === "zh" ? "展示 {visible}/{total} 件作品。" : "Showing {visible} of {total} works."}
   >
     <header class="atelier-hero">
       <p class="atelier-eyebrow">{copy.selectedWorks}</p>
@@ -141,7 +141,7 @@ const structuredData = createAtelierCollectionJsonLd({
           )}
 
           <p class="atelier-results-status" role="status" aria-live="polite" data-results-status>
-            {locale === "zh" ? `共陈列 ${works.length} 件制品。` : `Showing all ${works.length} ${works.length === 1 ? "artifact" : "artifacts"}.`}
+            {locale === "zh" ? `共展示 ${works.length} 件作品。` : `Showing all ${works.length} ${works.length === 1 ? "work" : "works"}.`}
           </p>
           <div class="atelier-grid" data-work-grid>
             {catalogueWorks.map(({ work, latest, types }) => (
@@ -253,7 +253,7 @@ const structuredData = createAtelierCollectionJsonLd({
           status.textContent = visibleCount === cards.length
             ? showingAll
                 .replace("{count}", String(visibleCount))
-                .replace("{noun}", visibleCount === 1 ? "artifact" : "artifacts")
+                .replace("{noun}", visibleCount === 1 ? "work" : "works")
             : showingSome
                 .replace("{visible}", String(visibleCount))
                 .replace("{total}", String(cards.length));

@@ -29,10 +29,10 @@ const {
 
 /** @brief 作品封面或统一默认封面 / Work cover or the shared default cover. */
 const coverUrl = cover ?? DEFAULT_ATELIER_COVER;
-/** @brief 当前语言的制品卡片文案 / Localized artifact-card copy. */
+/** @brief 当前语言的作品卡片文案 / Localized work-card copy. */
 const copy = ATELIER_COPY[locale];
-/** @brief 可读的最近制作日期 / Human-readable latest making date. */
-const madeDate = activityDate.toLocaleDateString(
+/** @brief 可读的最近活动日期 / Human-readable latest activity date. */
+const activityDateLabel = activityDate.toLocaleDateString(
   locale === "zh" ? "zh-CN" : "en",
   {
     year: "numeric",
@@ -56,15 +56,15 @@ const madeDate = activityDate.toLocaleDateString(
     <p>{summary}</p>
     <dl class="atelier-card__manifest">
       <div>
-        <dt>{copy.made}</dt>
-        <dd><time datetime={activityDate.toISOString()}>{madeDate}</time></dd>
+        <dt>{copy.lastActivity}</dt>
+        <dd><time datetime={activityDate.toISOString()}>{activityDateLabel}</time></dd>
       </div>
       <div>
-        <dt>{copy.materials}</dt>
+        <dt>{copy.includedFiles}</dt>
         <dd>{types.length > 0 ? types.join(" · ") : "—"}</dd>
       </div>
       <div>
-        <dt>{copy.versions}</dt>
+        <dt>{copy.releaseLabel}</dt>
         <dd>{version ? `v${version}` : "—"}</dd>
       </div>
     </dl>

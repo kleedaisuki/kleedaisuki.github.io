@@ -233,7 +233,7 @@ function verifyAtelier() {
       .map((entry) => entry.name);
     if (workDirectories.length === 0) {
       /** @brief 当前语言的正式空态标题 / Intentional empty-state title for the locale. */
-      const emptyTitle = locale === "zh" ? "Articrafts 正在准备中。" : "Articrafts is being prepared.";
+      const emptyTitle = locale === "zh" ? "这里暂时还空着。" : "Nothing here just yet.";
       assert(index.includes(emptyTitle), `Localized Articrafts has no intentional empty state: ${locale}`);
     }
 
