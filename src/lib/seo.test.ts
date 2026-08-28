@@ -56,6 +56,7 @@ describe("SEO helpers", () => {
     const url = getAbsoluteUrl("/en/articrafts/");
     const data = createAtelierCollectionJsonLd({
       url,
+      locale: "en",
       name: "Articrafts",
       description: "Published documents and source code.",
       items: [
@@ -80,6 +81,7 @@ describe("SEO helpers", () => {
     const data = createAtelierWorkJsonLd({
       url,
       atelierUrl: getAbsoluteUrl("/en/articrafts/"),
+      locale: "en",
       name: "Example",
       description: "An example work.",
       publishedAt: new Date("2026-08-24T00:00:00.000Z"),
@@ -96,5 +98,58 @@ describe("SEO helpers", () => {
       license: "MIT",
     });
     expect(graph[1]).toMatchObject({ "@type": "BreadcrumbList" });
+    expect(
+      (graph[1].itemListElement as Array<Record<string, unknown>>)[0],
+    ).toMatchObject({ item: getAbsoluteUrl("/en/") });
+  });
+
+  it("localizes Chinese Articrafts schemas and their home breadcrumb", () => {
+    /** @brief 中文作品目录的绝对地址 / Absolute URL of the Chinese Articrafts catalogue. */
+    const collectionUrl = getAbsoluteUrl("/zh/articrafts/");
+    /** @brief 中文作品目录结构化数据 / Structured data for the Chinese Articrafts catalogue. */
+    const collection = createAtelierCollectionJsonLd({
+      url: collectionUrl,
+      locale: "zh",
+      name: "Articrafts",
+      description: "已发布的文档与源代码。",
+      items: [],
+    });
+    /** @brief 中文作品目录结构化数据图 / Structured-data graph for the Chinese Articrafts catalogue. */
+    const collectionGraph = collection["@graph"] as Array<
+      Record<string, unknown>
+    >;
+
+    expect(collectionGraph[0]).toMatchObject({
+      "@type": "CollectionPage",
+      inLanguage: "zh-CN",
+    });
+
+    /** @brief 中文作品详情的绝对地址 / Absolute URL of the Chinese Articrafts detail. */
+    const workUrl = getAbsoluteUrl("/zh/articrafts/example/");
+    /** @brief 中文作品详情结构化数据 / Structured data for the Chinese Articrafts detail. */
+    const work = createAtelierWorkJsonLd({
+      url: workUrl,
+      atelierUrl: collectionUrl,
+      locale: "zh",
+      name: "示例",
+      description: "一个示例作品。",
+      publishedAt: new Date("2026-08-24T00:00:00.000Z"),
+      homeName: "首页",
+    });
+    /** @brief 中文作品详情结构化数据图 / Structured-data graph for the Chinese Articrafts detail. */
+    const workGraph = work["@graph"] as Array<Record<string, unknown>>;
+
+    expect(workGraph[0]).toMatchObject({
+      "@type": "CreativeWork",
+      inLanguage: "zh-CN",
+    });
+    expect(
+      (workGraph[1].itemListElement as Array<Record<string, unknown>>)[0],
+    ).toMatchObject({
+      "@type": "ListItem",
+      position: 1,
+      name: "首页",
+      item: getAbsoluteUrl("/zh/"),
+    });
   });
 });

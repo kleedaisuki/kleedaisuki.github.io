@@ -55,6 +55,7 @@ export interface AtelierCollectionItem {
 /** @brief Atelier 索引结构化数据输入 (Atelier collection schema input) / Input for Atelier collection structured data. */
 export interface AtelierCollectionSchemaInput {
   url: string;
+  locale: BlogLocale;
   name: string;
   description: string;
   items: readonly AtelierCollectionItem[];
@@ -64,6 +65,7 @@ export interface AtelierCollectionSchemaInput {
 export interface AtelierWorkSchemaInput {
   url: string;
   atelierUrl: string;
+  locale: BlogLocale;
   name: string;
   description: string;
   publishedAt: Date;
@@ -269,7 +271,7 @@ export function createAtelierCollectionJsonLd(
         url: input.url,
         name: input.name,
         description: input.description,
-        inLanguage: "en",
+        inLanguage: getLanguageTag(input.locale),
         author: {
           "@type": "Person",
           name: SITE.authorName,
@@ -316,7 +318,7 @@ export function createAtelierWorkJsonLd(
     headline: input.name,
     description: input.description,
     datePublished: input.publishedAt.toISOString(),
-    inLanguage: "en",
+    inLanguage: getLanguageTag(input.locale),
     author: {
       "@type": "Person",
       name: SITE.authorName,
@@ -347,7 +349,7 @@ export function createAtelierWorkJsonLd(
             "@type": "ListItem",
             position: 1,
             name: input.homeName ?? "Home",
-            item: getAbsoluteUrl("/zh/"),
+            item: getAbsoluteUrl(`/${input.locale}/`),
           },
           {
             "@type": "ListItem",

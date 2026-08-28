@@ -91,6 +91,7 @@ const typeFilters = [
 /** @brief Atelier 目录结构化数据 / Structured data for the Atelier catalogue. */
 const structuredData = createAtelierCollectionJsonLd({
   url: getAbsoluteUrl(cataloguePath),
+  locale,
   name: "Articrafts",
   description,
   items: works.map((work) => ({

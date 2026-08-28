@@ -83,6 +83,7 @@ const { Content } = await render(entry);
 const structuredData = createAtelierWorkJsonLd({
   url: getAbsoluteUrl(getAtelierPath(locale, entry.data.slug)),
   atelierUrl: getAbsoluteUrl(`/${locale}/articrafts/`),
+  locale,
   name: getAtelierText(entry.data.title, locale),
   description: getAtelierText(entry.data.summary, locale),
   publishedAt: entry.data.published,

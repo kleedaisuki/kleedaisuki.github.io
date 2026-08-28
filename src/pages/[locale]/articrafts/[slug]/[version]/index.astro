@@ -102,6 +102,7 @@ const canonicalPath = isLatestRelease
 const structuredData = createAtelierWorkJsonLd({
   url: getAbsoluteUrl(canonicalPath),
   atelierUrl: getAbsoluteUrl(`/${locale}/articrafts/`),
+  locale,
   name: `${getAtelierText(entry.data.title, locale)} — ${release.version}`,
   description: getAtelierText(entry.data.summary, locale),
   publishedAt: entry.data.published,
