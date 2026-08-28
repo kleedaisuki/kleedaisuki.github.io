@@ -448,6 +448,12 @@
     scrollbar-width: none;
   }
 
+  /** @brief 将移动阅读器边缘控件的焦点环收进滚动轨道 (Inset mobile reader edge-control focus rings within the scroll rail). */
+  .pdf-reader__controls :is(a, button):focus-visible,
+  .pdf-reader__back:focus-visible {
+    outline-offset: -3px;
+  }
+
   .pdf-reader__controls::-webkit-scrollbar {
     display: none;
   }
@@ -544,6 +550,32 @@
   .pdf-reader__outline nav button,
   .pdf-reader__status > button {
     transform: none;
-    transition-duration: 0.01ms;
+    transition: none;
+  }
+
+  /** @brief 减少动态时逐项取消阅读器控件状态位移 (Remove each reader-control state displacement under reduced motion). */
+  .pdf-reader__back:hover,
+  .pdf-reader__back:focus-visible,
+  .pdf-reader__back:active,
+  .pdf-reader__controls button:hover:not(:disabled),
+  .pdf-reader__controls button:focus-visible,
+  .pdf-reader__controls button:active:not(:disabled),
+  .pdf-reader__controls a:hover,
+  .pdf-reader__controls a:focus-visible,
+  .pdf-reader__controls a:active,
+  .pdf-reader__find button:hover,
+  .pdf-reader__find button:focus-visible,
+  .pdf-reader__find button:active,
+  .pdf-reader__outline-heading button:hover,
+  .pdf-reader__outline-heading button:focus-visible,
+  .pdf-reader__outline-heading button:active,
+  .pdf-reader__outline nav button:hover,
+  .pdf-reader__outline nav button:focus-visible,
+  .pdf-reader__outline nav button:active,
+  .pdf-reader__status > button:hover,
+  .pdf-reader__status > button:focus-visible,
+  .pdf-reader__status > button:active {
+    transform: none;
+    transition: none;
   }
 }

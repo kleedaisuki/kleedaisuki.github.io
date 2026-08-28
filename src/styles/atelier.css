@@ -669,9 +669,7 @@
 }
 
 .atelier-filter-group a:active,
-.atelier-button:active,
-.atelier-card:active,
-.file-item:active {
+.atelier-button:active {
   transform: scale(0.99);
 }
 
@@ -794,7 +792,6 @@
 
   .atelier-card:hover,
   .atelier-card:focus-within,
-  .atelier-card:active,
   .atelier-filter-group a:hover,
   .atelier-filter-group a:focus-visible,
   .atelier-filter-group a:active,
@@ -802,9 +799,9 @@
   .atelier-button:focus-visible,
   .atelier-button:active,
   .file-item:hover,
-  .file-item:focus-within,
-  .file-item:active {
+  .file-item:focus-within {
     transform: none;
+    transition: none;
   }
 }
 

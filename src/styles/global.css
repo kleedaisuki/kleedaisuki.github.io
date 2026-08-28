@@ -295,6 +295,11 @@ a {
   border-radius: var(--radius-small);
 }
 
+/** @brief 将页眉控件焦点环收进裁切边界内 (Inset header control focus rings within the clipped chrome). */
+.workshop-header :where(a, button):focus-visible {
+  outline-offset: -4px;
+}
+
 /** @brief 将跳转正文链接置于视口外，聚焦时恢复 (Keep the skip link off-canvas until focused). */
 .skip-link {
   position: fixed;
@@ -444,7 +449,8 @@ a {
   cursor: pointer;
   transition:
     color var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard);
+    background-color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
 }
 
 .theme-toggle__icon {
@@ -853,8 +859,31 @@ img {
     animation-iteration-count: 1;
   }
 
+  /** @brief 减少动态时让通用链接与按钮状态即时切换 (Switch generic link and button states instantly under reduced motion). */
+  a,
+  button,
+  .skip-link {
+    transition: none;
+  }
+
   /** @brief 减少动态时取消所有控件位移但保留即时颜色与边框状态 (Remove control displacement while retaining immediate color and border states under reduced motion). */
-  :where(.site-wordmark, .site-nav__links a, .theme-toggle, .lang-switch a) {
+  .site-wordmark,
+  .site-wordmark:hover,
+  .site-wordmark:focus-visible,
+  .site-wordmark:active,
+  .site-nav__links a,
+  .site-nav__links a:hover,
+  .site-nav__links a:focus-visible,
+  .site-nav__links a:active,
+  .theme-toggle,
+  .theme-toggle:hover,
+  .theme-toggle:focus-visible,
+  .theme-toggle:active,
+  .lang-switch a,
+  .lang-switch a:hover,
+  .lang-switch a:focus-visible,
+  .lang-switch a:active {
     transform: none;
+    transition: none;
   }
 }

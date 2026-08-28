@@ -38,7 +38,7 @@
       var(--surface-muted, var(--surface-color))
     );
   box-shadow: var(--shadow-md, 0 15px 28px var(--shadow-color));
-  animation: blog-reveal var(--motion-slow) var(--ease-emphasized) both;
+  animation: blog-reveal var(--motion-slow) var(--ease-emphasized) backwards;
 }
 
 .blog-header::before {
@@ -93,7 +93,7 @@
     border-color var(--motion-fast, 160ms) var(--ease-standard),
     box-shadow var(--motion-fast, 160ms) var(--ease-standard),
     background-color var(--motion-fast, 160ms) var(--ease-standard);
-  animation: blog-reveal var(--motion-slow) var(--ease-emphasized) both;
+  animation: blog-reveal var(--motion-slow) var(--ease-emphasized) backwards;
 }
 
 /** @brief 为前几篇文章添加克制的进入节奏 (Add a restrained entrance rhythm to the first few posts). */
@@ -140,12 +140,6 @@
     var(--border-subtle, var(--border-color))
   );
   box-shadow: var(--shadow-md, 0 14px 24px var(--shadow-color));
-}
-
-/** @brief 点击文章卡片时提供短促而稳定的轻压反馈 (Provide brief, stable press feedback when activating a post card). */
-.post-item:active {
-  transform: translateY(1px) scale(0.995);
-  transition-duration: 90ms;
 }
 
 .post-content {
@@ -378,7 +372,7 @@
   margin-top: 0.45rem;
 }
 
-.prose :is(p, li) > a {
+.prose :is(p, li) a {
   color: var(--accent-text, var(--accent-strong));
   font-weight: 650;
   text-decoration: underline;
@@ -391,8 +385,8 @@
   text-underline-offset: 0.17em;
 }
 
-.prose :is(p, li) > a:hover,
-.prose :is(p, li) > a:focus-visible {
+.prose :is(p, li) a:hover,
+.prose :is(p, li) a:focus-visible {
   text-decoration-color: currentcolor;
 }
 
@@ -526,8 +520,15 @@
   .post-title a,
   .post-breadcrumb a,
   .post-byline a {
-    transition-duration: 0.01ms;
+    transition: none;
     animation: none;
     transform: none;
+  }
+
+  /** @brief 减少动态时逐项取消博客卡片状态位移 (Remove each blog-card state displacement under reduced motion). */
+  .post-item:hover,
+  .post-item:focus-within {
+    transform: none;
+    transition: none;
   }
 }

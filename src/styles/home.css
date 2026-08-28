@@ -411,7 +411,6 @@
 }
 
 .studio-door:active,
-.studio-track:active,
 .studio-list a:active {
   transform: scale(0.99);
 }
@@ -420,6 +419,8 @@
 .studio-track:focus-within {
   border-color: var(--accent-color);
   box-shadow: var(--shadow-md);
+  outline: 3px solid var(--focus-ring);
+  outline-offset: -3px;
   transform: translateY(-0.125rem);
 }
 
@@ -504,21 +505,22 @@
     transition: none;
   }
 
-  .studio-door:hover {
-    transform: none;
-  }
-
+  /** @brief 减少动态时逐项取消工作室交互位移 (Remove each studio interaction displacement under reduced motion). */
+  .studio-door:hover,
   .studio-track:hover,
   .studio-track:focus-within,
   .studio-list a:hover,
+  .studio-list a:focus-visible,
   .studio-door:focus-visible,
   .studio-door:active,
-  .studio-track:active,
   .studio-list a:active,
   .studio-door:hover .studio-door__action > span,
   .studio-door:focus-visible .studio-door__action > span,
-  .studio-track__heading > a:hover {
+  .studio-track__heading > a:hover,
+  .studio-track__heading > a:focus-visible,
+  .studio-track__heading > a:active {
     transform: none;
+    transition: none;
   }
 }
 

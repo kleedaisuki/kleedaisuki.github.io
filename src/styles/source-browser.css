@@ -358,6 +358,26 @@
     .source-viewer__download
   ) {
     transform: none;
-    transition-duration: 0.01ms;
+    transition: none;
+  }
+
+  /** @brief 减少动态时逐项取消源码控件状态位移 (Remove each source-control state displacement under reduced motion). */
+  .source-tree a:hover,
+  .source-tree a:focus-visible,
+  .source-tree a:active,
+  .source-tree summary:hover,
+  .source-tree summary:focus-visible,
+  .source-tree summary:active,
+  .source-viewer__actions a:hover,
+  .source-viewer__actions a:focus-visible,
+  .source-viewer__actions a:active,
+  .source-viewer__actions button:hover,
+  .source-viewer__actions button:focus-visible,
+  .source-viewer__actions button:active,
+  .source-viewer__download:hover,
+  .source-viewer__download:focus-visible,
+  .source-viewer__download:active {
+    transform: none;
+    transition: none;
   }
 }
