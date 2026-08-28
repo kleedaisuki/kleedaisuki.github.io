@@ -1,5 +1,5 @@
 ---
-import type { AtelierLocale } from "@i18n/atelier";
+import { ATELIER_COPY, type AtelierLocale } from "@i18n/atelier";
 import { DEFAULT_ATELIER_COVER, getAtelierPath } from "../../lib/atelier";
 
 /** @brief Atelier 卡片属性 / Atelier work-card properties. */
@@ -29,6 +29,17 @@ const {
 
 /** @brief 作品封面或统一默认封面 / Work cover or the shared default cover. */
 const coverUrl = cover ?? DEFAULT_ATELIER_COVER;
+/** @brief 当前语言的制品卡片文案 / Localized artifact-card copy. */
+const copy = ATELIER_COPY[locale];
+/** @brief 可读的最近制作日期 / Human-readable latest making date. */
+const madeDate = activityDate.toLocaleDateString(
+  locale === "zh" ? "zh-CN" : "en",
+  {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  },
+);
 ---
 
 <article
@@ -40,25 +51,29 @@ const coverUrl = cover ?? DEFAULT_ATELIER_COVER;
     <img src={coverUrl} alt="" loading="lazy" decoding="async" />
   </div>
   <div class="atelier-card__body">
-    <div class="atelier-card__meta">
-      <time datetime={activityDate.toISOString()}>
-        {activityDate.toLocaleDateString(locale === "zh" ? "zh-CN" : "en", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })}
-      </time>
-      {version && <span>v{version}</span>}
-    </div>
+    <p class="atelier-card__kind">{copy.artifact} / {slug}</p>
     <h2><a href={getAtelierPath(locale, slug)}>{title}</a></h2>
     <p>{summary}</p>
+    <dl class="atelier-card__manifest">
+      <div>
+        <dt>{copy.made}</dt>
+        <dd><time datetime={activityDate.toISOString()}>{madeDate}</time></dd>
+      </div>
+      <div>
+        <dt>{copy.materials}</dt>
+        <dd>{types.length > 0 ? types.join(" · ") : "—"}</dd>
+      </div>
+      <div>
+        <dt>{copy.versions}</dt>
+        <dd>{version ? `v${version}` : "—"}</dd>
+      </div>
+    </dl>
     {
-      (types.length > 0 || tags.length > 0) && (
+      tags.length > 0 && (
         <ul
           class="atelier-card__chips"
-          aria-label={locale === "zh" ? "作品格式与标签" : "Work formats and tags"}
+          aria-label={copy.workTags}
         >
-          {types.map((type) => <li class="atelier-chip atelier-chip--type">{type}</li>)}
           {tags.map((tag) => <li class="atelier-chip">{tag}</li>)}
         </ul>
       )

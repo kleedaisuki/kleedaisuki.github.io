@@ -69,7 +69,7 @@ const releaseHistory = [...entry.data.releases].sort(
       <img src={coverUrl} alt="" decoding="async" />
     </div>
     <div class="atelier-detail__intro">
-      <p class="atelier-eyebrow">{copy.atelier}</p>
+      <p class="atelier-eyebrow">{copy.artifact} / {entry.data.slug}</p>
       <h1 id="work-title">{title}</h1>
       <p class="atelier-detail__summary">{summary}</p>
       <dl class="atelier-detail__facts">
@@ -101,6 +101,7 @@ const releaseHistory = [...entry.data.releases].sort(
   <div class="atelier-detail__layout">
     <div class="atelier-detail__main">
       <section class="atelier-panel atelier-description" aria-labelledby="about-this-work">
+        <p class="atelier-section-index">01 / {copy.made}</p>
         <h2 id="about-this-work">{copy.aboutWork}</h2>
         <div class="atelier-prose">
           {about ? about.map((paragraph) => <p>{paragraph}</p>) : <slot />}
@@ -110,7 +111,7 @@ const releaseHistory = [...entry.data.releases].sort(
       <section class="atelier-panel" aria-labelledby="files-heading">
         <div class="atelier-section-heading">
           <div>
-            <p class="atelier-eyebrow">{copy.releaseFiles}</p>
+            <p class="atelier-section-index">02 / {copy.materials}</p>
             <h2 id="files-heading">
               {release ? `${locale === "zh" ? "版本" : "Version"} ${release.version}` : copy.noRelease}
             </h2>
@@ -134,6 +135,7 @@ const releaseHistory = [...entry.data.releases].sort(
 
     <aside class="atelier-detail__aside" aria-label={copy.workInformation}>
       <section class="atelier-panel atelier-panel--compact">
+        <p class="atelier-section-index">03 / {copy.versions}</p>
         <h2>{copy.versionHistory}</h2>
         {entry.data.releases.length > 0 ? (
           <ol class="version-list">

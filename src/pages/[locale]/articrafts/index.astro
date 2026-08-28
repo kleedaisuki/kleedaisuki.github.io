@@ -110,8 +110,8 @@ const structuredData = createAtelierCollectionJsonLd({
   <div
     class="atelier-catalogue"
     data-atelier-catalogue
-    data-showing-all={locale === "zh" ? "共显示 {count} 项作品。" : "Showing all {count} {noun}."}
-    data-showing-some={locale === "zh" ? "显示 {visible}/{total} 项作品。" : "Showing {visible} of {total} works."}
+    data-showing-all={locale === "zh" ? "共陈列 {count} 件制品。" : "Showing all {count} {noun}."}
+    data-showing-some={locale === "zh" ? "陈列 {visible}/{total} 件制品。" : "Showing {visible} of {total} artifacts."}
   >
     <header class="atelier-hero">
       <p class="atelier-eyebrow">{copy.selectedWorks}</p>
@@ -140,7 +140,7 @@ const structuredData = createAtelierCollectionJsonLd({
           )}
 
           <p class="atelier-results-status" role="status" aria-live="polite" data-results-status>
-            {locale === "zh" ? `共显示 ${works.length} 项作品。` : `Showing all ${works.length} ${works.length === 1 ? "work" : "works"}.`}
+            {locale === "zh" ? `共陈列 ${works.length} 件制品。` : `Showing all ${works.length} ${works.length === 1 ? "artifact" : "artifacts"}.`}
           </p>
           <div class="atelier-grid" data-work-grid>
             {catalogueWorks.map(({ work, latest, types }) => (
@@ -173,7 +173,7 @@ const structuredData = createAtelierCollectionJsonLd({
           <span class="atelier-empty__mark" aria-hidden="true">✦</span>
           <h2>{copy.emptyTitle}</h2>
           <p>{copy.emptyBody}</p>
-          <a class="atelier-button atelier-button--primary" href={`/${locale}/blog/`}>{copy.visitBlog}</a>
+          <a class="atelier-button atelier-button--primary" href={`/${locale}/`}>{copy.visitBlog}</a>
         </section>
       )
     }
@@ -252,7 +252,7 @@ const structuredData = createAtelierCollectionJsonLd({
           status.textContent = visibleCount === cards.length
             ? showingAll
                 .replace("{count}", String(visibleCount))
-                .replace("{noun}", visibleCount === 1 ? "work" : "works")
+                .replace("{noun}", visibleCount === 1 ? "artifact" : "artifacts")
             : showingSome
                 .replace("{visible}", String(visibleCount))
                 .replace("{total}", String(cards.length));
