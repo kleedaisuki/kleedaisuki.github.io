@@ -13,7 +13,7 @@ describe("SEO helpers", () => {
     expect(getPostPath("zh", "图 灵 / notes")).toBe(
       "/zh/blog/%E5%9B%BE%20%E7%81%B5%20%2F%20notes/",
     );
-    expect(getAbsoluteUrl("/en/")).toBe("https://blog.moesegfault.dev/en/");
+    expect(getAbsoluteUrl("/en/")).toBe("https://atelier.moesegfault.dev/en/");
   });
 
   it("emits visible article facts in the BlogPosting graph", () => {
@@ -52,15 +52,15 @@ describe("SEO helpers", () => {
     expect(serialized).toContain("\\u003c/script\\u003e");
   });
 
-  it("describes a localized Atelier view as a collection page", () => {
-    const url = getAbsoluteUrl("/en/atelier/");
+  it("describes a localized Articrafts view as a collection page", () => {
+    const url = getAbsoluteUrl("/en/articrafts/");
     const data = createAtelierCollectionJsonLd({
       url,
-      name: "Atelier",
+      name: "Articrafts",
       description: "Published documents and source code.",
       items: [
         {
-          url: getAbsoluteUrl("/en/atelier/example/"),
+          url: getAbsoluteUrl("/en/articrafts/example/"),
           name: "Example",
           description: "An example work.",
         },
@@ -75,11 +75,11 @@ describe("SEO helpers", () => {
     });
   });
 
-  it("describes an Atelier detail as a CreativeWork with breadcrumbs", () => {
-    const url = getAbsoluteUrl("/en/atelier/example/");
+  it("describes an Articrafts detail as a CreativeWork with breadcrumbs", () => {
+    const url = getAbsoluteUrl("/en/articrafts/example/");
     const data = createAtelierWorkJsonLd({
       url,
-      atelierUrl: getAbsoluteUrl("/en/atelier/"),
+      atelierUrl: getAbsoluteUrl("/en/articrafts/"),
       name: "Example",
       description: "An example work.",
       publishedAt: new Date("2026-08-24T00:00:00.000Z"),

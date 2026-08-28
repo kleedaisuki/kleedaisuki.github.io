@@ -7,7 +7,7 @@ const OUTPUT_DIRECTORY = process.env.BUILD_OUTPUT_DIRECTORY
   : join(process.cwd(), "dist");
 
 /** @brief 站点规范来源 (canonical origin) / Canonical site origin. */
-const SITE_ORIGIN = "https://blog.moesegfault.dev";
+const SITE_ORIGIN = "https://atelier.moesegfault.dev";
 
 /** @brief PDF.js 静态资源的锁定目录 (pinned PDF.js asset directory) / Pinned PDF.js static-asset directory. */
 const PDFJS_ASSET_DIRECTORY = join("_pdfjs", "6.2.108");
@@ -76,7 +76,7 @@ function verifyArticle(relativePath, locale) {
     `Article has no description: ${relativePath}`,
   );
   assert(
-    /<link rel="canonical" href="https:\/\/blog\.moesegfault\.dev\//.test(html),
+    /<link rel="canonical" href="https:\/\/atelier\.moesegfault\.dev\//.test(html),
     `Article has no absolute canonical: ${relativePath}`,
   );
   assert(
@@ -135,26 +135,26 @@ function verifySitemap() {
     "Sitemap is missing the English home page",
   );
   assert(
-    !sitemap.includes(`<loc>${SITE_ORIGIN}/atelier/</loc>`),
-    "The noindex Atelier locale redirect must not appear in the sitemap",
+    !sitemap.includes(`<loc>${SITE_ORIGIN}/articrafts/</loc>`),
+    "The noindex Articrafts locale redirect must not appear in the sitemap",
   );
   for (const locale of ["zh", "en"]) {
     assert(
-      sitemap.includes(`<loc>${SITE_ORIGIN}/${locale}/atelier/</loc>`),
-      `Sitemap is missing the ${locale} Atelier collection`,
+      sitemap.includes(`<loc>${SITE_ORIGIN}/${locale}/articrafts/</loc>`),
+      `Sitemap is missing the ${locale} Articrafts collection`,
     );
   }
   assert(
-    !/<loc>[^<]*\/(?:zh|en)\/atelier\/[^<]+\/(?:read|reader|source|raw)(?:\/|<)/.test(
+    !/<loc>[^<]*\/(?:zh|en)\/articrafts\/[^<]+\/(?:read|reader|source|raw)(?:\/|<)/.test(
       sitemap,
     ),
-    "Sitemap includes an Atelier reader, source, or raw-resource route",
+    "Sitemap includes an Articrafts reader, source, or raw-resource route",
   );
 }
 
 /**
- * @brief 提取 Atelier 能力页面链接 (extract Atelier capability links) / Extract linked Atelier reader and source pages.
- * @param html Atelier 详情页 HTML / Atelier detail-page HTML.
+ * @brief 提取 Atelier 能力页面链接 (extract Articrafts capability links) / Extract linked Articrafts reader and source pages.
+ * @param html Atelier 详情页 HTML / Articrafts detail-page HTML.
  * @return 去重后的站内能力页面路径 / Deduplicated site-local capability page paths.
  */
 function getAtelierCapabilityPaths(html) {
@@ -162,7 +162,7 @@ function getAtelierCapabilityPaths(html) {
   for (const match of html.matchAll(/href="([^"]+)"/g)) {
     const pathname = new URL(match[1], SITE_ORIGIN).pathname;
     if (
-      /^\/(?:zh|en)\/atelier\/[^/]+\/[^/]+\/(?:read|reader|source)(?:\/|$)/.test(
+      /^\/(?:zh|en)\/articrafts\/[^/]+\/[^/]+\/(?:read|reader|source)(?:\/|$)/.test(
         pathname,
       )
     ) {
@@ -187,43 +187,43 @@ function pageOutputPath(pathname) {
  * @note 正式空态没有详情目录；此时索引页本身即为完整有效产物。
  */
 function verifyAtelier() {
-  const redirect = readOutputFile(join("atelier", "index.html"));
+  const redirect = readOutputFile(join("articrafts", "index.html"));
   assert(
     /<meta name="robots" content="noindex">/.test(redirect),
-    "Atelier locale redirect must be noindex",
+    "Articrafts locale redirect must be noindex",
   );
 
   for (const locale of ["zh", "en"]) {
-    const indexPath = join(locale, "atelier", "index.html");
+    const indexPath = join(locale, "articrafts", "index.html");
     const index = readOutputFile(indexPath);
     assert(
       new RegExp(`<html lang="${locale}"`).test(index),
-      `Atelier has the wrong document language: ${indexPath}`,
+      `Articrafts has the wrong document language: ${indexPath}`,
     );
-    assert(index.includes('hreflang="zh"'), `Atelier lacks zh hreflang: ${indexPath}`);
-    assert(index.includes('hreflang="en"'), `Atelier lacks en hreflang: ${indexPath}`);
+    assert(index.includes('hreflang="zh"'), `Articrafts lacks zh hreflang: ${indexPath}`);
+    assert(index.includes('hreflang="en"'), `Articrafts lacks en hreflang: ${indexPath}`);
     assert(
       /rel="alternate" type="application\/rss\+xml"/.test(index),
-      `Atelier lacks localized RSS discovery: ${indexPath}`,
+      `Articrafts lacks localized RSS discovery: ${indexPath}`,
     );
-    assert(index.includes('class="lang-switch"'), `Atelier lacks a language switcher: ${indexPath}`);
+    assert(index.includes('class="lang-switch"'), `Articrafts lacks a language switcher: ${indexPath}`);
     assert(
-      /<h1[^>]*>\s*Atelier\s*<\/h1>/.test(index),
-      `Atelier has no visible catalogue H1: ${indexPath}`,
+      /<h1[^>]*>\s*Articrafts\s*<\/h1>/.test(index),
+      `Articrafts has no visible catalogue H1: ${indexPath}`,
     );
     assert(
       !index.includes('data-filter-group="tag"'),
-      `Atelier unexpectedly exposes a tag filter: ${indexPath}`,
+      `Articrafts unexpectedly exposes a tag filter: ${indexPath}`,
     );
     const collectionJsonLd = parseJsonLd(index, indexPath);
     const collectionGraph = collectionJsonLd["@graph"];
     assert(
       Array.isArray(collectionGraph) &&
         collectionGraph.some((item) => item?.["@type"] === "CollectionPage"),
-      `Atelier JSON-LD has no CollectionPage: ${indexPath}`,
+      `Articrafts JSON-LD has no CollectionPage: ${indexPath}`,
     );
 
-    const atelierDirectory = join(OUTPUT_DIRECTORY, locale, "atelier");
+    const atelierDirectory = join(OUTPUT_DIRECTORY, locale, "articrafts");
     const workDirectories = readdirSync(atelierDirectory, { withFileTypes: true })
       .filter(
         (entry) =>
@@ -233,13 +233,13 @@ function verifyAtelier() {
       .map((entry) => entry.name);
     if (workDirectories.length === 0) {
       /** @brief 当前语言的正式空态标题 / Intentional empty-state title for the locale. */
-      const emptyTitle = locale === "zh" ? "工坊正在准备中。" : "The atelier is being prepared.";
-      assert(index.includes(emptyTitle), `Localized Atelier has no intentional empty state: ${locale}`);
+      const emptyTitle = locale === "zh" ? "Articrafts 正在准备中。" : "Articrafts is being prepared.";
+      assert(index.includes(emptyTitle), `Localized Articrafts has no intentional empty state: ${locale}`);
     }
 
     for (const slug of workDirectories) {
       const workDirectory = join(atelierDirectory, slug);
-      const detailPaths = [join(locale, "atelier", slug, "index.html")];
+      const detailPaths = [join(locale, "articrafts", slug, "index.html")];
       detailPaths.push(
         ...readdirSync(workDirectory, { withFileTypes: true })
           .filter(
@@ -247,7 +247,7 @@ function verifyAtelier() {
               entry.isDirectory() &&
               existsSync(join(workDirectory, entry.name, "index.html")),
           )
-          .map((entry) => join(locale, "atelier", slug, entry.name, "index.html")),
+          .map((entry) => join(locale, "articrafts", slug, entry.name, "index.html")),
       );
 
       for (const detailPath of detailPaths) {
@@ -258,13 +258,13 @@ function verifyAtelier() {
           Array.isArray(detailGraph) &&
             detailGraph.some((item) => item?.["@type"] === "CreativeWork") &&
             detailGraph.some((item) => item?.["@type"] === "BreadcrumbList"),
-          `Atelier detail JSON-LD is incomplete: ${detailPath}`,
+          `Articrafts detail JSON-LD is incomplete: ${detailPath}`,
         );
-        assert(detail.includes('hreflang="zh"'), `Atelier detail lacks zh hreflang: ${detailPath}`);
-        assert(detail.includes('hreflang="en"'), `Atelier detail lacks en hreflang: ${detailPath}`);
+        assert(detail.includes('hreflang="zh"'), `Articrafts detail lacks zh hreflang: ${detailPath}`);
+        assert(detail.includes('hreflang="en"'), `Articrafts detail lacks en hreflang: ${detailPath}`);
         assert(
           detail.includes('class="lang-switch"'),
-          `Atelier detail lacks a language switcher: ${detailPath}`,
+          `Articrafts detail lacks a language switcher: ${detailPath}`,
         );
         if (slug === "ai-job-workspace-internship-report") {
           const expectedAbout = locale === "zh"
@@ -275,13 +275,13 @@ function verifyAtelier() {
             : "这份报告总结了 AI 求职工作台";
           const expectedFileLabel = locale === "zh" ? "实习报告" : "Internship report";
           const foreignFileLabel = locale === "zh" ? "Internship report" : "实习报告";
-          assert(detail.includes(expectedAbout), `Atelier detail lacks localized prose: ${detailPath}`);
-          assert(!detail.includes(foreignAbout), `Atelier detail mixes localized prose: ${detailPath}`);
-          assert(detail.includes(expectedFileLabel), `Atelier detail lacks a localized file label: ${detailPath}`);
-          assert(!detail.includes(foreignFileLabel), `Atelier detail mixes file-label languages: ${detailPath}`);
+          assert(detail.includes(expectedAbout), `Articrafts detail lacks localized prose: ${detailPath}`);
+          assert(!detail.includes(foreignAbout), `Articrafts detail mixes localized prose: ${detailPath}`);
+          assert(detail.includes(expectedFileLabel), `Articrafts detail lacks a localized file label: ${detailPath}`);
+          assert(!detail.includes(foreignFileLabel), `Articrafts detail mixes file-label languages: ${detailPath}`);
           assert(
             detail.includes('src="/atelier-default-cover.svg"'),
-            `Atelier detail lacks the default cover: ${detailPath}`,
+            `Articrafts detail lacks the default cover: ${detailPath}`,
           );
         }
 
@@ -290,7 +290,7 @@ function verifyAtelier() {
           const capability = readOutputFile(capabilityOutput);
           assert(
             /<meta name="robots" content="[^"]*noindex[^"]*">/.test(capability),
-            `Atelier capability page is not noindex: ${capabilityOutput}`,
+            `Articrafts capability page is not noindex: ${capabilityOutput}`,
           );
         }
       }
@@ -305,7 +305,7 @@ function verifyAtelier() {
 function verifyPdfJsAssets() {
   assert(
     existsSync(join(OUTPUT_DIRECTORY, "atelier-default-cover.svg")),
-    "Atelier default cover was not emitted",
+    "Articrafts default cover was not emitted",
   );
   const representativeAssets = {
     cmaps: "78-EUC-H.bcmap",
@@ -352,8 +352,8 @@ function verifyDiscoveryEntries() {
   const llms = readOutputFile("llms.txt");
   assert(llms.includes(`${SITE_ORIGIN}/zh/blog/`), "llms.txt is missing the Chinese archive");
   assert(llms.includes(`${SITE_ORIGIN}/en/blog/`), "llms.txt is missing the English archive");
-  assert(llms.includes(`${SITE_ORIGIN}/zh/atelier/`), "llms.txt is missing Chinese Atelier");
-  assert(llms.includes(`${SITE_ORIGIN}/en/atelier/`), "llms.txt is missing English Atelier");
+  assert(llms.includes(`${SITE_ORIGIN}/zh/articrafts/`), "llms.txt is missing Chinese Articrafts");
+  assert(llms.includes(`${SITE_ORIGIN}/en/articrafts/`), "llms.txt is missing English Articrafts");
   readOutputFile("rss.xml");
 }
 

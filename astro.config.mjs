@@ -17,16 +17,16 @@ const PDFJS_ASSET_VERSION = "6.2.108";
  */
 const isIndexableSitemapPage = (page) => {
   const pathname = new URL(page).pathname;
-  if (pathname === "/" || pathname === "/atelier/") return false;
-  if (/^\/(?:zh|en)\/atelier\/[^/]+\/[^/]+\/?$/.test(pathname)) return false;
+  if (pathname === "/" || pathname === "/articrafts/") return false;
+  if (/^\/(?:zh|en)\/articrafts\/[^/]+\/[^/]+\/?$/.test(pathname)) return false;
 
-  return !/^\/(?:zh|en)\/atelier\/[^/]+\/[^/]+\/(?:read|reader|source(?:\.zip)?|raw)(?:\/|$)/.test(
+  return !/^\/(?:zh|en)\/articrafts\/[^/]+\/[^/]+\/(?:read|reader|source(?:\.zip)?|raw)(?:\/|$)/.test(
     pathname,
   );
 };
 
 export default defineConfig({
-  site: "https://blog.moesegfault.dev",
+  site: "https://atelier.moesegfault.dev",
   // 开发环境接受带或不带末尾斜杠的 URL；静态产物仍以目录形式输出，保留既有的 /path/ 链接语义。
   trailingSlash: "ignore",
   build: {

@@ -13,25 +13,26 @@ const locale = Astro.props.locale ?? asLocale(Astro.currentLocale);
 /** @brief 当前路径的规范化表示 (normalized current pathname)。 */
 const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
 
-/** @brief 当前页面是否属于本地化 Atelier (whether this page belongs to localized Atelier)。 */
-const isAtelier = /^\/(?:zh|en)\/atelier(?:\/|$)/.test(currentPath);
+/** @brief 当前页面是否属于本地化作品集 (whether this page belongs to localized Articrafts)。 */
+const isArticrafts = /^\/(?:zh|en)\/articrafts(?:\/|$)/.test(currentPath);
 
 /** @brief 站内链接的服务端回退语言 (SSR fallback locale for localized site links)。 */
 const linkLocale: Locale = locale;
 
 /** @brief 站内导航链接 (site navigation links)。 */
 const links = [
-  { href: `/${linkLocale}/`, label: t("home", locale), section: "home" },
-  {
-    href: `/${linkLocale}/about/`,
-    label: t("about", locale),
-    section: "about",
-  },
+  { href: `/${linkLocale}/`, label: "Atelier", section: "home" },
   { href: `/${linkLocale}/blog/`, label: t("blog", locale), section: "blog" },
   {
-    href: `/${linkLocale}/atelier/`,
+    href: `/${linkLocale}/articrafts/`,
     label: t("atelier", locale),
-    section: "atelier",
+    section: "articrafts",
+  },
+  {
+    href: "https://me.moesegfault.dev",
+    label: "About ↗",
+    section: "external",
+    rel: "me external",
   },
 ];
 
@@ -43,7 +44,7 @@ const links = [
  */
 const isCurrentPage = (href: string, section: string) => {
   const normalizedHref = href.replace(/\/+$/, "") || "/";
-  if (section === "atelier") return isAtelier;
+  if (section === "articrafts") return isArticrafts;
   if (section === "blog") {
     return (
       currentPath === normalizedHref ||
@@ -72,9 +73,10 @@ const themeCopy =
 
 <nav class="site-nav" aria-label={themeCopy.navigation}>
   {
-    links.map(({ href, label, section }) => (
+    links.map(({ href, label, section, rel }) => (
       <a
         href={href}
+        rel={rel}
         aria-current={isCurrentPage(href, section) ? "page" : undefined}
       >
         {label}

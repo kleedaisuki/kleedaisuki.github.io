@@ -106,7 +106,7 @@ const detailUrl =
 const previewNote =
   file.content === undefined ? copy.binaryPreviewNote : copy.largePreviewNote;
 /** @brief 页面标题 (page title) / Browser and social title for the source view. */
-const pageTitle = `${file.path} · ${workTitle} · Atelier`;
+const pageTitle = `${file.path} · ${workTitle} · Articrafts`;
 ---
 
 <BaseLayout
@@ -121,7 +121,7 @@ const pageTitle = `${file.path} · ${workTitle} · Atelier`;
   <div class="source-browser">
     <nav class="source-browser__breadcrumb" aria-label={copy.breadcrumb}>
       <ol>
-        <li><a href={`/${locale}/atelier/`}>{copy.atelier}</a></li>
+        <li><a href={`/${locale}/articrafts/`}>{copy.atelier}</a></li>
         <li><a href={detailUrl}>{workTitle}</a></li>
         <li>{copy.source} · {version}</li>
       </ol>

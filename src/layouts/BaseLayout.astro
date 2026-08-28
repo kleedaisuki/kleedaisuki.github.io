@@ -84,7 +84,7 @@ const {
 } = Astro.props as LayoutProps;
 const canonical = new URL(
   canonicalPath ?? Astro.url.pathname,
-  Astro.site ?? "https://blog.moesegfault.dev",
+  Astro.site ?? SITE.url,
 ).toString();
 /** @brief 页面是否显式脱离站点国际化路由 / Whether the page explicitly opts out of site locale routing. */
 const isLocaleIndependent = standalone;

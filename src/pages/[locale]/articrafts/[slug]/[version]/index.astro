@@ -101,7 +101,7 @@ const canonicalPath = isLatestRelease
 /** @brief 当前版本结构化数据 / Structured data for the selected release. */
 const structuredData = createAtelierWorkJsonLd({
   url: getAbsoluteUrl(canonicalPath),
-  atelierUrl: getAbsoluteUrl(`/${locale}/atelier/`),
+  atelierUrl: getAbsoluteUrl(`/${locale}/articrafts/`),
   name: `${getAtelierText(entry.data.title, locale)} — ${release.version}`,
   description: getAtelierText(entry.data.summary, locale),
   publishedAt: entry.data.published,
@@ -109,12 +109,12 @@ const structuredData = createAtelierWorkJsonLd({
   tags: entry.data.tags,
   license: entry.data.license,
   repository: entry.data.repository,
-  atelierName: "Atelier",
+  atelierName: "Articrafts",
 });
 ---
 
 <BaseLayout
-  pageTitle={`${getAtelierText(entry.data.title, locale)} ${release.version} | Atelier`}
+  pageTitle={`${getAtelierText(entry.data.title, locale)} ${release.version} | Articrafts`}
   description={`${getAtelierText(entry.data.summary, locale)} ${locale === "zh" ? "版本" : "Version"} ${release.version}.`}
   pageType="article"
   publishedTime={entry.data.published.toISOString()}

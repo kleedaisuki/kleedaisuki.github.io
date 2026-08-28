@@ -1,7 +1,6 @@
 // src/i18n/en.ts
 export default {
-  home: "Home",
-  about: "About",
+  home: "Atelier",
   blog: "Blog",
-  atelier: "Atelier",
+  atelier: "Articrafts",
 } as const;

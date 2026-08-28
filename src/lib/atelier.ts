@@ -233,7 +233,7 @@ export function formatFileSize(bytes?: number): string {
  * @return 站内详情页 URL / Internal detail URL.
  */
 export function getAtelierPath(locale: AtelierLocale, slug: string): string {
-  return `/${locale}/atelier/${encodeSegment(slug)}/`;
+  return `/${locale}/articrafts/${encodeSegment(slug)}/`;
 }
 
 /**
@@ -324,7 +324,7 @@ export function getPdfReaderUrl(
   version: string,
   fileId: string,
 ): string {
-  return `/${locale}/atelier/${encodeSegment(slug)}/${encodeSegment(version)}/read/${encodeSegment(fileId)}/`;
+  return `/${locale}/articrafts/${encodeSegment(slug)}/${encodeSegment(version)}/read/${encodeSegment(fileId)}/`;
 }
 
 /**
@@ -359,7 +359,7 @@ export function getSourceBrowserUrl(
   version: string,
   sourcePath?: string,
 ): string {
-  const root = `/${locale}/atelier/${encodeSegment(slug)}/${encodeSegment(version)}/source/`;
+  const root = `/${locale}/articrafts/${encodeSegment(slug)}/${encodeSegment(version)}/source/`;
   return sourcePath ? `${root}${encodePath(sourcePath)}/` : root;
 }
 
@@ -377,7 +377,7 @@ export function getSourceRawUrl(
   version: string,
   sourcePath: string,
 ): string {
-  return `/${locale}/atelier/${encodeSegment(slug)}/${encodeSegment(version)}/raw/${encodePath(sourcePath)}`;
+  return `/${locale}/articrafts/${encodeSegment(slug)}/${encodeSegment(version)}/raw/${encodePath(sourcePath)}`;
 }
 
 /**
@@ -409,7 +409,7 @@ export function getSourceArchiveUrl(
   slug: string,
   version: string,
 ): string {
-  return `/${locale}/atelier/${encodeSegment(slug)}/${encodeSegment(version)}/source.zip`;
+  return `/${locale}/articrafts/${encodeSegment(slug)}/${encodeSegment(version)}/source.zip`;
 }
 
 /**

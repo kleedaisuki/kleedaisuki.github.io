@@ -1,7 +1,6 @@
 // src/i18n/zh.ts
 export default {
-  home: "首页",
-  about: "关于",
+  home: "Atelier",
   blog: "博客",
-  atelier: "Atelier",
+  atelier: "Articrafts",
 } as const;

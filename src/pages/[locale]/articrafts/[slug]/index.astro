@@ -82,7 +82,7 @@ const { Content } = await render(entry);
 /** @brief 当前作品结构化数据 / Structured data for the current work. */
 const structuredData = createAtelierWorkJsonLd({
   url: getAbsoluteUrl(getAtelierPath(locale, entry.data.slug)),
-  atelierUrl: getAbsoluteUrl(`/${locale}/atelier/`),
+  atelierUrl: getAbsoluteUrl(`/${locale}/articrafts/`),
   name: getAtelierText(entry.data.title, locale),
   description: getAtelierText(entry.data.summary, locale),
   publishedAt: entry.data.published,
@@ -90,12 +90,12 @@ const structuredData = createAtelierWorkJsonLd({
   tags: entry.data.tags,
   license: entry.data.license,
   repository: entry.data.repository,
-  atelierName: "Atelier",
+  atelierName: "Articrafts",
 });
 ---
 
 <BaseLayout
-  pageTitle={`${getAtelierText(entry.data.title, locale)} | Atelier`}
+  pageTitle={`${getAtelierText(entry.data.title, locale)} | Articrafts`}
   description={getAtelierText(entry.data.summary, locale)}
   pageType="article"
   publishedTime={entry.data.published.toISOString()}

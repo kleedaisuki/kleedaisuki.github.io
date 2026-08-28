@@ -112,10 +112,10 @@ describe("Atelier release helpers", () => {
 describe("Atelier URLs", () => {
   it("encodes slugs, versions, identifiers, and nested source paths", () => {
     expect(getAtelierPath("zh", "lambda notes")).toBe(
-      "/zh/atelier/lambda%20notes/",
+      "/zh/articrafts/lambda%20notes/",
     );
     expect(getAtelierReleasePath("en", "lambda notes", "1.0 rc")).toBe(
-      "/en/atelier/lambda%20notes/1.0%20rc/",
+      "/en/articrafts/lambda%20notes/1.0%20rc/",
     );
     expect(
       getReleaseFileUrl("lambda notes", "1.0 rc", {
@@ -125,22 +125,22 @@ describe("Atelier URLs", () => {
       }),
     ).toBe("/atelier-assets/lambda%20notes/1.0%20rc/papers/main%20zh.pdf");
     expect(getPdfReaderUrl("zh", "demo", "v1", "paper zh")).toBe(
-      "/zh/atelier/demo/v1/read/paper%20zh/",
+      "/zh/articrafts/demo/v1/read/paper%20zh/",
     );
     expect(getSourceBrowserUrl("en", "demo", "v1")).toBe(
-      "/en/atelier/demo/v1/source/",
+      "/en/articrafts/demo/v1/source/",
     );
     expect(getSourceBrowserUrl("en", "demo", "v1", "src/main file.ts")).toBe(
-      "/en/atelier/demo/v1/source/src/main%20file.ts/",
+      "/en/articrafts/demo/v1/source/src/main%20file.ts/",
     );
     expect(getSourceRawUrl("zh", "demo", "v1", "src/main.ts")).toBe(
-      "/zh/atelier/demo/v1/raw/src/main.ts",
+      "/zh/articrafts/demo/v1/raw/src/main.ts",
     );
     expect(getSourceDownloadUrl("zh", "demo", "v1", "src/main.ts")).toBe(
-      "/zh/atelier/demo/v1/raw/src/main.ts",
+      "/zh/articrafts/demo/v1/raw/src/main.ts",
     );
     expect(getSourceArchiveUrl("en", "demo", "v1")).toBe(
-      "/en/atelier/demo/v1/source.zip",
+      "/en/articrafts/demo/v1/source.zip",
     );
   });
 

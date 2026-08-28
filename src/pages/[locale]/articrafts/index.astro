@@ -27,7 +27,7 @@ const locale = asAtelierLocale(Astro.params.locale);
 /** @brief 当前 Atelier 界面文案 / Current localized Atelier copy. */
 const copy = ATELIER_COPY[locale];
 /** @brief 当前 Atelier 目录路径 / Current localized Atelier catalogue path. */
-const cataloguePath = `/${locale}/atelier/`;
+const cataloguePath = `/${locale}/articrafts/`;
 
 /** @brief Atelier 页面说明 / Atelier catalogue description. */
 const description = copy.catalogueDescription;
@@ -91,7 +91,7 @@ const typeFilters = [
 /** @brief Atelier 目录结构化数据 / Structured data for the Atelier catalogue. */
 const structuredData = createAtelierCollectionJsonLd({
   url: getAbsoluteUrl(cataloguePath),
-  name: "Atelier",
+  name: "Articrafts",
   description,
   items: works.map((work) => ({
     url: getAbsoluteUrl(getAtelierPath(locale, work.data.slug)),
@@ -102,7 +102,7 @@ const structuredData = createAtelierCollectionJsonLd({
 ---
 
 <BaseLayout
-  pageTitle="Atelier | kleedaisuki"
+  pageTitle="Articrafts | Atelier"
   description={description}
   structuredData={structuredData}
   documentLocale={locale}

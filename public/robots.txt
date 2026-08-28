@@ -6,4 +6,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://blog.moesegfault.dev/sitemap-index.xml
+Sitemap: https://atelier.moesegfault.dev/sitemap-index.xml

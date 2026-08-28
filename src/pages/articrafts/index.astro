@@ -1,5 +1,5 @@
 ---
-/** @brief 旧 Atelier 根路径只负责选择语言 / Legacy Atelier root only selects a locale. */
+/** @brief Articrafts 根路径只负责选择语言 / Articrafts root only selects a locale. */
 ---
 
 <!doctype html>
@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="robots" content="noindex" />
-    <title>Redirecting to Atelier…</title>
+    <title>Redirecting to Articrafts…</title>
     <script is:inline>
       (() => {
         /** @brief 最近一次站点语言的存储键 (storage key for the most recent site locale). */
@@ -33,7 +33,7 @@
         const inferredLocale = browserLanguage.toLowerCase().startsWith("en")
           ? "en"
           : "zh";
-        /** @brief Atelier 的最终目标语言 (resolved target locale for Atelier). */
+        /** @brief Articrafts 的最终目标语言 (resolved target locale for Articrafts). */
         const locale = supportedLocales.has(queryLocale)
           ? queryLocale
           : storedLocale ?? inferredLocale;
@@ -44,17 +44,17 @@
           // 受限存储环境下仍可完成当前跳转 (the current redirect still works when storage is unavailable).
         }
 
-        location.replace(`/${locale}/atelier/`);
+        location.replace(`/${locale}/articrafts/`);
       })();
     </script>
-    <noscript><meta http-equiv="refresh" content="0; url=/zh/atelier/" /></noscript>
+    <noscript><meta http-equiv="refresh" content="0; url=/zh/articrafts/" /></noscript>
   </head>
   <body>
     <noscript>
       <p>
         请选择语言 / Choose your language:
-        <a href="/zh/atelier/">中文</a> |
-        <a href="/en/atelier/">English</a>
+        <a href="/zh/articrafts/">中文</a> |
+        <a href="/en/articrafts/">English</a>
       </p>
     </noscript>
   </body>

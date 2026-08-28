@@ -72,8 +72,8 @@ try {
     CONTENT_FILE,
     `---
 slug: ${FIXTURE_SLUG}
-title: Atelier build fixture
-summary: Exercises every generated Atelier capability during CI.
+title: Articrafts build fixture
+summary: Exercises every generated Articrafts capability during CI.
 published: 2025-01-01
 tags: [fixture, code]
 releases:
@@ -115,15 +115,15 @@ This entry exists only while the integration build runs.
 
   /** @brief 必须由夹具生成的静态产物 / Static artifacts the fixture must generate. */
   const expectedOutputs = [
-    "zh/atelier/__build_fixture__/index.html",
-    "en/atelier/__build_fixture__/index.html",
-    "zh/atelier/__build_fixture__/1.0.0/index.html",
-    "en/atelier/__build_fixture__/2.0.0/index.html",
-    "zh/atelier/__build_fixture__/2.0.0/read/paper/index.html",
-    "en/atelier/__build_fixture__/2.0.0/read/paper/index.html",
-    "en/atelier/__build_fixture__/2.0.0/source/src/main.ts/index.html",
-    "en/atelier/__build_fixture__/2.0.0/raw/src/main.ts",
-    "en/atelier/__build_fixture__/2.0.0/source.zip",
+    "zh/articrafts/__build_fixture__/index.html",
+    "en/articrafts/__build_fixture__/index.html",
+    "zh/articrafts/__build_fixture__/1.0.0/index.html",
+    "en/articrafts/__build_fixture__/2.0.0/index.html",
+    "zh/articrafts/__build_fixture__/2.0.0/read/paper/index.html",
+    "en/articrafts/__build_fixture__/2.0.0/read/paper/index.html",
+    "en/articrafts/__build_fixture__/2.0.0/source/src/main.ts/index.html",
+    "en/articrafts/__build_fixture__/2.0.0/raw/src/main.ts",
+    "en/articrafts/__build_fixture__/2.0.0/source.zip",
   ];
   for (const output of expectedOutputs) {
     assert(existsSync(path.join(OUTPUT_ROOT, ...output.split("/"))), `Missing ${output}`);
@@ -131,7 +131,7 @@ This entry exists only while the integration build runs.
 
   /** @brief 最新版本详情 HTML / Latest version-detail HTML. */
   const latestHtml = readFileSync(
-    path.join(OUTPUT_ROOT, "en", "atelier", FIXTURE_SLUG, "2.0.0", "index.html"),
+    path.join(OUTPUT_ROOT, "en", "articrafts", FIXTURE_SLUG, "2.0.0", "index.html"),
     "utf8",
   );
   assert(
@@ -140,7 +140,7 @@ This entry exists only while the integration build runs.
   );
   assert(
     latestHtml.includes(
-      `rel="canonical" href="https://blog.moesegfault.dev/en/atelier/${FIXTURE_SLUG}/"`,
+      `rel="canonical" href="https://atelier.moesegfault.dev/en/articrafts/${FIXTURE_SLUG}/"`,
     ),
     "Latest version does not canonicalize to the stable work URL",
   );
@@ -154,7 +154,7 @@ This entry exists only while the integration build runs.
       path.join(
         OUTPUT_ROOT,
         "en",
-        "atelier",
+        "articrafts",
         FIXTURE_SLUG,
         "2.0.0",
         "read",
@@ -167,7 +167,7 @@ This entry exists only while the integration build runs.
 
   /** @brief 历史版本详情 HTML / Historical release-detail HTML. */
   const historicalDetail = readFileSync(
-    path.join(OUTPUT_ROOT, "en", "atelier", FIXTURE_SLUG, "1.0.0", "index.html"),
+    path.join(OUTPUT_ROOT, "en", "articrafts", FIXTURE_SLUG, "1.0.0", "index.html"),
     "utf8",
   );
   assert(
@@ -179,7 +179,7 @@ This entry exists only while the integration build runs.
     path.join(
       OUTPUT_ROOT,
       "en",
-      "atelier",
+      "articrafts",
       FIXTURE_SLUG,
       "1.0.0",
       "read",
@@ -193,7 +193,7 @@ This entry exists only while the integration build runs.
     path.join(
       OUTPUT_ROOT,
       "en",
-      "atelier",
+      "articrafts",
       FIXTURE_SLUG,
       "1.0.0",
       "source",
@@ -203,7 +203,7 @@ This entry exists only while the integration build runs.
     "utf8",
   );
   /** @brief 历史版本详情路径 / Historical release-detail path. */
-  const historicalDetailPath = `/en/atelier/${FIXTURE_SLUG}/1.0.0/`;
+  const historicalDetailPath = `/en/articrafts/${FIXTURE_SLUG}/1.0.0/`;
   assert(
     historicalReader.includes(`href="${historicalDetailPath}"`),
     "Historical PDF reader loses its release context",

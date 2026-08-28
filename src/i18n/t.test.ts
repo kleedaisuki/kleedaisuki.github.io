@@ -14,7 +14,9 @@ describe("asLocale", () => {
 
 describe("t", () => {
   it("returns translated navigation labels", () => {
-    expect(t("home", "zh")).toBe("首页");
-    expect(t("home", "en")).toBe("Home");
+    expect(t("home", "zh")).toBe("Atelier");
+    expect(t("home", "en")).toBe("Atelier");
+    expect(t("atelier", "zh")).toBe("Articrafts");
+    expect(t("atelier", "en")).toBe("Articrafts");
   });
 });

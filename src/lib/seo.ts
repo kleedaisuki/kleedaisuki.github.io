@@ -2,13 +2,13 @@ import type { BlogLocale } from "./localized-blog";
 
 /** @brief 站点的稳定身份信息 (site identity) / Stable identity information for the site. */
 export const SITE = {
-  url: "https://blog.moesegfault.dev",
-  name: "kleedaisuki",
+  url: "https://atelier.moesegfault.dev",
+  name: "Atelier",
   authorName: "kleedaisuki",
-  authorUrl: "https://github.com/kleedaisuki",
+  authorUrl: "https://me.moesegfault.dev",
   defaultDescription: {
-    zh: "kleedaisuki 的个人笔记：编程、数学、研究与一路上的思考。",
-    en: "Personal notes by kleedaisuki on programming, mathematics, research, and ideas.",
+    zh: "Klee 的 Atelier：文章、作品、研究与持续生长的想法。",
+    en: "Klee's Atelier for writing, artifacts, research, and ideas in progress.",
   },
 } as const;
 
@@ -326,7 +326,7 @@ export function createAtelierWorkJsonLd(
       "@type": "CollectionPage",
       "@id": `${input.atelierUrl}#collection`,
       url: input.atelierUrl,
-      name: input.atelierName ?? "Atelier",
+      name: input.atelierName ?? "Articrafts",
     },
   };
 
@@ -352,7 +352,7 @@ export function createAtelierWorkJsonLd(
           {
             "@type": "ListItem",
             position: 2,
-            name: input.atelierName ?? "Atelier",
+            name: input.atelierName ?? "Articrafts",
             item: input.atelierUrl,
           },
           {

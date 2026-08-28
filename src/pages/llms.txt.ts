@@ -82,16 +82,16 @@ export async function GET(): Promise<Response> {
   const lines = [
     `# ${SITE.name}`,
     "",
-    "> A bilingual personal site with notes on programming, mathematics, research, and ideas.",
+    "> A bilingual digital atelier for writing, artifacts, research, and ideas in progress.",
     "",
     "The canonical HTML pages listed below are the source of record. Use the language-specific URL that matches the request; published translations are linked with hreflang in the HTML.",
     "",
     "## Start here",
     `- [Chinese home](${getAbsoluteUrl("/zh/")})`,
     `- [English home](${getAbsoluteUrl("/en/")})`,
-    `- [Chinese Atelier](${getAbsoluteUrl("/zh/atelier/")}): Shared artifacts with a Chinese interface.`,
-    `- [English Atelier](${getAbsoluteUrl("/en/atelier/")}): The same artifacts with an English interface.`,
-    `- [Author on GitHub](${SITE.authorUrl})`,
+    `- [Chinese Articrafts](${getAbsoluteUrl("/zh/articrafts/")}): Shared artifacts with a Chinese interface.`,
+    `- [English Articrafts](${getAbsoluteUrl("/en/articrafts/")}): The same artifacts with an English interface.`,
+    `- [About the author](${SITE.authorUrl})`,
     `- [All-language RSS feed](${getAbsoluteUrl("/rss.xml")})`,
     `- [XML sitemap](${getAbsoluteUrl("/sitemap-index.xml")})`,
     "",
@@ -102,9 +102,9 @@ export async function GET(): Promise<Response> {
       right.data.published.valueOf() - left.data.published.valueOf(),
   );
   for (const locale of ["zh", "en"] as const) {
-    lines.push(`## ${locale === "zh" ? "Chinese" : "English"} Atelier works`);
+    lines.push(`## ${locale === "zh" ? "Chinese" : "English"} Articrafts`);
     lines.push(
-      `- [Atelier index](${getAbsoluteUrl(`/${locale}/atelier/`)}): Documents, source code, and downloadable releases.`,
+      `- [Articrafts index](${getAbsoluteUrl(`/${locale}/articrafts/`)}): Documents, source code, and downloadable releases.`,
     );
     lines.push(
       ...sortedWorks.map((work) => formatAtelierEntry(work, locale)),
