@@ -1,6 +1,10 @@
 @import "@fontsource/noto-sans-sc/400.css";
 @import "@fontsource/noto-sans-sc/700.css";
 
+/**
+ * @brief 站点拉丁正文使用的易读字体 (Readable Latin typeface used for site body copy).
+ * @note 字体文件由站点自身托管，避免首屏依赖外部字体服务 (Font files are self-hosted to avoid a first-paint dependency on an external font service).
+ */
 @font-face {
   font-family: "Atkinson Hyperlegible";
   src: url("/fonts/atkinson-regular.woff") format("woff");
@@ -9,6 +13,10 @@
   font-display: swap;
 }
 
+/**
+ * @brief 站点拉丁强调文字使用的易读粗体 (Readable Latin bold face used for emphasized copy).
+ * @note 字体文件由站点自身托管 (The font file is self-hosted).
+ */
 @font-face {
   font-family: "Atkinson Hyperlegible";
   src: url("/fonts/atkinson-bold.woff") format("woff");
@@ -17,10 +25,12 @@
   font-display: swap;
 }
 
+/** @brief 中文界面的正文排印栈 (Body typography stack for the Chinese interface). */
 html[lang="zh"] body {
   font-family: "Noto Sans SC", "Atkinson Hyperlegible", sans-serif;
 }
 
+/** @brief 英文界面的正文排印栈 (Body typography stack for the English interface). */
 html[lang="en"] body {
   font-family: "Atkinson Hyperlegible", "Noto Sans SC", sans-serif;
 }

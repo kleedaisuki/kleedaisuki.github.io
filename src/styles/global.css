@@ -1,194 +1,201 @@
+/**
+ * @brief Atelier 的全站设计令牌与兼容别名 (Site-wide design tokens and compatibility aliases for Atelier).
+ * @note 新令牌描述纸张、石墨、朱砂与蓝图语义；旧令牌继续供现有内容模块使用 (New tokens express paper, graphite, vermilion, and blueprint semantics; legacy aliases keep existing content modules working).
+ */
 :root {
   color-scheme: light;
 
-  --bg-color: #fff6ea;
-  --bg-accent: #ffe4c3;
-  --surface-color: rgba(255, 251, 244, 0.9);
-  --surface-strong: #fffdf8;
-  --surface-muted: #fff7ed;
-  --surface-elevated: #fffaf4;
-  --text-color: #4b2a1e;
-  --text-soft: #805648;
-  --heading-color: #26110b;
-  --accent-color: #e66a3f;
-  --accent-strong: #bd4525;
-  --accent-text: #ad3d1d;
-  --accent-text-hover: #822b14;
-  --interactive-color: #bd4525;
-  --accent-faint: #ffe5d3;
-  --accent-wash: rgba(255, 225, 204, 0.7);
-  --accent-gold: #ffb55e;
-  --accent-berry: #ff8569;
-  --border-color: #f3bf98;
-  --border-subtle: rgba(243, 191, 152, 0.72);
-  --code-bg-color: #fff1dd;
-  --shadow-color: rgba(158, 78, 37, 0.14);
-  --shadow-sm: 0 8px 18px rgba(158, 78, 37, 0.1);
-  --shadow-md: 0 16px 34px rgba(158, 78, 37, 0.16);
-  --focus-ring: #542516;
-  --browser-theme-color: #fff6ea;
-  --body-glow-primary: rgba(255, 207, 140, 0.55);
-  --body-glow-secondary: rgba(255, 174, 123, 0.36);
-  --body-gradient-top: #fffaf2;
-  --body-gradient-bottom: #fff1e2;
-  --header-bg-start: rgba(255, 252, 247, 0.95);
-  --header-bg-end: rgba(255, 238, 215, 0.9);
-  --footer-bg: rgba(255, 250, 242, 0.8);
-  --on-accent: #fffaf2;
+  --paper: #f2eadb;
+  --paper-deep: #e8ddca;
+  --paper-raised: #faf5eb;
+  --graphite: #292b2d;
+  --graphite-soft: #66645f;
+  --vermilion: #b7472f;
+  --vermilion-deep: #8e321f;
+  --blueprint: #315d79;
+  --blueprint-soft: #dbe4e5;
+  --rule: #b9af9e;
+  --rule-soft: rgba(91, 84, 73, 0.22);
+  --ink-on-accent: #fffaf0;
 
-  --motion-fast: 160ms;
-  --motion-base: 240ms;
-  --motion-slow: 480ms;
+  --bg-color: var(--paper);
+  --bg-accent: var(--paper-deep);
+  --surface-color: rgba(250, 245, 235, 0.9);
+  --surface-strong: var(--paper-raised);
+  --surface-muted: #eee5d6;
+  --surface-elevated: #fffaf0;
+  --text-color: var(--graphite);
+  --text-soft: var(--graphite-soft);
+  --heading-color: #202225;
+  --accent-color: var(--vermilion);
+  --accent-strong: var(--vermilion-deep);
+  --accent-text: #9c3925;
+  --accent-text-hover: #722617;
+  --interactive-color: var(--vermilion-deep);
+  --accent-faint: #eedbd1;
+  --accent-wash: rgba(183, 71, 47, 0.1);
+  --accent-gold: #b8873d;
+  --accent-berry: var(--vermilion);
+  --border-color: var(--rule);
+  --border-subtle: var(--rule-soft);
+  --code-bg-color: #e7e3d9;
+  --shadow-color: rgba(45, 40, 33, 0.14);
+  --shadow-sm: 0 2px 0 rgba(45, 40, 33, 0.08);
+  --shadow-md: 0 8px 22px rgba(45, 40, 33, 0.1);
+  --focus-ring: var(--blueprint);
+  --browser-theme-color: var(--paper);
+  --body-glow-primary: transparent;
+  --body-glow-secondary: transparent;
+  --body-gradient-top: var(--paper);
+  --body-gradient-bottom: var(--paper);
+  --header-bg-start: rgba(242, 234, 219, 0.96);
+  --header-bg-end: rgba(242, 234, 219, 0.96);
+  --footer-bg: transparent;
+  --on-accent: var(--ink-on-accent);
+
+  --motion-fast: 140ms;
+  --motion-base: 220ms;
+  --motion-slow: 420ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
 
   --font-sans: "Atkinson Hyperlegible", "Noto Sans SC", sans-serif;
-  --font-display: "Atkinson Hyperlegible", "Noto Sans SC", sans-serif;
-  --font-mono: "IBM Plex Mono", "Cascadia Mono", "Fira Code", monospace;
+  --font-display: Georgia, "Noto Sans SC", serif;
+  --font-mono: "IBM Plex Mono", "Cascadia Mono", "SFMono-Regular", monospace;
 
-  --radius-small: 10px;
-  --radius-medium: 18px;
-  --radius-large: 26px;
-
-  /* @brief BaseLayout 共用内容宽度 (shared BaseLayout content width)。 */
-  --layout-content-width: 980px;
-
-  /* @brief 屏幕安全区域上边距 (top safe-area inset)。 */
+  --radius-small: 2px;
+  --radius-medium: 4px;
+  --radius-large: 8px;
+  --layout-content-width: 1180px;
   --safe-area-top: env(safe-area-inset-top, 0px);
-  /* @brief 屏幕安全区域右边距 (right safe-area inset)。 */
   --safe-area-right: env(safe-area-inset-right, 0px);
-  /* @brief 屏幕安全区域下边距 (bottom safe-area inset)。 */
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  /* @brief 屏幕安全区域左边距 (left safe-area inset)。 */
   --safe-area-left: env(safe-area-inset-left, 0px);
 }
 
+/** @brief Atelier 的夜间纸张与制图板配色 (Night paper and drafting-board palette for Atelier). */
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --bg-color: #21130f;
-  --bg-accent: #3a211a;
-  --surface-color: rgba(47, 28, 23, 0.92);
-  --surface-strong: #30201b;
-  --surface-muted: #3a251f;
-  --surface-elevated: #39231d;
-  --text-color: #f6e7dc;
-  --text-soft: #d9b8a6;
-  --heading-color: #fff6ef;
-  --accent-color: #f27a50;
-  --accent-strong: #ffb18c;
-  --accent-text: #ffc2a4;
-  --accent-text-hover: #ffd8c5;
-  --interactive-color: #c04725;
-  --accent-faint: #512a20;
-  --accent-wash: rgba(133, 62, 42, 0.42);
-  --accent-gold: #f9b65d;
-  --accent-berry: #ff997f;
-  --border-color: #714531;
-  --border-subtle: rgba(160, 99, 69, 0.68);
-  --code-bg-color: #3c241d;
+  --paper: #181a1d;
+  --paper-deep: #111316;
+  --paper-raised: #222529;
+  --graphite: #e7e0d4;
+  --graphite-soft: #aaa69e;
+  --vermilion: #db7055;
+  --vermilion-deep: #ee8a70;
+  --blueprint: #79abc6;
+  --blueprint-soft: #253a45;
+  --rule: #5f5b54;
+  --rule-soft: rgba(219, 211, 197, 0.18);
+  --ink-on-accent: #151719;
+
+  --bg-color: var(--paper);
+  --bg-accent: var(--paper-deep);
+  --surface-color: rgba(34, 37, 41, 0.92);
+  --surface-strong: var(--paper-raised);
+  --surface-muted: #292c30;
+  --surface-elevated: #2b2e32;
+  --text-color: var(--graphite);
+  --text-soft: var(--graphite-soft);
+  --heading-color: #f3ede3;
+  --accent-color: var(--vermilion);
+  --accent-strong: var(--vermilion-deep);
+  --accent-text: #f09279;
+  --accent-text-hover: #ffc0ad;
+  --interactive-color: var(--vermilion);
+  --accent-faint: #3d2926;
+  --accent-wash: rgba(219, 112, 85, 0.12);
+  --accent-gold: #c99b58;
+  --accent-berry: var(--vermilion);
+  --border-color: var(--rule);
+  --border-subtle: var(--rule-soft);
+  --code-bg-color: #292c2f;
   --shadow-color: rgba(0, 0, 0, 0.34);
-  --shadow-sm: 0 8px 18px rgba(0, 0, 0, 0.22);
-  --shadow-md: 0 16px 34px rgba(0, 0, 0, 0.38);
-  --focus-ring: #ffe0a3;
-  --browser-theme-color: #21130f;
-  --body-glow-primary: rgba(155, 69, 42, 0.22);
-  --body-glow-secondary: rgba(218, 105, 64, 0.13);
-  --body-gradient-top: #281712;
-  --body-gradient-bottom: #19100e;
-  --header-bg-start: rgba(56, 33, 27, 0.96);
-  --header-bg-end: rgba(47, 27, 23, 0.94);
-  --footer-bg: rgba(48, 29, 24, 0.88);
-  --on-accent: #fff7f1;
+  --shadow-sm: 0 2px 0 rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 8px 22px rgba(0, 0, 0, 0.32);
+  --focus-ring: var(--blueprint);
+  --browser-theme-color: var(--paper);
+  --header-bg-start: rgba(24, 26, 29, 0.96);
+  --header-bg-end: rgba(24, 26, 29, 0.96);
+  --footer-bg: transparent;
+  --on-accent: var(--ink-on-accent);
 }
 
+/** @brief 统一元素盒模型 (Use a single box model for all elements). */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
+/** @brief 为锚点导航预留工作室页眉空间 (Reserve workshop-header space for anchor navigation). */
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 7.5rem;
+  scroll-padding-top: 8rem;
 }
 
+/**
+ * @brief 创建暖纸张与克制蓝图网格的页面画布 (Create the warm-paper page canvas with a restrained blueprint grid).
+ * @note 网格仅作为背景标注，不承载信息 (The grid is annotation only and carries no information).
+ */
 body {
-  margin: 0;
-  min-height: 100vh;
   position: relative;
-  font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.75;
+  min-height: 100vh;
+  margin: 0;
   color: var(--text-color);
-  background:
-    radial-gradient(
-      circle at 14% 12%,
-      var(--body-glow-primary) 0%,
-      transparent 35%
-    ),
-    radial-gradient(
-      circle at 82% 18%,
-      var(--body-glow-secondary) 0%,
-      transparent 42%
+  background-color: var(--bg-color);
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--blueprint) 8%, transparent) 1px,
+      transparent 1px
     ),
     linear-gradient(
-      180deg,
-      var(--body-gradient-top) 0%,
-      var(--bg-color) 54%,
-      var(--body-gradient-bottom) 100%
+      to bottom,
+      color-mix(in srgb, var(--blueprint) 8%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--blueprint) 13%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--blueprint) 13%, transparent) 1px,
+      transparent 1px
     );
+  background-position: center top;
+  background-size:
+    24px 24px,
+    24px 24px,
+    120px 120px,
+    120px 120px;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.7;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-body::before,
-body::after {
+/** @brief 提供纸张底色，避免网格干扰正文阅读 (Provide a paper wash so the grid does not interfere with reading). */
+body::before {
   content: "";
   position: fixed;
+  inset: 0;
   z-index: -1;
   pointer-events: none;
-}
-
-body::before {
-  inset: 0;
-  background-image:
-    radial-gradient(
-      circle at 25% 18%,
-      color-mix(in srgb, var(--accent-gold) 22%, transparent) 0 2px,
-      transparent 2px
-    ),
-    radial-gradient(
-      circle at 64% 36%,
-      color-mix(in srgb, var(--accent-berry) 18%, transparent) 0 1.6px,
-      transparent 1.8px
-    ),
-    radial-gradient(
-      circle at 80% 72%,
-      color-mix(in srgb, var(--accent-gold) 15%, transparent) 0 1.8px,
-      transparent 2px
-    );
-  background-size:
-    220px 220px,
-    290px 290px,
-    340px 340px;
-  opacity: 0.55;
-}
-
-body::after {
-  inset: auto 3% 3% auto;
-  width: 260px;
-  aspect-ratio: 1;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--accent-gold) 32%, transparent),
-    transparent
+  background: linear-gradient(
+    90deg,
+    transparent 0 5%,
+    color-mix(in srgb, var(--paper) 90%, transparent) 16% 84%,
+    transparent 95%
   );
-  animation: drift 9s var(--ease-emphasized) infinite;
 }
 
+/** @brief 建立页眉、正文与页脚的纵向布局 (Establish the vertical header, content, and footer layout). */
 .site-wrapper {
   display: flex;
   flex-direction: column;
@@ -197,7 +204,7 @@ body::after {
     var(--safe-area-left);
 }
 
-/* @brief 在支持动态视口时覆盖固定视口高度 (override the static viewport height when dynamic viewport units are supported)。 */
+/** @brief 在支持动态视口时使用真实可用高度 (Use the actual available height when dynamic viewport units are supported). */
 @supports (min-height: 100dvh) {
   body,
   .site-wrapper {
@@ -205,79 +212,85 @@ body::after {
   }
 }
 
+/** @brief 约束全站内容宽度并保留装订边距 (Constrain site content and preserve binding margins). */
 .container {
-  width: min(var(--layout-content-width), 100% - 2.2rem);
-  margin: 0 auto;
+  width: min(var(--layout-content-width), calc(100% - 3rem));
+  margin-inline: auto;
 }
 
-header.container {
+/**
+ * @brief 编辑工作室式粘性页眉 (Editorial-workshop sticky header).
+ * @note 方正边线代替悬浮胶囊，保持工具栏层级清楚 (Square rules replace the floating pill while keeping toolbar hierarchy clear).
+ */
+.workshop-header {
   position: sticky;
-  overflow: visible;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.2rem 1.35rem;
-  margin-top: 1.2rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-large);
+  top: calc(0.75rem + var(--safe-area-top));
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  min-height: 5rem;
+  margin-top: 0.75rem;
+  border-block: 1px solid var(--border-color);
   background: linear-gradient(
-    120deg,
+    90deg,
     var(--header-bg-start),
     var(--header-bg-end)
   );
   box-shadow: var(--shadow-md);
-  top: calc(0.9rem + var(--safe-area-top));
-  z-index: 20;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
-header.container::after {
+/** @brief 在页眉上缘加入朱砂校样标记 (Add a vermilion proof mark to the header edge). */
+.workshop-header::before {
   content: "";
   position: absolute;
-  right: 1rem;
-  top: -0.15rem;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 50%;
-  background: var(--accent-gold);
-  box-shadow:
-    -1.2rem 0.3rem 0 color-mix(in srgb, var(--accent-berry) 80%, transparent),
-    -0.72rem -0.42rem 0 color-mix(in srgb, var(--accent-gold) 68%, transparent);
+  inset: -1px auto auto 0;
+  width: clamp(3rem, 9vw, 7rem);
+  height: 3px;
+  background: var(--vermilion);
 }
 
+/** @brief 为主要内容提供呼吸空间 (Provide working space around the primary content). */
 main.container {
-  flex-grow: 1;
-  padding: 2.8rem 0 3.3rem;
+  flex: 1;
+  padding-block: clamp(2.5rem, 6vw, 5.5rem);
 }
 
-footer.container {
-  margin-bottom: 1.2rem;
-  padding: 1.35rem;
-  text-align: center;
-  font-size: 0.95rem;
+p {
+  margin: 0 0 1rem;
+}
+
+/** @brief 以出版物版权页样式呈现页脚 (Present the footer as a publication colophon). */
+.workshop-footer {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-block: 1.1rem;
+  border-top: 1px solid var(--border-color);
   color: var(--text-soft);
-  border: 1px dashed var(--border-color);
-  border-radius: var(--radius-medium);
-  background: var(--footer-bg);
-  position: relative;
-  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.035em;
 }
 
-footer.container::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(
-    color-mix(in srgb, var(--accent-gold) 25%, transparent) 1.4px,
-    transparent 1.5px
-  );
-  background-size: 18px 18px;
-  opacity: 0.45;
-  pointer-events: none;
+/** @brief 消除版权页段落的默认边距 (Remove default paragraph margins inside the colophon). */
+.workshop-footer p {
+  margin: 0;
 }
 
+/** @brief 将版权页标签渲染为蓝图式索引文字 (Render the colophon label as blueprint index copy). */
+.workshop-footer__mark {
+  color: var(--blueprint);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+/** @brief 统一标题的编辑式衬线排印 (Apply editorial serif typography to headings). */
 h1,
 h2,
 h3,
@@ -287,61 +300,56 @@ h6 {
   margin: 0 0 0.9rem;
   color: var(--heading-color);
   font-family: var(--font-display);
-  line-height: 1.25;
+  font-weight: 700;
+  line-height: 1.16;
+  text-wrap: balance;
 }
 
 h1 {
-  font-size: clamp(2rem, 4vw, 3.05rem);
-  letter-spacing: 0.01em;
+  font-size: clamp(2.2rem, 5vw, 4.4rem);
+  letter-spacing: -0.035em;
 }
 
 h2 {
-  font-size: clamp(1.52rem, 3.1vw, 2.2rem);
+  font-size: clamp(1.55rem, 3.2vw, 2.45rem);
+  letter-spacing: -0.02em;
 }
 
 h3 {
-  font-size: clamp(1.2rem, 2.2vw, 1.58rem);
+  font-size: clamp(1.2rem, 2.2vw, 1.62rem);
 }
 
-p {
-  margin: 0 0 1rem;
-}
-
+/** @brief 使用清晰而克制的文本链接标记 (Use a clear, restrained treatment for textual links). */
 a {
   color: var(--accent-text);
-  text-decoration-color: color-mix(in srgb, currentColor 42%, transparent);
+  text-decoration-color: color-mix(in srgb, currentColor 46%, transparent);
   text-decoration-thickness: 0.08em;
-  text-underline-offset: 0.16em;
+  text-underline-offset: 0.18em;
   transition:
     color var(--motion-fast) var(--ease-standard),
     text-decoration-color var(--motion-fast) var(--ease-standard);
 }
 
-a:focus-visible {
-  color: var(--accent-text-hover);
-}
-
-a:focus-visible {
+/** @brief 为键盘用户提供高可见度焦点环 (Provide a high-visibility focus ring for keyboard users). */
+:where(a, button):focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 3px;
-  border-radius: 8px;
-  box-shadow:
-    0 0 0 2px var(--surface-elevated),
-    0 0 0 5px var(--focus-ring);
+  border-radius: var(--radius-small);
 }
 
+/** @brief 将跳转正文链接置于视口外，聚焦时恢复 (Keep the skip link off-canvas until focused). */
 .skip-link {
   position: fixed;
-  left: calc(1rem + var(--safe-area-left));
-  top: calc(1rem + var(--safe-area-top));
+  top: calc(0.75rem + var(--safe-area-top));
+  left: calc(0.75rem + var(--safe-area-left));
   z-index: 100;
-  padding: 0.62rem 0.9rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-small);
+  min-height: 44px;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--blueprint);
   background: var(--surface-elevated);
   box-shadow: var(--shadow-md);
   color: var(--heading-color);
-  transform: translateY(-160%);
+  transform: translateY(-180%);
   transition: transform var(--motion-fast) var(--ease-standard);
 }
 
@@ -349,108 +357,137 @@ a:focus-visible {
   transform: translateY(0);
 }
 
-.site-nav,
-.lang-switch {
+/** @brief 让品牌、栏目与主题工具共用一条清晰基线 (Give brand, sections, and theme tools one clear baseline). */
+.site-nav {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.56rem;
+  align-items: stretch;
+  justify-content: space-between;
+  min-width: 0;
 }
 
-.site-nav a,
-.lang-switch a {
+/** @brief 将 Atelier 字标呈现为工作室的核心标识 (Present the Atelier wordmark as the workshop's primary identity). */
+.site-brand {
   position: relative;
+  display: flex;
+  flex: none;
+  min-width: 12rem;
+}
+
+.site-wordmark {
   display: inline-flex;
+  flex: 1;
   align-items: center;
-  justify-content: center;
-  padding: 0.42rem 0.9rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-strong) 86%, var(--bg-accent));
-  color: var(--text-color);
+  gap: 0.7rem;
+  min-height: 64px;
+  padding: 0.35rem 1rem 1rem 0.15rem;
+  color: var(--heading-color);
   text-decoration: none;
+}
+
+/** @brief 通过伪元素绘制不污染链接文字的朱砂校样缩写 (Draw the vermilion proof abbreviation without polluting link text). */
+.site-wordmark::before {
+  content: "A/";
+  color: var(--vermilion);
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
   font-weight: 700;
-  letter-spacing: 0.01em;
-  transition:
-    transform var(--motion-fast) var(--ease-standard),
-    box-shadow var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard);
+  letter-spacing: -0.08em;
 }
 
-.site-nav a::before,
-.lang-switch a::before {
-  content: "";
-  width: 0.38rem;
-  height: 0.38rem;
-  margin-right: 0.4rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent-gold) 70%, var(--surface-strong));
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-gold) 18%, transparent);
-  transition:
-    transform var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard);
+/** @brief 垂直排列字标名称与工作室说明 (Stack the wordmark name and workshop descriptor). */
+.site-wordmark__copy {
+  display: inline-flex;
+  line-height: 1;
 }
 
-.site-nav a:focus-visible,
-.lang-switch a:focus-visible {
-  transform: translateY(-1px);
-  color: var(--on-accent);
-  background: var(--interactive-color);
-  box-shadow:
-    0 8px 20px color-mix(in srgb, var(--accent-strong) 26%, transparent),
-    0 0 0 2px var(--surface-elevated),
-    0 0 0 5px var(--focus-ring);
+.site-wordmark__copy strong {
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  letter-spacing: -0.045em;
 }
 
-.site-nav a:focus-visible::before,
-.lang-switch a:focus-visible::before {
-  background: var(--on-accent);
-  transform: scale(1.22);
-}
-
-.lang-switch {
+/** @brief 在字标下方放置不参与链接名称的工作室说明 (Place a non-link workshop descriptor beneath the wordmark). */
+.site-wordmark__note {
+  position: absolute;
+  bottom: 0.55rem;
+  left: 2.15rem;
   color: var(--text-soft);
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-.site-nav a[aria-current="page"] {
-  color: var(--on-accent);
-  background: var(--interactive-color);
-  box-shadow: inset 0 -2px 0
-    color-mix(in srgb, var(--accent-gold) 52%, transparent);
+/** @brief 对齐栏目链接与主题按钮 (Align section links and the theme button). */
+.site-nav__tools {
+  display: flex;
+  align-items: stretch;
+  border-left: 1px solid var(--border-subtle);
 }
 
-.site-nav a[aria-current="page"]::before {
-  background: var(--on-accent);
+/** @brief 将栏目链接组织为编辑索引 (Organize section links as an editorial index). */
+.site-nav__links {
+  display: flex;
+  align-items: stretch;
 }
 
-.theme-toggle {
+.site-nav__links a {
   position: relative;
   display: inline-flex;
   align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  padding: 0.6rem clamp(0.65rem, 1.4vw, 1rem);
+  border-right: 1px solid var(--border-subtle);
+  color: var(--text-color);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/** @brief 通过数据属性显示不污染链接文字的栏目校样编号 (Show the section proof index from data without polluting link text). */
+.site-nav__links a::before {
+  content: attr(data-index);
+  align-self: flex-start;
+  margin-top: 0.45rem;
+  color: var(--blueprint);
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 400;
+}
+
+/** @brief 用朱砂下划线标记当前栏目 (Mark the current section with a vermilion rule). */
+.site-nav__links a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 3px;
+  background: var(--vermilion);
+}
+
+/** @brief 主题切换器沿用工作室工具栏语法 (Keep the theme switcher within the workshop-toolbar grammar). */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  gap: 0.42rem;
-  min-height: 2.3rem;
-  padding: 0.42rem 0.72rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-strong) 86%, var(--bg-accent));
+  gap: 0.38rem;
+  min-width: 4.7rem;
+  min-height: 44px;
+  padding: 0.6rem 0.75rem;
+  border: 0;
+  border-right: 1px solid var(--border-subtle);
+  background: transparent;
   color: var(--text-color);
   font: inherit;
   font-weight: 700;
-  line-height: 1;
   cursor: pointer;
   transition:
-    transform var(--motion-fast) var(--ease-standard),
-    box-shadow var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard);
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
 }
 
 .theme-toggle__icon {
-  width: 1.05rem;
-  height: 1.05rem;
+  width: 1rem;
+  height: 1rem;
   flex: none;
   fill: none;
   stroke: currentColor;
@@ -460,9 +497,10 @@ a:focus-visible {
 }
 
 .theme-toggle__label {
-  font-size: 0.84rem;
+  font-size: 0.75rem;
 }
 
+/** @brief 仅向辅助技术暴露主题切换结果 (Expose theme-change status only to assistive technology). */
 .theme-toggle__status {
   position: absolute;
   width: 1px;
@@ -475,62 +513,91 @@ a:focus-visible {
   border: 0;
 }
 
-.theme-toggle:focus-visible {
-  color: var(--on-accent);
-  background: var(--interactive-color);
-  box-shadow: 0 8px 20px
-    color-mix(in srgb, var(--accent-strong) 26%, transparent);
-  transform: translateY(-1px);
+/** @brief 将语言选择器呈现为小型排版工具 (Present the language switcher as a compact typesetting tool). */
+.lang-switch {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 5.25rem;
+  padding-inline: 0.6rem;
+  border-left: 1px solid var(--border-color);
 }
 
-.theme-toggle:focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 3px;
-  box-shadow:
-    0 8px 20px color-mix(in srgb, var(--accent-strong) 26%, transparent),
-    0 0 0 2px var(--surface-elevated),
-    0 0 0 5px var(--focus-ring);
-}
-
-code {
+.lang-switch__label {
+  color: var(--blueprint);
   font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+}
+
+.lang-switch__choices {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.lang-switch a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 44px;
+  padding: 0.2rem 0.35rem;
+  color: var(--text-soft);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.lang-switch a[aria-current="page"] {
+  color: var(--ink-on-accent);
+  background: var(--blueprint);
+}
+
+/** @brief 统一行内代码的校样标签外观 (Style inline code as a proofing label). */
+code {
+  padding: 0.12em 0.34em;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-small);
   background: var(--code-bg-color);
   color: var(--accent-strong);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 0.14em 0.38em;
+  font-family: var(--font-mono);
   font-size: 0.89em;
 }
 
+/** @brief 将代码块呈现为制图纸面板 (Present code blocks as drafting-paper panels). */
 pre {
-  background: var(--surface-strong);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-medium);
-  box-shadow: var(--shadow-sm);
-  padding: 1.1rem;
   overflow-x: auto;
+  padding: 1.1rem;
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--blueprint);
+  border-radius: var(--radius-medium);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow-sm);
 }
 
 pre > code {
   all: unset;
-  font-family: var(--font-mono);
   color: var(--text-color);
+  font-family: var(--font-mono);
 }
 
+/** @brief 覆盖 Shiki 内联浅色值以支持夜间主题 (Override Shiki inline light values for the dark theme). */
 :root[data-theme="dark"] .astro-code,
 :root[data-theme="dark"] .astro-code span {
-  /* biome-ignore lint/complexity/noImportantStyles: Shiki emits light-theme colors inline, so this controlled override is required for a manual dark theme. */
+  /* biome-ignore lint/complexity/noImportantStyles: Shiki emits inline theme colors, so the theme override requires important. */
   color: var(--shiki-dark) !important;
-  /* biome-ignore lint/complexity/noImportantStyles: Shiki emits a light background inline, so this controlled override is required for a manual dark theme. */
+  /* biome-ignore lint/complexity/noImportantStyles: Shiki emits an inline background, so the theme override requires important. */
   background-color: var(--shiki-dark-bg) !important;
 }
 
+/** @brief 用朱砂校样线标示引用内容 (Mark quoted content with a vermilion proof rule). */
 blockquote {
   margin: 1.5rem 0;
   padding: 0.9rem 1rem 0.9rem 1.2rem;
-  border-left: 4px solid var(--accent-color);
+  border-left: 3px solid var(--vermilion);
   background: var(--accent-wash);
-  border-radius: 0 12px 12px 0;
 }
 
 img {
@@ -539,7 +606,9 @@ img {
   border-radius: var(--radius-medium);
 }
 
-.post-body {
+/** @brief 约束文章正文到舒适行长 (Constrain article copy to a comfortable measure). */
+.post-body,
+.prose {
   max-width: 72ch;
   margin-inline: auto;
 }
@@ -547,7 +616,8 @@ img {
 .post-breadcrumb {
   margin: 0 0 1.15rem;
   color: var(--text-soft);
-  font-size: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
 }
 
 .post-breadcrumb ol {
@@ -562,29 +632,17 @@ img {
 .post-breadcrumb li:not(:last-child)::after {
   content: "/";
   margin-left: 0.35rem;
-  color: var(--border-color);
+  color: var(--blueprint);
 }
 
 .post-header {
-  margin-bottom: 2.2rem;
+  margin-bottom: 2.4rem;
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .post-header > h1 {
   margin-bottom: 1rem;
-  position: relative;
-  display: inline-block;
-}
-
-.post-header > h1::after {
-  content: "";
-  position: absolute;
-  left: 0.15rem;
-  right: 0.15rem;
-  bottom: -0.28rem;
-  height: 0.2rem;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent-gold), var(--accent-berry));
-  opacity: 0.62;
 }
 
 .post-summary {
@@ -597,33 +655,25 @@ img {
   margin: 0.9rem 0 0;
   color: var(--text-soft);
   font-family: var(--font-mono);
-  font-size: 0.88rem;
+  font-size: 0.78rem;
 }
 
 .post-taxonomy {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.48rem;
+  gap: 0.4rem;
   margin: 1rem 0 0;
   padding: 0;
   list-style: none;
 }
 
 .post-taxonomy li {
-  padding: 0.2rem 0.65rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-muted) 86%, var(--accent-faint));
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--border-color);
+  background: var(--surface-muted);
   color: var(--text-soft);
   font-family: var(--font-mono);
-  font-size: 0.78rem;
-  box-shadow: inset 0 -1px 0
-    color-mix(in srgb, var(--accent-strong) 12%, transparent);
-}
-
-.prose {
-  max-width: 72ch;
-  margin-inline: auto;
+  font-size: 0.72rem;
 }
 
 .prose > * + * {
@@ -632,8 +682,13 @@ img {
 
 .prose h2,
 .prose h3 {
-  margin-top: 1.8rem;
+  margin-top: 2.2rem;
   scroll-margin-top: 8rem;
+}
+
+.prose h2 {
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .prose ul,
@@ -645,94 +700,135 @@ img {
   margin-top: 0.35rem;
 }
 
-main.container > * {
-  animation: rise-in var(--motion-slow) var(--ease-emphasized) both;
-}
-
-main.container > *:nth-child(2) {
-  animation-delay: 0.08s;
-}
-
-main.container > *:nth-child(3) {
-  animation-delay: 0.16s;
-}
-
-@keyframes rise-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
+/** @brief 在精确指针设备上提供克制的悬停反馈 (Provide restrained hover feedback on precise pointers). */
+@media (hover: hover) and (pointer: fine) {
+  a:hover {
+    color: var(--accent-text-hover);
   }
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .site-wordmark:hover {
+    color: var(--vermilion);
+  }
+
+  .site-nav__links a:hover,
+  .theme-toggle:hover {
+    color: var(--heading-color);
+    background: color-mix(in srgb, var(--blueprint-soft) 62%, transparent);
+  }
+
+  .lang-switch a:hover {
+    color: var(--heading-color);
+    background: var(--blueprint-soft);
   }
 }
 
-@keyframes drift {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
+/** @brief 在中等视口中把工作室工具栏换行为两层 (Wrap the workshop toolbar into two rows on medium viewports). */
+@media (max-width: 900px) {
+  .container {
+    width: min(var(--layout-content-width), calc(100% - 2rem));
   }
 
-  50% {
-    transform: translate(-18px, -14px) scale(1.08);
-  }
-}
-
-@media (max-width: 860px) {
-  header.container {
+  .workshop-header {
     position: static;
-    border-radius: var(--radius-medium);
-    padding: 1rem;
-    margin-top: 0.75rem;
+    display: block;
   }
 
-  header.container::after {
+  .site-nav {
+    flex-wrap: wrap;
+  }
+
+  .site-brand {
+    flex: 1 1 auto;
+  }
+
+  .site-nav__tools {
+    flex: 1 0 100%;
+    border-top: 1px solid var(--border-subtle);
+    border-left: 0;
+  }
+
+  .site-nav__links {
+    flex: 1;
+  }
+
+  .site-nav__links a {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .lang-switch {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.4rem;
+    min-height: 3.7rem;
+    border-left: 0;
+  }
+}
+
+/** @brief 在窄屏上维持 44 像素触摸目标与清晰栏目分栏 (Keep 44-pixel touch targets and clear section columns on narrow screens). */
+@media (max-width: 600px) {
+  .container {
+    width: min(var(--layout-content-width), calc(100% - 1.25rem));
+  }
+
+  .site-brand {
+    min-height: 68px;
+  }
+
+  .site-wordmark {
+    padding-right: 5.2rem;
+  }
+
+  .site-wordmark__note {
+    max-width: 10rem;
+    line-height: 1.3;
+  }
+
+  .site-nav__tools {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .site-nav__links {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .site-nav__links a {
+    gap: 0.2rem;
+    min-width: 0;
+    padding-inline: 0.35rem;
+    font-size: 0.8rem;
+  }
+
+  .site-nav__links a::before {
+    display: none;
+  }
+
+  .theme-toggle {
+    min-width: 3.2rem;
+  }
+
+  .theme-toggle__label,
+  .lang-switch__label,
+  .lang-switch__long-label {
     display: none;
   }
 
   main.container {
-    padding-top: 2.1rem;
+    padding-block: 2.25rem 3rem;
   }
 
-  body::after {
-    width: 190px;
-  }
-}
-
-@media (max-width: 640px) {
-  header.container {
+  .workshop-footer {
+    align-items: flex-start;
     flex-direction: column;
-    align-items: stretch;
-  }
-
-  .site-nav,
-  .lang-switch {
-    justify-content: center;
-  }
-
-  .site-nav {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-  }
-
-  .site-nav a,
-  .theme-toggle {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .lang-switch a {
-    flex: 0 1 auto;
-    min-width: 0;
+    gap: 0.35rem;
   }
 }
 
 /**
  * @brief 在移动端让文档阅读器独占可用视口 (Give document readers the available mobile viewport).
- * @note 阅读器自身提供返回操作，省略站点级导航与页脚以避免重复占用高度 (The reader owns navigation back, so site chrome does not consume the reading viewport).
+ * @note 阅读器自身提供返回操作，省略站点级导航与页脚 (The reader owns navigation back, so site chrome is omitted).
  */
 @media (max-width: 760px) {
   body.layout-reader {
@@ -746,8 +842,8 @@ main.container > *:nth-child(3) {
     min-height: 0;
   }
 
-  .layout-reader header.container,
-  .layout-reader footer.container {
+  .layout-reader .workshop-header,
+  .layout-reader .workshop-footer {
     display: none;
   }
 
@@ -768,53 +864,18 @@ main.container > *:nth-child(3) {
   }
 }
 
-@media (hover: hover) and (pointer: fine) {
-  a:hover {
-    color: var(--accent-text-hover);
-  }
-
-  .site-nav a:hover,
-  .lang-switch a:hover {
-    color: var(--on-accent);
-    background: var(--interactive-color);
-    box-shadow: 0 8px 20px
-      color-mix(in srgb, var(--accent-strong) 26%, transparent);
-    transform: translateY(-1px);
-  }
-
-  .site-nav a:hover::before,
-  .lang-switch a:hover::before {
-    background: var(--on-accent);
-    transform: scale(1.22);
-  }
-
-  .theme-toggle:hover {
-    color: var(--on-accent);
-    background: var(--interactive-color);
-    box-shadow: 0 8px 20px
-      color-mix(in srgb, var(--accent-strong) 26%, transparent);
-    transform: translateY(-1px);
-  }
-}
-
+/** @brief 尊重减少动态效果的系统偏好 (Honor the system preference for reduced motion). */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
-  body::after,
-  main.container > * {
-    animation: none;
-  }
-
-  body::after {
-    display: none;
-  }
-
-  .site-nav a,
-  .lang-switch a,
-  .theme-toggle,
-  .skip-link {
-    transition: none;
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
   }
 }

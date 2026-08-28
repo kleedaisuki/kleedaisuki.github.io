@@ -3,29 +3,40 @@ import { getCollection } from "astro:content";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { getPublishedAlternates } from "../lib/localized-blog";
 
+/** @brief 当前请求路径 (current request pathname)。 */
 const pathname = Astro.url.pathname;
-const m = pathname.match(/^\/(zh|en)\/blog\/([^/]+)\/?$/);
+/** @brief 当前博客文章路由的匹配结果 (match for the current blog-post route)。 */
+const postRoute = pathname.match(/^\/(zh|en)\/blog\/([^/]+)\/?$/);
+/** @brief 当前页面的语言分区 (locale section of the current page)。 */
 const currentLocale = pathname.match(/^\/(zh|en)(?:\/|$)/)?.[1] as
   | "zh"
   | "en"
   | undefined;
+/** @brief 去除语言前缀后的相对路径 (relative path without the locale prefix)。 */
+const relativePath = pathname.replace(/^\/(zh|en)\//, "");
+/** @brief 中文目标地址 (Chinese destination URL)。 */
+let toZH: string | undefined = getRelativeLocaleUrl("zh", relativePath);
+/** @brief 英文目标地址 (English destination URL)。 */
+let toEN: string | undefined = getRelativeLocaleUrl("en", relativePath);
 
-const raw = pathname.replace(/^\/(zh|en)\//, "");
-let toZH: string | undefined = getRelativeLocaleUrl("zh", raw);
-let toEN: string | undefined = getRelativeLocaleUrl("en", raw);
-
-if (m) {
-  const postLocale = m[1] as "zh" | "en";
-  const currentSlug = decodeURIComponent(m[2]);
+if (postRoute) {
+  /** @brief 当前文章的语言 (locale of the current post)。 */
+  const postLocale = postRoute[1] as "zh" | "en";
+  /** @brief 当前文章的解码标识 (decoded slug of the current post)。 */
+  const currentSlug = decodeURIComponent(postRoute[2]);
+  /** @brief 所有已发布文章 (all published posts)。 */
   const allPosts = await getCollection("blog", ({ data }) => !data.draft);
+  /** @brief 当前文章真实存在的翻译版本 (published translations of the current post)。 */
   const publishedAlternates = getPublishedAlternates(
     allPosts,
     postLocale,
     currentSlug,
   );
+  /** @brief 当前文章的中文版本 (Chinese edition of the current post)。 */
   const zhAlternate = publishedAlternates.find(
     (alternate) => alternate.locale === "zh",
   );
+  /** @brief 当前文章的英文版本 (English edition of the current post)。 */
   const enAlternate = publishedAlternates.find(
     (alternate) => alternate.locale === "en",
   );
@@ -37,32 +48,37 @@ if (m) {
     ? `/en/blog/${encodeURIComponent(enAlternate.slug)}/`
     : undefined;
 }
+
+/** @brief 语言切换器的无障碍名称 (accessible name for the language switcher)。 */
+const switcherLabel = currentLocale === "zh" ? "语言切换" : "Language switcher";
 ---
 
-<nav
-    class="lang-switch"
-    aria-label={currentLocale === "zh" ? "语言切换" : "Language switcher"}
->
+<nav class="lang-switch" aria-label={switcherLabel}>
+  <span class="lang-switch__label" aria-hidden="true">LANG</span>
+  <span class="lang-switch__choices">
     {
-        toZH && (
-            <a
-                href={toZH}
-                hreflang="zh"
-                aria-current={currentLocale === "zh" ? "page" : undefined}
-                onclick="try{localStorage.setItem('prefLocale','zh')}catch(e){}">中文</a
-            >
-        )
+      toZH && (
+        <a
+          href={toZH}
+          lang="zh"
+          hreflang="zh"
+          aria-current={currentLocale === "zh" ? "page" : undefined}
+        >
+          中<span class="lang-switch__long-label">文</span>
+        </a>
+      )
     }
-    {toZH && toEN && <span aria-hidden="true">|</span>}
     {
-        toEN && (
-            <a
-                href={toEN}
-                hreflang="en"
-                aria-current={currentLocale === "en" ? "page" : undefined}
-                onclick="try{localStorage.setItem('prefLocale','en')}catch(e){}"
-                >English</a
-            >
-        )
+      toEN && (
+        <a
+          href={toEN}
+          lang="en"
+          hreflang="en"
+          aria-current={currentLocale === "en" ? "page" : undefined}
+        >
+          EN
+        </a>
+      )
     }
+  </span>
 </nav>

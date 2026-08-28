@@ -1,5 +1,5 @@
 ---
-import "@styles/global.css"; // 我们把 global.css 的引用放在这里
+import "@styles/global.css";
 import "@styles/fonts.css";
 import { getCollection } from "astro:content";
 import { getAbsoluteLocaleUrl } from "astro:i18n";
@@ -105,7 +105,7 @@ const alternateOpenGraphLocales = alternates
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta name="color-scheme" content="light dark" />
-    <meta id="theme-color" name="theme-color" content="#fff6ea" />
+    <meta id="theme-color" name="theme-color" content="#f2eadb" />
     <script is:inline>
       /**
        * @brief 在首次绘制前恢复站点主题 (Restore theme before first paint).
@@ -133,7 +133,7 @@ const alternateOpenGraphLocales = alternates
         root.style.colorScheme = theme;
         document
           .querySelector('meta[name="theme-color"]')
-          ?.setAttribute("content", theme === "dark" ? "#21130f" : "#fff6ea");
+          ?.setAttribute("content", theme === "dark" ? "#181a1d" : "#f2eadb");
       })();
     </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -199,21 +199,27 @@ const alternateOpenGraphLocales = alternates
       {documentLocale === "zh" ? "跳至正文" : "Skip to content"}
     </a>
     <div class="site-wrapper">
-      <header class="container">
+      <header class="container workshop-header">
         <Nav locale={documentLocale} />
         {effectiveShowLanguageSwitch && <LangSwitch />}
       </header>
       <main id="main-content" class="container" tabindex="-1">
         <slot />
       </main>
-      <footer class="container">
-        © 2024-{new Date().getFullYear()} kleedaisuki ✨<br />
-        <a
-          href="http://creativecommons.org/licenses/by-nc-sa/4.0/"
-          rel="license"
-        >
-          CC BY-NC-SA 4.0
-        </a>
+      <footer class="container workshop-footer">
+        <p class="workshop-footer__mark" aria-hidden="true">
+          ATELIER / COLOPHON
+        </p>
+        <p>
+          <span>© 2024-{new Date().getFullYear()} kleedaisuki</span>
+          <span aria-hidden="true"> · </span>
+          <a
+            href="http://creativecommons.org/licenses/by-nc-sa/4.0/"
+            rel="license"
+          >
+            CC BY-NC-SA 4.0
+          </a>
+        </p>
       </footer>
     </div>
   </body>
