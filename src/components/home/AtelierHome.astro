@@ -1,0 +1,141 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { useTranslations } from "@i18n/utils";
+import type { AtelierLocale } from "@i18n/atelier";
+import { getAtelierPath, getAtelierText } from "../../lib/atelier";
+import {
+  getRecentStudioPosts,
+  getRecentStudioWorks,
+  getStudioMaterials,
+  getStudioWorkActivity,
+} from "../../lib/studio-index";
+import { createWebSiteJsonLd } from "../../lib/seo";
+import "@styles/home.css";
+
+/** @brief Atelier 门厅组件属性 / Properties for the Atelier foyer component. */
+interface Props {
+  locale: AtelierLocale;
+}
+
+/** @brief 当前门厅语言 / Current foyer locale. */
+const { locale } = Astro.props;
+/** @brief 当前语言的界面翻译函数 / UI translation function for the current locale. */
+const t = useTranslations(locale);
+/** @brief 当前语言的博客入口 / Blog entrance for the current locale. */
+const blogPath = `/${locale}/blog/`;
+/** @brief 当前语言的 Articrafts 入口 / Articrafts entrance for the current locale. */
+const articraftsPath = `/${locale}/articrafts/`;
+/** @brief 全部博客内容 / Entire blog collection. */
+const allPosts = await getCollection("blog");
+/** @brief 全部 Articrafts 内容 / Entire Articrafts collection. */
+const allWorks = await getCollection("atelier");
+/** @brief 当前语言最近发布的少量文章 / Small set of newest posts in the current locale. */
+const recentPosts = getRecentStudioPosts(allPosts, locale);
+/** @brief 最近活动的少量作品 / Small set of recently active works. */
+const recentWorks = getRecentStudioWorks(allWorks);
+/** @brief 当前语言全部公开文章 / All published posts in the current locale. */
+const publishedLocalePosts = getRecentStudioPosts(
+  allPosts,
+  locale,
+  Number.POSITIVE_INFINITY,
+);
+/** @brief 来自真实内容的材料与实践线索 / Material and practice cues derived from real content. */
+const materials = getStudioMaterials(publishedLocalePosts, allWorks);
+/** @brief 门厅页面标题 / Foyer page title. */
+const pageTitle = t("home.page_title");
+/** @brief 门厅结构化数据 / Structured data for the foyer. */
+const structuredData = createWebSiteJsonLd(locale);
+/** @brief HTML 日期语言 / Locale used to format visible dates. */
+const dateLocale = locale === "zh" ? "zh-CN" : "en";
+---
+
+<BaseLayout pageTitle={pageTitle} description={t("home.intro")} structuredData={structuredData} documentLocale={locale}>
+  <div class="studio-home">
+    <header class="studio-hero">
+      <div class="studio-hero__copy">
+        <p class="studio-kicker">{t("home.kicker")}</p>
+        <h1>Atelier</h1>
+        <p class="studio-hero__lead">{t("home.greeting")}</p>
+        <p class="studio-hero__intro">{t("home.intro")}</p>
+      </div>
+      <dl class="studio-process" aria-label={t("home.process_label")}>
+        <div><dt>{t("home.making_label")}</dt><dd>{t("home.making_text")}</dd></div>
+        <div><dt>{t("home.made_label")}</dt><dd>{t("home.made_text")}</dd></div>
+        <div><dt>{t("home.materials_label")}</dt><dd>{t("home.materials_text")}</dd></div>
+      </dl>
+    </header>
+
+    <nav class="studio-doors" aria-label={t("home.explore_label")}>
+      <a class="studio-door studio-door--writing" href={blogPath}>
+        <span class="studio-door__number" aria-hidden="true">01</span>
+        <span class="studio-door__eyebrow">{t("home.writing_desk")}</span>
+        <h2>Blog</h2>
+        <p>{t("home.blog_intro")}</p>
+        <span class="studio-door__action">{t("home.enter_blog")} <span aria-hidden="true">↗</span></span>
+      </a>
+      <a class="studio-door studio-door--articrafts" href={articraftsPath}>
+        <span class="studio-door__number" aria-hidden="true">02</span>
+        <span class="studio-door__eyebrow">{t("home.worktable")}</span>
+        <h2>Articrafts</h2>
+        <p>{t("home.articrafts_intro")}</p>
+        <span class="studio-door__action">{t("home.enter_articrafts")} <span aria-hidden="true">↗</span></span>
+      </a>
+    </nav>
+
+    <section class="studio-now" aria-labelledby="studio-now-title">
+      <header class="studio-section-heading">
+        <p class="studio-kicker">{t("home.on_tables")}</p>
+        <h2 id="studio-now-title">{t("home.recent_title")}</h2>
+        <p>{t("home.recent_intro")}</p>
+      </header>
+      <div class="studio-tracks">
+        <section class="studio-track" aria-labelledby="writing-track-title">
+          <header class="studio-track__heading">
+            <div><p>{t("home.writing_desk")}</p><h3 id="writing-track-title">{t("home.recent_writing")}</h3></div>
+            <a href={blogPath}>{t("home.view_all")} <span aria-hidden="true">→</span></a>
+          </header>
+          {recentPosts.length > 0 ? (
+            <ol class="studio-list">
+              {recentPosts.map((post) => (
+                <li><a href={`/${locale}/blog/${encodeURIComponent(post.data.slug)}/`}>
+                  <div class="studio-list__body"><h4>{post.data.title}</h4><p>{post.data.description}</p></div>
+                  <time datetime={post.data.date.toISOString()}>{post.data.date.toLocaleDateString(dateLocale, { year: "numeric", month: "short", day: "numeric" })}</time>
+                </a></li>
+              ))}
+            </ol>
+          ) : <p class="studio-empty">{t("home.empty_writing")}</p>}
+        </section>
+
+        <section class="studio-track" aria-labelledby="articrafts-track-title">
+          <header class="studio-track__heading">
+            <div><p>{t("home.worktable")}</p><h3 id="articrafts-track-title">{t("home.recent_articrafts")}</h3></div>
+            <a href={articraftsPath}>{t("home.view_all")} <span aria-hidden="true">→</span></a>
+          </header>
+          {recentWorks.length > 0 ? (
+            <ol class="studio-list">
+              {recentWorks.map((work) => {
+                const activity = getStudioWorkActivity(work);
+                return <li><a href={getAtelierPath(locale, work.data.slug)}>
+                  <div class="studio-list__body"><h4>{getAtelierText(work.data.title, locale)}</h4><p>{getAtelierText(work.data.summary, locale)}</p></div>
+                  <time datetime={activity.toISOString()}>{activity.toLocaleDateString(dateLocale, { year: "numeric", month: "short", day: "numeric" })}</time>
+                </a></li>;
+              })}
+            </ol>
+          ) : <p class="studio-empty">{t("home.empty_articrafts")}</p>}
+        </section>
+      </div>
+    </section>
+
+    {materials.length > 0 && (
+      <aside class="studio-materials" aria-labelledby="studio-materials-title">
+        <div>
+          <p class="studio-kicker">{t("home.materials_label")}</p>
+          <h2 id="studio-materials-title">{t("home.materials_title")}</h2>
+          <p>{t("home.materials_intro")}</p>
+        </div>
+        <ul aria-label={t("home.materials_title")}>{materials.map((material) => <li>{material}</li>)}</ul>
+      </aside>
+    )}
+  </div>
+</BaseLayout>
