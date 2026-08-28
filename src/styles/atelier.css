@@ -7,8 +7,8 @@
     var(--surface-strong) 96%,
     var(--accent-gold)
   );
-  --atelier-blueprint: color-mix(in srgb, #477a92 38%, var(--border-subtle));
-  --atelier-seal: color-mix(in srgb, #b6412c 82%, var(--accent-color));
+  --atelier-blueprint: var(--border-color);
+  --atelier-seal: var(--accent-color);
   width: 100%;
   min-width: 0;
 }
@@ -19,18 +19,7 @@
   overflow: hidden;
   padding: clamp(2.75rem, 8vw, 6.25rem) clamp(1.4rem, 6vw, 5rem);
   border: 1px solid var(--atelier-blueprint);
-  background:
-    linear-gradient(
-      color-mix(in srgb, var(--atelier-blueprint) 22%, transparent) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--atelier-blueprint) 22%, transparent) 1px,
-      transparent 1px
-    ),
-    var(--atelier-paper);
-  background-size: 1.5rem 1.5rem;
+  background: var(--atelier-paper);
   box-shadow: var(--shadow-md);
   text-align: left;
 }
@@ -392,13 +381,7 @@
   grid-template-columns: minmax(12rem, 32%) minmax(0, 1fr);
   overflow: hidden;
   border: 1px solid var(--atelier-blueprint);
-  background:
-    linear-gradient(
-      color-mix(in srgb, var(--atelier-blueprint) 15%, transparent) 1px,
-      transparent 1px
-    ),
-    var(--atelier-paper);
-  background-size: 100% 1.5rem;
+  background: var(--atelier-paper);
   box-shadow: var(--shadow-md);
 }
 
@@ -464,14 +447,7 @@
   min-width: 0;
   padding: clamp(1.2rem, 3.5vw, 2rem);
   border: 1px solid var(--atelier-blueprint);
-  background:
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--atelier-blueprint) 15%, transparent) 1px,
-      transparent 1px
-    ),
-    var(--atelier-paper);
-  background-size: 1.5rem 100%;
+  background: var(--atelier-paper);
   box-shadow: var(--shadow-sm);
 }
 .atelier-panel--compact {

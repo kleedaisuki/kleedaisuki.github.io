@@ -1,57 +1,58 @@
 /**
- * @brief Atelier 的全站设计令牌与兼容别名 (Site-wide design tokens and compatibility aliases for Atelier).
- * @note 新令牌描述纸张、石墨、朱砂与蓝图语义；旧令牌继续供现有内容模块使用 (New tokens express paper, graphite, vermilion, and blueprint semantics; legacy aliases keep existing content modules working).
+ * @brief Atelier 的全站语义配色令牌 (Site-wide semantic color tokens for Atelier).
+ * @note 这些值精确沿用平台原主题；新版工作室别名在其后单向引用语义令牌 (These values preserve the original platform theme exactly; newer workshop aliases reference the semantic tokens one-way below).
  */
 :root {
   color-scheme: light;
 
-  --paper: #f2eadb;
-  --paper-deep: #e8ddca;
-  --paper-raised: #faf5eb;
-  --graphite: #292b2d;
-  --graphite-soft: #66645f;
-  --vermilion: #b7472f;
-  --vermilion-deep: #8e321f;
-  --blueprint: #315d79;
-  --blueprint-soft: #dbe4e5;
-  --rule: #b9af9e;
-  --rule-soft: rgba(91, 84, 73, 0.22);
-  --ink-on-accent: #fffaf0;
+  --bg-color: #fff6ea;
+  --bg-accent: #ffe4c3;
+  --surface-color: rgba(255, 251, 244, 0.9);
+  --surface-strong: #fffdf8;
+  --surface-muted: #fff7ed;
+  --surface-elevated: #fffaf4;
+  --text-color: #4b2a1e;
+  --text-soft: #805648;
+  --heading-color: #26110b;
+  --accent-color: #e66a3f;
+  --accent-strong: #bd4525;
+  --accent-text: #ad3d1d;
+  --accent-text-hover: #822b14;
+  --interactive-color: #bd4525;
+  --accent-faint: #ffe5d3;
+  --accent-wash: rgba(255, 225, 204, 0.7);
+  --accent-gold: #ffb55e;
+  --accent-berry: #ff8569;
+  --border-color: #f3bf98;
+  --border-subtle: rgba(243, 191, 152, 0.72);
+  --code-bg-color: #fff1dd;
+  --shadow-color: rgba(158, 78, 37, 0.14);
+  --shadow-sm: 0 8px 18px rgba(158, 78, 37, 0.1);
+  --shadow-md: 0 16px 34px rgba(158, 78, 37, 0.16);
+  --focus-ring: #542516;
+  --browser-theme-color: #fff6ea;
+  --body-glow-primary: rgba(255, 207, 140, 0.55);
+  --body-glow-secondary: rgba(255, 174, 123, 0.36);
+  --body-gradient-top: #fffaf2;
+  --body-gradient-bottom: #fff1e2;
+  --header-bg-start: rgba(255, 252, 247, 0.95);
+  --header-bg-end: rgba(255, 238, 215, 0.9);
+  --footer-bg: rgba(255, 250, 242, 0.8);
+  --on-accent: #fffaf2;
 
-  --bg-color: var(--paper);
-  --bg-accent: var(--paper-deep);
-  --surface-color: rgba(250, 245, 235, 0.9);
-  --surface-strong: var(--paper-raised);
-  --surface-muted: #eee5d6;
-  --surface-elevated: #fffaf0;
-  --text-color: var(--graphite);
-  --text-soft: var(--graphite-soft);
-  --heading-color: #202225;
-  --accent-color: var(--vermilion);
-  --accent-strong: var(--vermilion-deep);
-  --accent-text: #9c3925;
-  --accent-text-hover: #722617;
-  --interactive-color: var(--vermilion-deep);
-  --accent-faint: #eedbd1;
-  --accent-wash: rgba(183, 71, 47, 0.1);
-  --accent-gold: #b8873d;
-  --accent-berry: var(--vermilion);
-  --border-color: var(--rule);
-  --border-subtle: var(--rule-soft);
-  --code-bg-color: #e7e3d9;
-  --shadow-color: rgba(45, 40, 33, 0.14);
-  --shadow-sm: 0 2px 0 rgba(45, 40, 33, 0.08);
-  --shadow-md: 0 8px 22px rgba(45, 40, 33, 0.1);
-  --focus-ring: var(--blueprint);
-  --browser-theme-color: var(--paper);
-  --body-glow-primary: transparent;
-  --body-glow-secondary: transparent;
-  --body-gradient-top: var(--paper);
-  --body-gradient-bottom: var(--paper);
-  --header-bg-start: rgba(242, 234, 219, 0.96);
-  --header-bg-end: rgba(242, 234, 219, 0.96);
-  --footer-bg: transparent;
-  --on-accent: var(--ink-on-accent);
+  /** @brief 将新版工作室词汇映射到平台语义色 (Map newer workshop vocabulary to platform semantic colors). */
+  --paper: var(--bg-color);
+  --paper-deep: var(--bg-accent);
+  --paper-raised: var(--surface-strong);
+  --graphite: var(--text-color);
+  --graphite-soft: var(--text-soft);
+  --vermilion: var(--accent-color);
+  --vermilion-deep: var(--accent-strong);
+  --blueprint: var(--interactive-color);
+  --blueprint-soft: var(--accent-faint);
+  --rule: var(--border-color);
+  --rule-soft: var(--border-subtle);
+  --ink-on-accent: var(--on-accent);
 
   --motion-fast: 140ms;
   --motion-base: 220ms;
@@ -73,53 +74,44 @@
   --safe-area-left: env(safe-area-inset-left, 0px);
 }
 
-/** @brief Atelier 的夜间纸张与制图板配色 (Night paper and drafting-board palette for Atelier). */
+/** @brief Atelier 的平台原生夜间配色 (Original platform dark palette for Atelier). */
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --paper: #181a1d;
-  --paper-deep: #111316;
-  --paper-raised: #222529;
-  --graphite: #e7e0d4;
-  --graphite-soft: #aaa69e;
-  --vermilion: #db7055;
-  --vermilion-deep: #ee8a70;
-  --blueprint: #79abc6;
-  --blueprint-soft: #253a45;
-  --rule: #5f5b54;
-  --rule-soft: rgba(219, 211, 197, 0.18);
-  --ink-on-accent: #151719;
-
-  --bg-color: var(--paper);
-  --bg-accent: var(--paper-deep);
-  --surface-color: rgba(34, 37, 41, 0.92);
-  --surface-strong: var(--paper-raised);
-  --surface-muted: #292c30;
-  --surface-elevated: #2b2e32;
-  --text-color: var(--graphite);
-  --text-soft: var(--graphite-soft);
-  --heading-color: #f3ede3;
-  --accent-color: var(--vermilion);
-  --accent-strong: var(--vermilion-deep);
-  --accent-text: #f09279;
-  --accent-text-hover: #ffc0ad;
-  --interactive-color: var(--vermilion);
-  --accent-faint: #3d2926;
-  --accent-wash: rgba(219, 112, 85, 0.12);
-  --accent-gold: #c99b58;
-  --accent-berry: var(--vermilion);
-  --border-color: var(--rule);
-  --border-subtle: var(--rule-soft);
-  --code-bg-color: #292c2f;
+  --bg-color: #21130f;
+  --bg-accent: #3a211a;
+  --surface-color: rgba(47, 28, 23, 0.92);
+  --surface-strong: #30201b;
+  --surface-muted: #3a251f;
+  --surface-elevated: #39231d;
+  --text-color: #f6e7dc;
+  --text-soft: #d9b8a6;
+  --heading-color: #fff6ef;
+  --accent-color: #f27a50;
+  --accent-strong: #ffb18c;
+  --accent-text: #ffc2a4;
+  --accent-text-hover: #ffd8c5;
+  --interactive-color: #c04725;
+  --accent-faint: #512a20;
+  --accent-wash: rgba(133, 62, 42, 0.42);
+  --accent-gold: #f9b65d;
+  --accent-berry: #ff997f;
+  --border-color: #714531;
+  --border-subtle: rgba(160, 99, 69, 0.68);
+  --code-bg-color: #3c241d;
   --shadow-color: rgba(0, 0, 0, 0.34);
-  --shadow-sm: 0 2px 0 rgba(0, 0, 0, 0.28);
-  --shadow-md: 0 8px 22px rgba(0, 0, 0, 0.32);
-  --focus-ring: var(--blueprint);
-  --browser-theme-color: var(--paper);
-  --header-bg-start: rgba(24, 26, 29, 0.96);
-  --header-bg-end: rgba(24, 26, 29, 0.96);
-  --footer-bg: transparent;
-  --on-accent: var(--ink-on-accent);
+  --shadow-sm: 0 8px 18px rgba(0, 0, 0, 0.22);
+  --shadow-md: 0 16px 34px rgba(0, 0, 0, 0.38);
+  --focus-ring: #ffe0a3;
+  --browser-theme-color: #21130f;
+  --body-glow-primary: rgba(155, 69, 42, 0.22);
+  --body-glow-secondary: rgba(218, 105, 64, 0.13);
+  --body-gradient-top: #281712;
+  --body-gradient-bottom: #19100e;
+  --header-bg-start: rgba(56, 33, 27, 0.96);
+  --header-bg-end: rgba(47, 27, 23, 0.94);
+  --footer-bg: rgba(48, 29, 24, 0.88);
+  --on-accent: #fff7f1;
 }
 
 /** @brief 统一元素盒模型 (Use a single box model for all elements). */
@@ -135,64 +127,24 @@ html {
   scroll-padding-top: 8rem;
 }
 
-/**
- * @brief 创建暖纸张与克制蓝图网格的页面画布 (Create the warm-paper page canvas with a restrained blueprint grid).
- * @note 网格仅作为背景标注，不承载信息 (The grid is annotation only and carries no information).
- */
+/** @brief 使用平台原主题的柔和无纹理页面画布 (Use the original platform theme's soft, texture-free page canvas). */
 body {
   position: relative;
   min-height: 100vh;
   margin: 0;
   color: var(--text-color);
-  background-color: var(--bg-color);
-  background-image:
-    linear-gradient(
-      to right,
-      color-mix(in srgb, var(--blueprint) 8%, transparent) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--blueprint) 8%, transparent) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to right,
-      color-mix(in srgb, var(--blueprint) 13%, transparent) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--blueprint) 13%, transparent) 1px,
-      transparent 1px
-    );
-  background-position: center top;
-  background-size:
-    24px 24px,
-    24px 24px,
-    120px 120px,
-    120px 120px;
+  background: linear-gradient(
+    180deg,
+    var(--body-gradient-top) 0%,
+    var(--bg-color) 54%,
+    var(--body-gradient-bottom) 100%
+  );
   font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.7;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-/** @brief 提供纸张底色，避免网格干扰正文阅读 (Provide a paper wash so the grid does not interfere with reading). */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    transparent 0 5%,
-    color-mix(in srgb, var(--paper) 90%, transparent) 16% 84%,
-    transparent 95%
-  );
 }
 
 /** @brief 建立页眉、正文与页脚的纵向布局 (Establish the vertical header, content, and footer layout). */
