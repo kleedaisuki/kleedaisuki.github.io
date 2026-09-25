@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "@layouts/BaseLayout.astro";
+import SubscribeForm from "./SubscribeForm.astro";
 import { useTranslations } from "@i18n/utils";
 import type { AtelierLocale } from "@i18n/atelier";
 import { getAtelierPath, getAtelierText } from "../../lib/atelier";
@@ -137,5 +138,6 @@ const dateLocale = locale === "zh" ? "zh-CN" : "en";
         <ul aria-label={t("home.materials_title")}>{materials.map((material) => <li>{material}</li>)}</ul>
       </aside>
     )}
+    <SubscribeForm locale={locale} />
   </div>
 </BaseLayout>

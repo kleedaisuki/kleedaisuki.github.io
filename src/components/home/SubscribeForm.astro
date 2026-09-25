@@ -1,0 +1,134 @@
+---
+import type { AtelierLocale } from "@i18n/atelier";
+
+/** @brief 邮件订阅组件属性 (email subscription component properties) / Properties of the email subscription component. */
+interface Props {
+  locale: AtelierLocale;
+}
+
+/** @brief 当前表单语言 (form locale) / Locale submitted with the form. */
+const { locale } = Astro.props;
+/** @brief 静态双语文案 (static bilingual copy) / Copy rendered into crawlable HTML. */
+const copy =
+  locale === "zh"
+    ? {
+        heading: "订阅工坊更新",
+        intro:
+          "有新文章或作品发布时，收到一封来自 atelier@moesegfault.dev 的邮件。",
+        label: "电子邮箱",
+        placeholder: "name@example.com",
+        button: "订阅更新",
+        pending: "正在提交…",
+        success: "请求已收到。如适用，请查收确认邮件。",
+        error: "暂时无法提交，请稍后重试。",
+      }
+    : {
+        heading: "Get Atelier updates",
+        intro:
+          "Receive an email from atelier@moesegfault.dev when a new article or work is published.",
+        label: "Email address",
+        placeholder: "name@example.com",
+        button: "Subscribe",
+        pending: "Submitting…",
+        success:
+          "Request received. If applicable, check your inbox for a confirmation email.",
+        error: "We could not submit your request. Please try again later.",
+      };
+---
+
+<section class="studio-subscribe" aria-labelledby={`subscribe-heading-${locale}`}>
+  <div class="studio-subscribe__copy">
+    <h2 id={`subscribe-heading-${locale}`}>{copy.heading}</h2>
+    <p>{copy.intro}</p>
+  </div>
+  <form action="/api/subscribe" method="post" data-subscribe-form data-success={copy.success} data-error={copy.error}>
+    <input type="hidden" name="locale" value={locale} />
+    <label for={`subscribe-email-${locale}`}>{copy.label}</label>
+    <div class="studio-subscribe__controls">
+      <input id={`subscribe-email-${locale}`} name="email" type="email" autocomplete="email" inputmode="email" placeholder={copy.placeholder} maxlength="254" required />
+      <button type="submit" data-idle={copy.button} data-pending={copy.pending}>{copy.button}</button>
+    </div>
+    <p class="studio-subscribe__status" role="status" aria-live="polite" data-subscribe-status></p>
+  </form>
+</section>
+
+<style>
+  /** @brief 订阅区只复用现有配色令牌，不改动既有页面组件 (Use existing theme tokens without changing previous page components). */
+  .studio-subscribe {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 1fr);
+    gap: clamp(1.25rem, 4vw, 3rem);
+    align-items: center;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-large);
+    background: var(--surface-color);
+  }
+
+  .studio-subscribe h2 { margin-bottom: 0.5rem; }
+  .studio-subscribe p { margin: 0; color: var(--text-soft); }
+  .studio-subscribe label { display: block; margin-bottom: 0.4rem; font-weight: 700; }
+  .studio-subscribe__controls { display: flex; gap: 0.65rem; }
+  .studio-subscribe input {
+    min-width: 0;
+    flex: 1;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-small);
+    background: var(--surface-strong);
+    color: var(--text-color);
+    font: inherit;
+  }
+  .studio-subscribe button {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--accent-strong);
+    border-radius: var(--radius-small);
+    background: var(--accent-strong);
+    color: var(--on-accent);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .studio-subscribe button:disabled { cursor: wait; opacity: 0.65; }
+  .studio-subscribe :is(input, button):focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+  .studio-subscribe__status { min-height: 1.7em; margin-top: 0.35rem !important; }
+
+  @media (max-width: 760px) {
+    .studio-subscribe { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 420px) {
+    .studio-subscribe__controls { flex-direction: column; }
+  }
+</style>
+
+<script>
+  /** @brief 对原生表单做渐进增强 (progressive enhancement) / Keep native POST working without JavaScript. */
+  for (const form of document.querySelectorAll<HTMLFormElement>("[data-subscribe-form]")) {
+    form.addEventListener("submit", async (event: SubmitEvent) => {
+      event.preventDefault();
+      const status = form.querySelector<HTMLElement>("[data-subscribe-status]");
+      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      const email = form.querySelector<HTMLInputElement>('input[name="email"]');
+      const locale = form.querySelector<HTMLInputElement>('input[name="locale"]');
+      if (!status || !button || !email || !locale || !form.reportValidity()) return;
+
+      button.disabled = true;
+      button.textContent = button.dataset.pending ?? button.textContent;
+      status.textContent = "";
+      try {
+        const response = await fetch(form.action, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({ email: email.value.trim(), locale: locale.value }),
+        });
+        status.textContent = response.ok ? form.dataset.success ?? "" : form.dataset.error ?? "";
+        if (response.ok) email.value = "";
+      } catch {
+        status.textContent = form.dataset.error ?? "";
+      } finally {
+        button.disabled = false;
+        button.textContent = button.dataset.idle ?? button.textContent;
+      }
+    });
+  }
+</script>

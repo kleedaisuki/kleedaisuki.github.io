@@ -1,0 +1,11 @@
+# 已带内容哈希的 Astro 产物可以长期缓存 / Fingerprinted Astro bundles are immutable.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 资源路径包含锁定的 PDF.js 版本 / The path contains the pinned PDF.js version.
+/_pdfjs/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 发布材料的作品与版本路径不可就地替换 / Published work/version assets are not replaced in place.
+/atelier-assets/*
+  Cache-Control: public, max-age=31536000, immutable
