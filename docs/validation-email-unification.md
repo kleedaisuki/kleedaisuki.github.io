@@ -1,10 +1,10 @@
-# Local validation: unified Atelier email, 2026-09-26
+# Validation and release record: unified Atelier email, 2026-09-26
 
 ## Scope and expected behavior
 
 The intended journey is a recognizable Atelier confirmation email and publication update, without changing established consent routes or resending old campaigns. New issues use an editable HTML fragment and plain-text sibling. `send:false` must persist a draft and create no deliveries; omitted `format` must continue to accept a complete legacy document, and queued IDs must be immutable. The additive `campaigns.text` migration must preserve old rows. Confirmation/update layouts should fit 320 px and 600 px widths. These expectations come from [the design spec](atelier-email-design.md), [template contract](email-template-architecture.md), and the existing `/api/admin/notify` workflow, not just implementation assertions.
 
-All checks below used only local Wrangler/D1 and synthetic addresses or preview-only HTML. **No live email was sent and no remote deployment was performed.** The browser screenshots do not establish Gmail or Outlook rendering.
+The local checks below used Wrangler/D1, synthetic addresses, and preview-only HTML; **they sent no live email**. A later, separate production deployment/no-send observation is recorded after the local results. Neither browser screenshots nor remote draft persistence establish Gmail or Outlook rendering.
 
 ## Commands, environment, observations
 
@@ -120,4 +120,10 @@ Visual inspection of `.temp/email-update-320.png` and `.temp/email-confirmation-
 
 ## Verdict and limits
 
-**Local pass for the no-send draft, legacy storage/API compatibility, additive migration, content parity, and browser-width requirement.** This does not verify recipient-client rendering, dark-mode behavior, MIME delivery by Cloudflare Email Service, or a production D1 migration. A controlled received-message check in Gmail/Outlook remains necessary before a newly styled `send:true` publication is sent broadly. Old already-queued campaigns should not be rewrapped or resent as a styling test.
+**Local pass for the no-send draft, legacy storage/API compatibility, additive migration, content parity, and browser-width requirement.** The separate production evidence below establishes migration/deployment and a persisted no-send draft, but not recipient-client rendering, dark-mode behavior, or MIME delivery of the new templates. A controlled received-message check in Gmail/Outlook remains necessary before a newly styled `send:true` publication is sent broadly. Old already-queued campaigns should not be rewrapped or resent as a styling test.
+
+## Later production release evidence (2026-09-26)
+
+The first [deploy Action 36177202232](https://github.com/kleedaisuki/kleedaisuki.github.io/actions/runs/36177202232) **successfully applied remote `0002_campaign_text.sql` at 19:06:37 UTC**, then deployed a Worker. The overall Action failed later when the new-format draft POST returned HTTP 400 immediately after deployment; its likely version-skew mechanism, alternatives, and bounded mitigation are recorded in [the incident note](mail-rollout-race.md). A failed workflow does not imply its earlier migration/deploy steps were rolled back. Do not conflate that dispatch failure with this local pass or infer an edge trace from timing alone.
+
+The follow-up [Action 36178715055](https://github.com/kleedaisuki/kleedaisuki.github.io/actions/runs/36178715055) succeeded: 84 browser tests passed, 7 skipped; its remote migration step reported **`No migrations to apply!`**, because 0002 had already been applied by the first Action. It then deployed Worker version `3b80ccce-0724-4730-bff8-83ab7f0e12a7`. CI's changed `send:false` draft was accepted at **19:21:29 UTC**. A remote D1 query showed `atelier-update-draft-2026-09` still `draft`, complete HTML length 3473, text length 689, both containing an unsubscribe placeholder and the 420-configuration summary, with **zero deliveries**. The historical launch campaign remained `complete` with one delivery; no historical replay was observed. Live `/api/health` advertised both `document` and `atelier-fragment-v1` formats; sampled `/zh/` showed the updated subscription copy; an invalid confirmation GET returned the expected 400 mailroom action page. Those are route/SSG/API checks, not proof of a received confirmation/update in any mail client.
