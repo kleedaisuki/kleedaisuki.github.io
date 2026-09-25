@@ -52,6 +52,9 @@ jobs:
       - run: pnpm run verify:seo
       - run: pnpm exec wrangler d1 migrations apply DB --local --persist-to .cache/wrangler
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      # 中文：用真实 Rust 模板与已签入长链接草稿检查邮件窄屏布局，不发送邮件。
+      # English: Check narrow mail layout with real Rust templates and the checked-in long-link draft; no email is sent.
+      - run: node --test tests/email-layout.test.mjs
       - run: pnpm run test:e2e:ci
       - name: Upload browser-test diagnostics
         if: always()
