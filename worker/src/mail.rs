@@ -48,7 +48,7 @@ fn confirmation_content(locale: Locale, confirm_url: &str) -> (&'static str, Str
             "我们收到了订阅工坊更新的请求。确认邮箱后，才会收到新文章与作品的消息。",
             "确认订阅",
             "链接将在 24 小时后失效。如果不是你提出的请求，直接忽略这封邮件即可。",
-            "Confirm your Atelier updates subscription.",
+            "Confirm your subscription to Atelier updates.",
         ),
         Locale::En => (
             "Confirm your Atelier subscription",
@@ -61,11 +61,16 @@ fn confirmation_content(locale: Locale, confirm_url: &str) -> (&'static str, Str
     };
     let safe_url = escape_html(confirm_url);
     let companion_lang = if locale == Locale::Zh { "en" } else { "zh-CN" };
+    let link_help = if locale == Locale::Zh {
+        "按钮无法打开？请复制以下链接到浏览器："
+    } else {
+        "Button not working? Copy this link into your browser:"
+    };
     let body = format!(
         "<h1 style=\"margin:0 0 16px;color:#26110b;font-family:Georgia,Arial,'PingFang SC','Microsoft YaHei',serif;font-size:27px;line-height:1.25;font-weight:700;\">{title}</h1>\
          <p style=\"margin:0 0 24px;color:#4b2a1e;font-size:16px;line-height:1.6;\">{lead}</p>\
          <p style=\"margin:0 0 24px;\"><a href=\"{safe_url}\" style=\"display:inline-block;padding:13px 20px;background-color:#bd4525;color:#fffaf2;font-size:16px;line-height:1.4;font-weight:700;text-decoration:underline;\">{action}</a></p>\
-         <p style=\"margin:0 0 8px;color:#805648;font-size:14px;line-height:1.6;\">链接 / Link:</p>\
+         <p style=\"margin:0 0 8px;color:#805648;font-size:14px;line-height:1.6;\">{link_help}</p>\
          <p style=\"margin:0;color:#ad3d1d;font-size:13px;line-height:1.5;word-break:break-all;overflow-wrap:anywhere;\"><a href=\"{safe_url}\" style=\"color:#ad3d1d;text-decoration:underline;word-break:break-all;\">{safe_url}</a></p>"
     );
     let footer = format!(

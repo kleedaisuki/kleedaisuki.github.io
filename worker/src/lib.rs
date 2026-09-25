@@ -151,7 +151,7 @@ async fn confirmation_page(req: Request, env: Env) -> Result<Response> {
     action_page(
         200,
         "确认订阅工坊更新",
-        "Confirm your Atelier updates subscription",
+        "Confirm your subscription to Atelier updates",
         Some(("/api/confirm", &token, "确认订阅 / Confirm subscription")),
     )
 }
@@ -176,7 +176,7 @@ async fn confirm(mut req: Request, env: Env) -> Result<Response> {
     action_page(
         200,
         "工坊更新订阅已确认",
-        "Atelier updates subscription confirmed.",
+        "Your subscription to Atelier updates is confirmed.",
         None,
     )
 }
@@ -206,7 +206,7 @@ async fn unsubscribe(mut req: Request, env: Env) -> Result<Response> {
     action_page(
         200,
         "工坊更新退订请求已处理",
-        "Your Atelier updates unsubscribe request has been processed.",
+        "Your request to unsubscribe from Atelier updates has been processed.",
         None,
     )
 }
@@ -598,8 +598,8 @@ fn subscribe_reply(is_json: bool, status: u16, ok: bool) -> Result<Response> {
     }
     let (zh, en) = if ok {
         (
-            "工坊更新订阅请求已收到；如适用，请查收确认邮件。",
-            "Atelier updates request received. If applicable, check your inbox for a confirmation email.",
+            "订阅请求已收到。若收到确认邮件，请按邮件指引完成订阅。",
+            "Subscription request received. If a confirmation email arrives, follow its instructions to finish subscribing.",
         )
     } else {
         (
