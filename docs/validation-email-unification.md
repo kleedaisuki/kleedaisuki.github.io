@@ -13,16 +13,95 @@ Windows PowerShell, Node 26.8.2, Wrangler 4.140.0, local Rust toolchain; local D
 ```powershell
 node --test tests/notification-dispatch.test.mjs
 cargo test --manifest-path worker/Cargo.toml --locked
-./node_modules/.bin/wrangler.cmd d1 migrations apply DB --local --persist-to .cache/email-unification-qa
-./node_modules/.bin/wrangler.cmd dev --local --persist-to .cache/email-unification-qa --port 8788 --var 'ATELIER_NOTIFY_TOKEN:qa-only-local-token'
-# In a second shell while Wrangler runs:
-node .temp/email-unification-smoke.mjs
-python .temp/email-unification-db-check.py
-python .temp/email-unification-migration.py
 node --test tests/email-layout.test.mjs
+./node_modules/.bin/wrangler.cmd d1 migrations apply DB --local --persist-to .cache/email-unification-repro
+./node_modules/.bin/wrangler.cmd dev --local --persist-to .cache/email-unification-repro --port 8788 --var 'ATELIER_NOTIFY_TOKEN:qa-only-local-token'
 ```
 
-The local smoke harness is `.temp/email-unification-smoke.mjs`; it posts the checked-in `notifications/atelier-update.json` + HTML/text, with `send:false`, then probes missing auth, unknown format, missing text, invalid fragment root, insecure text URL, idempotent draft replay, and an empty-list legacy `send:true` replay/immutable 409 path. It is intentionally not a production workflow script. The D1 inspection harness is `.temp/email-unification-db-check.py`. The migration rehearsal applies `0001_init.sql`, inserts a queued legacy campaign and pending delivery, then applies `0002_campaign_text.sql` in `.cache/email-unification-migration-fixture.sqlite`.
+The original exploratory HTTP and SQLite harnesses lived under ignored `.temp/` and are **not retained in Git**. The committed Node tests above cover the authoring/selection and browser-width contracts. To repeat the core HTTP/D1 checks without the discarded harnesses, use a **fresh** local persistence directory (as above) so there are no confirmed subscribers, leave Wrangler running in the first shell, and execute the following in a second PowerShell shell. This uses synthetic records and only `send:false` for the new fragment; the legacy `send:true` check has an empty recipient list. Never substitute the production Worker URL/token.
+
+```powershell
+$base = 'http://127.0.0.1:8788'
+$headers = @{ Authorization = 'Bearer qa-only-local-token' }
+$manifest = Get-Content notifications/atelier-update.json -Raw | ConvertFrom-Json
+$draft = @{
+  id = 'qa-new-fragment-repro'
+  subject = $manifest.subject
+  format = 'atelier-fragment-v1'
+  html = Get-Content notifications/atelier-update.html -Raw
+  text = Get-Content notifications/atelier-update.txt -Raw
+  send = $false
+} | ConvertTo-Json -Compress
+Invoke-RestMethod "$base/api/admin/notify" -Method Post -Headers $headers -ContentType 'application/json' -Body $draft
+Invoke-RestMethod "$base/api/admin/notify" -Method Post -Headers $headers -ContentType 'application/json' -Body $draft
+Invoke-RestMethod "$base/api/admin/status?id=qa-new-fragment-repro" -Headers $headers
+# Expected: draft both times, queued:false, all delivery counts zero.
+```
+
+Inspect the persisted full snapshots, not just the API response:
+
+```powershell
+./node_modules/.bin/wrangler.cmd d1 execute DB --local --persist-to .cache/email-unification-repro --command "SELECT status, length(html) AS html_chars, length(text) AS text_chars, instr(html, '{{unsubscribe_url}}') AS html_link, instr(text, '{{unsubscribe_url}}') AS text_link FROM campaigns WHERE id='qa-new-fragment-repro'"
+./node_modules/.bin/wrangler.cmd d1 execute DB --local --persist-to .cache/email-unification-repro --command "SELECT count(*) AS delivery_count FROM deliveries WHERE campaign_id='qa-new-fragment-repro'"
+```
+
+The HTML should be a complete document and both text and HTML should contain the issue summary and one unsubscribe placeholder. For the legacy path, first verify the fresh local D1 has zero confirmed subscribers; **stop if it does not**, or `send:true` could queue mail to them.
+
+```powershell
+./node_modules/.bin/wrangler.cmd d1 execute DB --local --persist-to .cache/email-unification-repro --command "SELECT count(*) AS confirmed_count FROM subscribers WHERE status='confirmed'"
+$legacy = @{
+  id = 'qa-legacy-repro'
+  subject = 'Legacy fixture'
+  html = '<!doctype html><html><body><p>Legacy content</p><a href="{{unsubscribe_url}}">Unsubscribe</a></body></html>'
+  send = $true
+} | ConvertTo-Json -Compress
+Invoke-RestMethod "$base/api/admin/notify" -Method Post -Headers $headers -ContentType 'application/json' -Body $legacy
+Invoke-RestMethod "$base/api/admin/notify" -Method Post -Headers $headers -ContentType 'application/json' -Body $legacy
+Invoke-RestMethod "$base/api/admin/status?id=qa-legacy-repro" -Headers $headers
+./node_modules/.bin/wrangler.cmd d1 execute DB --local --persist-to .cache/email-unification-repro --command "SELECT status, text IS NULL AS legacy_text_null, count(*) AS rows FROM campaigns WHERE id='qa-legacy-repro' GROUP BY status, text"
+./node_modules/.bin/wrangler.cmd d1 execute DB --local --persist-to .cache/email-unification-repro --command "SELECT count(*) AS delivery_count FROM deliveries WHERE campaign_id='qa-legacy-repro'"
+# Expected: first post queues, identical replay has queued:false, text=NULL, zero deliveries.
+# Change only the subject and POST again; expected HTTP 409, no new delivery.
+$changed = $legacy | ConvertFrom-Json
+$changed.subject = 'Changed after queue'
+try {
+  Invoke-RestMethod "$base/api/admin/notify" -Method Post -Headers $headers -ContentType 'application/json' -Body ($changed | ConvertTo-Json -Compress)
+  throw 'Expected immutable campaign to return HTTP 409'
+} catch {
+  if ([int]$_.Exception.Response.StatusCode -ne 409) { throw }
+}
+```
+
+For the additive migration rehearsal, the following uses only Python's `sqlite3` standard library and committed migration files. It creates a **new** repository-local fixture and refuses to overwrite an existing one; use a fresh filename for a second run. This is a SQLite schema/data preservation check, not a substitute for Wrangler's D1 migration test or a remote migration:
+
+```powershell
+@'
+from pathlib import Path
+import sqlite3
+
+p = Path(".cache/email-unification-migration-repro.sqlite")
+if p.exists():
+    raise SystemExit(f"Refusing to overwrite {p}; use a fresh fixture name")
+p.parent.mkdir(parents=True, exist_ok=True)
+db = sqlite3.connect(p)
+db.execute("PRAGMA foreign_keys=ON")
+db.executescript(Path("worker/migrations/0001_init.sql").read_text(encoding="utf-8"))
+db.execute("INSERT INTO subscribers(email,locale,status,confirm_token_hash,confirm_expires_at,unsubscribe_token,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)",
+           ("legacy@example.test","en","pending","fixture-hash",9999999999999,"fixture-opt-out",1,1))
+db.execute("INSERT INTO campaigns(id,subject,html,status,created_at,updated_at) VALUES (?,?,?,?,?,?)",
+           ("legacy-fixture","Old subject","<p>Old message</p>","queued",1,1))
+db.execute("INSERT INTO deliveries(campaign_id,email,status,available_at) VALUES (?,?,?,?)",
+           ("legacy-fixture","legacy@example.test","pending",1))
+db.commit()
+db.executescript(Path("worker/migrations/0002_campaign_text.sql").read_text(encoding="utf-8"))
+assert db.execute("SELECT text IS NULL,html,status FROM campaigns WHERE id='legacy-fixture'").fetchone() == (1,"<p>Old message</p>","queued")
+assert db.execute("SELECT status FROM deliveries WHERE campaign_id='legacy-fixture'").fetchone() == ("pending",)
+print("Legacy campaign and delivery preserved; new text is NULL")
+db.close()
+'@ | python -
+```
+
+The original smoke harness additionally exercised missing auth, unknown format, missing text, invalid fragment root, and insecure text URL (expected 401/400). Their equivalent validation rules are covered by `tests/notification-dispatch.test.mjs` and Rust unit tests; the one-off endpoint observations in the table below are retained as historical results, not falsely attributed to the durable snippets above.
 
 | Claim | Observed local result |
 | --- | --- |
