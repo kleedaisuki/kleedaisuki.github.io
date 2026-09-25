@@ -1,0 +1,40 @@
+# 中文：DNS 切换只能人工触发，且只修改已核实 CNAME 的 proxied 状态。
+# English: Cutover is manual-only and changes only the verified CNAME's proxied state.
+name: Manual Cloudflare DNS cutover
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Activate Worker routing or roll back to DNS-only GitHub Pages
+        required: true
+        type: choice
+        options:
+          - activate
+          - rollback
+
+concurrency:
+  group: atelier-dns-cutover
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  cutover:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test cutover safety contracts
+        run: node --test tests/cutover-dns.test.mjs
+      - name: Activate or roll back DNS proxy
+        env:
+          CUTOVER_ACTION: ${{ inputs.action }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ATELIER_WORKER_URL: ${{ vars.ATELIER_WORKER_URL }}
+        run: node scripts/cutover-dns.mjs
