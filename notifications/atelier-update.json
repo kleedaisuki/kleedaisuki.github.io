@@ -1,6 +1,8 @@
 {
   "id": "atelier-update-draft-2026-09",
-  "subject": "Atelier 更新通知 / Atelier update",
+  "subject": "Atelier｜MPI 之前：单边 Jacobi SVD 中的局部性与内核策略",
+  "format": "atelier-fragment-v1",
   "html_file": "atelier-update.html",
+  "text_file": "atelier-update.txt",
   "send": false
 }

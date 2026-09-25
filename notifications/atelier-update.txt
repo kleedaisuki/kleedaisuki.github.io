@@ -1,0 +1,9 @@
+Atelier｜作品导读 / From the atelier
+MPI 之前：单边 Jacobi SVD 中的局部性与内核策略
+
+这项研究比较了 420 种配置下的矩阵布局、内核策略与矩阵类型。结果提醒我们：在讨论跨节点扩展前，先量清本地数据布局与调度的代价；减少迭代轮次不一定能抵消动态策略的观测开销。
+
+Before MPI: Locality and Kernel Policy in One-Sided Jacobi SVD. A 420-configuration study finds that column-contiguous storage matters more than elaborate dynamic scheduling for this implementation. It separates local performance and convergence from MPI wrapper costs before making distributed-scaling claims.
+
+查看作品 / View the work:
+https://atelier.moesegfault.dev/zh/articrafts/jacobi-svd-locality-kernel-policy/
