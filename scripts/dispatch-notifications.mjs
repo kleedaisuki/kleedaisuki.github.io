@@ -6,6 +6,7 @@ import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
 /** 中文：通知目录与部署脚本同仓库 / Notification root in this repository. */
@@ -14,6 +15,8 @@ const manifestPattern = /^notifications\/[A-Za-z0-9][A-Za-z0-9._-]*\.json$/;
 const htmlPattern = /^notifications\/[A-Za-z0-9][A-Za-z0-9._-]*\.html$/;
 const textPattern = /^notifications\/[A-Za-z0-9][A-Za-z0-9._-]*\.txt$/;
 const siblingTextPattern = /^[A-Za-z0-9][A-Za-z0-9._-]*\.txt$/;
+const fragmentFormat = "atelier-fragment-v1";
+const fragmentPostAttempts = 5;
 
 /**
  * 中文：验证单条通知的声明和 HTML 路径，拒绝目录穿越。
@@ -176,30 +179,82 @@ export async function loadNotification(relativePath) {
 }
 
 /**
+ * 中文：只接受不带凭据和路径的 HTTPS Worker 来源，避免令牌发往意外地址。
+ * English: Accept only a clean HTTPS Worker origin so the admin token cannot leak to another URL.
+ * @param {string} baseUrl Configured Worker origin.
+ * @returns {URL} Validated origin.
+ */
+function workerOrigin(baseUrl) {
+  const origin = new URL(baseUrl);
+  if (origin.protocol !== "https:" || origin.username || origin.password || origin.search || origin.hash || origin.pathname !== "/") {
+    throw new Error("ATELIER_WORKER_URL must be a clean HTTPS URL");
+  }
+  return origin;
+}
+
+/**
+ * 中文：部署后轮询能力声明；旧边缘实例尚未更新时不得提交新版片段。
+ * English: Poll the post-deploy capability declaration before sending fragments to a possibly stale edge.
+ * @param {string} baseUrl Worker origin URL.
+ * @param {typeof fetch} fetchImpl Injectable fetch for tests.
+ * @param {(milliseconds: number) => Promise<unknown>} sleep Injectable delay for tests.
+ * @param {number} attempts Maximum health probes.
+ */
+export async function waitForFragmentSupport(baseUrl, fetchImpl = fetch, sleep = delay, attempts = 10) {
+  const url = new URL("/api/health", workerOrigin(baseUrl));
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      const response = await fetchImpl(url, {
+        method: "GET",
+        cache: "no-store",
+        redirect: "error",
+        signal: AbortSignal.timeout(5_000),
+      });
+      if (response.ok) {
+        const health = await response.json();
+        if (Array.isArray(health.mail_formats) && health.mail_formats.includes(fragmentFormat)) return;
+      }
+    } catch {
+      // 中文：短暂网络错误与旧实例一样等待；不要输出响应正文。 / Retry transient failures without logging response bodies.
+    }
+    if (attempt + 1 < attempts) await sleep(2_000);
+  }
+  throw new Error(`Notification Worker did not advertise ${fragmentFormat} after ${attempts} health probes`);
+}
+
+/**
  * 中文：把清单提交给受保护的 Rust Worker；非 2xx 响应视为发布失败。
  * English: Submit a manifest to the protected Rust Worker; non-2xx responses fail deployment.
  * @param {string} baseUrl Worker origin URL.
  * @param {string} token Admin bearer token.
  * @param {{id: string, subject: string, html: string, send: boolean, format?: string, text?: string}} notification Validated payload.
  * @param {typeof fetch} fetchImpl Injectable fetch for tests.
+ * @param {(milliseconds: number) => Promise<unknown>} sleep Injectable delay for tests.
  */
-export async function postNotification(baseUrl, token, notification, fetchImpl = fetch) {
-  const origin = new URL(baseUrl);
-  if (origin.protocol !== "https:" || origin.username || origin.password || origin.search || origin.hash || origin.pathname !== "/") {
-    throw new Error("ATELIER_WORKER_URL must be a clean HTTPS URL");
-  }
+export async function postNotification(baseUrl, token, notification, fetchImpl = fetch, sleep = delay) {
+  const origin = workerOrigin(baseUrl);
   const url = new URL("/api/admin/notify", origin);
   if (!token) throw new Error("ATELIER_NOTIFY_TOKEN is missing");
-  const response = await fetchImpl(url, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${token}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(notification),
-    redirect: "error",
-  });
-  if (!response.ok) throw new Error(`Notification API returned HTTP ${response.status}`);
+  const body = JSON.stringify(notification);
+  const attempts = notification.format === fragmentFormat ? fragmentPostAttempts : 1;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const response = await fetchImpl(url, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body,
+      redirect: "error",
+    });
+    if (response.ok) return;
+    // 中文：旧边缘版本会以 400 拒绝新格式；只重试这种明确未入队的响应。
+    // English: A stale edge rejects the new format with 400 before queueing; retry only this non-queued response.
+    if (response.status !== 400 || attempt + 1 === attempts) {
+      throw new Error(`Notification API returned HTTP ${response.status}`);
+    }
+    await sleep(2_000);
+  }
 }
 
 /** 中文：CI 入口 / CI entry point. */
@@ -212,8 +267,14 @@ async function main() {
   const baseUrl = process.env.ATELIER_WORKER_URL;
   const token = process.env.ATELIER_NOTIFY_TOKEN;
   if (!baseUrl || !token) throw new Error("Notification endpoint URL or token is missing");
+  const notifications = [];
   for (const relativePath of paths) {
-    const notification = await loadNotification(relativePath);
+    notifications.push(await loadNotification(relativePath));
+  }
+  if (notifications.some((notification) => notification.format === fragmentFormat)) {
+    await waitForFragmentSupport(baseUrl);
+  }
+  for (const notification of notifications) {
     await postNotification(baseUrl, token, notification);
     process.stdout.write(`Accepted notification ${notification.id} (send=${notification.send}).\n`);
   }

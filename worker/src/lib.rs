@@ -59,9 +59,7 @@ struct NotifyInput {
 pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
     let path = req.path();
     match (req.method(), path.as_str()) {
-        (Method::Get, "/api/health") => {
-            json_reply(200, json!({ "ok": true, "service": "atelier-worker" }))
-        }
+        (Method::Get, "/api/health") => json_reply(200, health_payload()),
         (Method::Post, "/api/subscribe") => subscribe(req, env).await,
         (Method::Get, "/api/confirm") => confirmation_page(req, env).await,
         (Method::Post, "/api/confirm") => confirm(req, env).await,
@@ -71,6 +69,16 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         (Method::Get, "/api/admin/status") => campaign_status(req, env).await,
         _ => Response::error("Not found", 404),
     }
+}
+
+/// 公开无敏感信息的 Worker 格式能力，供 CI 在发布竞争中识别旧版本。
+/// Expose non-sensitive Worker format capabilities so CI can detect stale deployments during rollout.
+fn health_payload() -> serde_json::Value {
+    json!({
+        "ok": true,
+        "service": "atelier-worker",
+        "mail_formats": ["document", "atelier-fragment-v1"]
+    })
 }
 
 /// 定时处理小批量邮件，不使正文页面依赖 D1 或发件服务。
@@ -702,6 +710,17 @@ fn api_headers(response: &mut Response) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn health_keeps_existing_fields_and_advertises_fragment_support() {
+        let health = health_payload();
+        assert_eq!(health["ok"], true);
+        assert_eq!(health["service"], "atelier-worker");
+        assert_eq!(
+            health["mail_formats"],
+            json!(["document", "atelier-fragment-v1"])
+        );
+    }
 
     #[test]
     fn action_html_uses_site_assets_and_escapes_copy() {

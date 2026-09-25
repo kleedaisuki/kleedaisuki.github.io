@@ -8,6 +8,7 @@ import {
   postNotification,
   validateAuthoringContent,
   validateManifest,
+  waitForFragmentSupport,
 } from "../scripts/dispatch-notifications.mjs";
 
 test("selects changed manifests only, de-duplicated and sorted", () => {
@@ -128,6 +129,113 @@ test("posts the optional fragment format and authored text without changing send
     assert.equal(body.text, draft.text);
     return { ok: true };
   });
+});
+
+test("waits for the new Worker health capability after a stale edge response", async () => {
+  let probes = 0;
+  let pauses = 0;
+  await waitForFragmentSupport(
+    "https://atelier.example.test",
+    async (url, options) => {
+      probes += 1;
+      assert.equal(url.href, "https://atelier.example.test/api/health");
+      assert.equal(options.method, "GET");
+      assert.equal(options.cache, "no-store");
+      assert.equal(options.redirect, "error");
+      assert(options.signal instanceof AbortSignal);
+      assert.equal(options.headers, undefined);
+      return {
+        ok: true,
+        json: async () => ({
+          ok: true,
+          service: "atelier-mailroom",
+          mail_formats: probes === 1 ? ["document"] : ["document", "atelier-fragment-v1"],
+        }),
+      };
+    },
+    async (milliseconds) => {
+      assert.equal(milliseconds, 2_000);
+      pauses += 1;
+    },
+    3,
+  );
+  assert.equal(probes, 2);
+  assert.equal(pauses, 1);
+});
+
+test("fails closed when the new Worker capability never appears", async () => {
+  let probes = 0;
+  await assert.rejects(
+    waitForFragmentSupport(
+      "https://atelier.example.test",
+      async () => {
+        probes += 1;
+        return { ok: true, json: async () => ({ ok: true, mail_formats: ["document"] }) };
+      },
+      async () => {},
+      3,
+    ),
+    /did not advertise atelier-fragment-v1 after 3 health probes/,
+  );
+  assert.equal(probes, 3);
+});
+
+test("retries only fragment 400 responses and preserves one immutable payload", async () => {
+  const draft = await loadNotification("notifications/atelier-update.json");
+  const bodies = [];
+  let pauses = 0;
+  await postNotification(
+    "https://atelier.example.test",
+    "secret",
+    { ...draft, send: true },
+    async (_url, options) => {
+      bodies.push(options.body);
+      return { ok: bodies.length === 2, status: bodies.length === 2 ? 200 : 400 };
+    },
+    async () => { pauses += 1; },
+  );
+  assert.equal(bodies.length, 2);
+  assert.equal(pauses, 1);
+  assert.equal(bodies[0], bodies[1]);
+  assert.equal(JSON.parse(bodies[0]).send, true);
+});
+
+test("a permanent fragment 400 fails after the bounded retry; legacy 400 never retries", async () => {
+  const draft = await loadNotification("notifications/atelier-update.json");
+  let calls = 0;
+  const reject400 = async () => {
+    calls += 1;
+    return { ok: false, status: 400 };
+  };
+  await assert.rejects(postNotification("https://atelier.example.test", "secret", draft, reject400, async () => {}), /HTTP 400/);
+  assert.equal(calls, 5);
+  calls = 0;
+  await assert.rejects(
+    postNotification("https://atelier.example.test", "secret", { id: "old", send: true }, reject400, async () => {}),
+    /HTTP 400/,
+  );
+  assert.equal(calls, 1);
+});
+
+test("does not retry ambiguous send:true failures", async () => {
+  const draft = await loadNotification("notifications/atelier-update.json");
+  let calls = 0;
+  await assert.rejects(
+    postNotification("https://atelier.example.test", "secret", { ...draft, send: true }, async () => {
+      calls += 1;
+      throw new Error("connection closed after request");
+    }),
+    /connection closed/,
+  );
+  assert.equal(calls, 1);
+  await assert.rejects(
+    postNotification("https://atelier.example.test", "secret", { ...draft, send: true }, async () => {
+      calls += 1;
+      return { ok: false, status: 500 };
+    }),
+    /HTTP 500/,
+  );
+  assert.equal(calls, 2);
 });
 
 test("rejects insecure origins and API conflicts", async () => {
