@@ -1,5 +1,6 @@
 /** 中文：通知调度契约测试 / Notification dispatch contract tests. */
 import assert from "node:assert/strict";
+import { readdirSync } from "node:fs";
 import { test } from "node:test";
 import {
   changedManifests,
@@ -33,6 +34,19 @@ test("loads an editable HTML draft without implicitly enabling send", async () =
   assert.match(draft.html, /<html/);
   assert.match(draft.html, /\{\{unsubscribe_url\}\}/);
   assert.match(draft.subject, /Atelier/);
+});
+
+/** 中文：所有仓库通知在部署前均可解析，避免发布后才发现模板错误。 / Validate every authored notification before deployment. */
+test("all notification manifests have unique IDs and valid editable HTML", async () => {
+  const names = readdirSync(new URL("../notifications/", import.meta.url)).filter((name) => name.endsWith(".json"));
+  const ids = new Set();
+  for (const name of names) {
+    const notification = await loadNotification(`notifications/${name}`);
+    assert(!ids.has(notification.id), `duplicate notification ID: ${notification.id}`);
+    assert.match(notification.html, /\{\{unsubscribe_url\}\}/);
+    ids.add(notification.id);
+  }
+  assert(names.length > 0);
 });
 
 test("posts the exact JSON contract with bearer auth and no redirect", async () => {
