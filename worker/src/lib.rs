@@ -5,7 +5,10 @@ mod domain;
 mod mail;
 mod store;
 
-use domain::{escape_html, normalize_email, normalize_locale, validate_campaign};
+use domain::{
+    escape_html, normalize_email, normalize_locale, validate_campaign, validate_document_text,
+    validate_fragment, validate_subject, CampaignFormat,
+};
 use futures_util::StreamExt;
 use getrandom::fill;
 use serde::Deserialize;
@@ -38,12 +41,15 @@ struct SubscribeInput {
     locale: String,
 }
 
-/// CI 创建的可编辑 HTML 通知。 / CI-authored editable HTML notification.
+/// CI 创建的可编辑通知；缺省格式与纯文本字段保留旧调用者的行为。
+/// CI-authored editable notification; omitted format and text preserve existing callers.
 #[derive(Deserialize)]
 struct NotifyInput {
     id: String,
     subject: String,
     html: String,
+    format: Option<String>,
+    text: Option<String>,
     send: bool,
 }
 
@@ -137,15 +143,15 @@ async fn confirmation_page(req: Request, env: Env) -> Result<Response> {
     let Some(token) = token.filter(|_| valid) else {
         return action_page(
             400,
-            "链接无效或已过期",
-            "This link is invalid or expired.",
+            "确认链接无效或已过期",
+            "This confirmation link is invalid or expired.",
             None,
         );
     };
     action_page(
         200,
-        "确认订阅 Atelier 更新",
-        "Confirm your Atelier subscription",
+        "确认订阅工坊更新",
+        "Confirm your Atelier updates subscription",
         Some(("/api/confirm", &token, "确认订阅 / Confirm subscription")),
     )
 }
@@ -153,7 +159,7 @@ async fn confirmation_page(req: Request, env: Env) -> Result<Response> {
 /// POST 消耗一次性令牌并激活订阅。 / POST consumes a one-time token to activate consent.
 async fn confirm(mut req: Request, env: Env) -> Result<Response> {
     let Some(token) = form_or_query_token(&mut req).await? else {
-        return action_page(400, "链接无效", "Invalid link.", None);
+        return action_page(400, "确认链接无效", "Invalid confirmation link.", None);
     };
     let activated = Store::new(env.d1("DB")?)
         .confirm(&hash_token(&token), now_ms())
@@ -162,22 +168,27 @@ async fn confirm(mut req: Request, env: Env) -> Result<Response> {
     if !activated {
         return action_page(
             400,
-            "链接无效或已过期",
-            "This link is invalid or expired.",
+            "确认链接无效或已过期",
+            "This confirmation link is invalid or expired.",
             None,
         );
     }
-    action_page(200, "订阅已确认", "Subscription confirmed.", None)
+    action_page(
+        200,
+        "工坊更新订阅已确认",
+        "Atelier updates subscription confirmed.",
+        None,
+    )
 }
 
 /// GET 只展示退订表单，防止邮件扫描器误触发。 / GET only shows an opt-out form to avoid scanner-triggered changes.
 fn unsubscribe_page(req: Request) -> Result<Response> {
     let Some(token) = query_token(&req) else {
-        return action_page(400, "链接无效", "Invalid link.", None);
+        return action_page(400, "退订链接无效", "Invalid unsubscribe link.", None);
     };
     action_page(
         200,
-        "退订 Atelier 更新",
+        "退订工坊更新",
         "Unsubscribe from Atelier updates",
         Some(("/api/unsubscribe", &token, "确认退订 / Unsubscribe")),
     )
@@ -187,15 +198,15 @@ fn unsubscribe_page(req: Request) -> Result<Response> {
 /// Accept browser and RFC 8058 one-click POST without login or CAPTCHA.
 async fn unsubscribe(mut req: Request, env: Env) -> Result<Response> {
     let Some(token) = form_or_query_token(&mut req).await? else {
-        return action_page(400, "链接无效", "Invalid link.", None);
+        return action_page(400, "退订链接无效", "Invalid unsubscribe link.", None);
     };
     Store::new(env.d1("DB")?)
         .unsubscribe(&token, now_ms())
         .await?;
     action_page(
         200,
-        "退订请求已处理",
-        "Your unsubscribe request has been processed.",
+        "工坊更新退订请求已处理",
+        "Your Atelier updates unsubscribe request has been processed.",
         None,
     )
 }
@@ -212,12 +223,15 @@ async fn notify(mut req: Request, env: Env) -> Result<Response> {
     let Ok(input) = serde_json::from_str::<NotifyInput>(&body) else {
         return Response::error("Invalid JSON", 400);
     };
-    if !valid_campaign_id(&input.id) || validate_campaign(&input.subject, &input.html).is_err() {
+    if !valid_campaign_id(&input.id) {
         return Response::error("Invalid campaign", 400);
     }
+    let Ok((html, text)) = prepare_campaign(&input) else {
+        return Response::error("Invalid campaign", 400);
+    };
     let store = Store::new(env.d1("DB")?);
     let written = store
-        .upsert_draft(&input.id, &input.subject, &input.html, now_ms())
+        .upsert_draft(&input.id, &input.subject, &html, text.as_deref(), now_ms())
         .await?;
     if written == CampaignWrite::Conflict {
         return Response::error("Campaign is immutable", 409);
@@ -236,6 +250,37 @@ async fn notify(mut req: Request, env: Env) -> Result<Response> {
         200,
         json!({ "id": input.id, "status": status, "queued": queued }),
     )
+}
+
+/// 在入库前构建完整且不可变的 HTML/纯文本快照，绝不在投递时重新包装。
+/// Build complete immutable HTML/plain-text snapshots before persistence, never rewrap at delivery.
+fn prepare_campaign(
+    input: &NotifyInput,
+) -> std::result::Result<(String, Option<String>), domain::ValidationError> {
+    match CampaignFormat::parse(input.format.as_deref())? {
+        CampaignFormat::Document => {
+            validate_campaign(&input.subject, &input.html)?;
+            if let Some(text) = &input.text {
+                validate_document_text(text)?;
+            }
+            Ok((input.html.clone(), input.text.clone()))
+        }
+        CampaignFormat::AtelierFragmentV1 => {
+            let text = input
+                .text
+                .as_deref()
+                .ok_or(domain::ValidationError::InvalidText)?;
+            validate_subject(&input.subject)?;
+            if input.subject.contains(domain::UNSUBSCRIBE_PLACEHOLDER) {
+                return Err(domain::ValidationError::InvalidSubject);
+            }
+            validate_fragment(&input.html, text)?;
+            let (html, text) = mail::render_update_snapshot(&input.subject, &input.html, text);
+            validate_campaign(&input.subject, &html)?;
+            validate_document_text(&text)?;
+            Ok((html, Some(text)))
+        }
+    }
 }
 
 /// 返回活动投递计数，供 CI 和人工核对 unknown 状态；不泄露订阅地址。
@@ -297,6 +342,7 @@ async fn dispatch(env: &Env) -> Result<()> {
             &item.email,
             &item.subject,
             &item.html,
+            item.text.as_deref(),
             &unsubscribe_url,
         )
         .await;
@@ -552,13 +598,13 @@ fn subscribe_reply(is_json: bool, status: u16, ok: bool) -> Result<Response> {
     }
     let (zh, en) = if ok {
         (
-            "请求已收到，请检查邮箱中的确认邮件（如适用）。",
-            "Request received. Check your inbox for a confirmation email if applicable.",
+            "工坊更新订阅请求已收到；如适用，请查收确认邮件。",
+            "Atelier updates request received. If applicable, check your inbox for a confirmation email.",
         )
     } else {
         (
-            "暂时无法提交，请检查地址或稍后重试。",
-            "Could not submit. Check the address or try again later.",
+            "工坊更新订阅暂时无法提交，请检查地址或稍后重试。",
+            "Could not submit the Atelier updates request. Check the address or try again later.",
         )
     };
     action_page(status, zh, en, None)
@@ -621,7 +667,7 @@ fn render_action_html(zh: &str, en: &str, form: &str) -> String {
     </header>
     <main class="action-main">
       <section class="action-card" aria-labelledby="action-title">
-        <p class="action-kicker">ATELIER <span aria-hidden="true">/</span> MAILROOM</p>
+        <p class="action-kicker">MAILROOM <span aria-hidden="true">/</span> 邮件室</p>
         <h1 id="action-title">{title}</h1>
         <p class="action-english" lang="en">{english}</p>
         {form}
@@ -675,6 +721,35 @@ mod tests {
         assert!(!valid_campaign_id("../escape"));
         assert!(!valid_campaign_id("a/b"));
         assert!(!valid_campaign_id(&"a".repeat(129)));
+    }
+
+    #[test]
+    fn notify_input_keeps_legacy_document_and_snapshots_new_fragment() {
+        let old_html = "<html><body><a href=\"{{unsubscribe_url}}\">Leave</a></body></html>";
+        let old: NotifyInput = serde_json::from_value(json!({
+            "id":"legacy", "subject":"Old issue", "html":old_html, "send":false
+        }))
+        .unwrap();
+        assert_eq!(prepare_campaign(&old), Ok((old_html.into(), None)));
+
+        let new: NotifyInput = serde_json::from_value(json!({
+            "id":"new", "subject":"A new essay", "html":"<h1>A new essay</h1><p>A specific summary.</p>",
+            "format":"atelier-fragment-v1",
+            "text":"A new essay explains a particular idea and why it matters to readers. Read it: https://atelier.moesegfault.dev/zh/essays/real-item/",
+            "send":false
+        })).unwrap();
+        let (html, text) = prepare_campaign(&new).unwrap();
+        assert!(html.starts_with("<!doctype html>"));
+        assert!(html.contains("<h1>A new essay</h1>"));
+        assert_eq!(html.matches("{{unsubscribe_url}}").count(), 1);
+        assert_eq!(text.unwrap().matches("{{unsubscribe_url}}").count(), 1);
+
+        let mut bad_subject = new;
+        bad_subject.subject = "{{unsubscribe_url}}".into();
+        assert_eq!(
+            prepare_campaign(&bad_subject),
+            Err(domain::ValidationError::InvalidSubject)
+        );
     }
 
     #[test]

@@ -53,6 +53,8 @@ pub struct Delivery {
     pub email: String,
     pub subject: String,
     pub html: String,
+    /// 可选的不可变纯文本模板；旧活动保持 `None`。 / Optional immutable plain-text template; legacy campaigns retain `None`.
+    pub text: Option<String>,
     pub attempts: i64,
     pub lease_expires_at: i64,
 }
@@ -67,6 +69,7 @@ pub struct Store {
 struct Campaign {
     subject: String,
     html: String,
+    text: Option<String>,
     status: String,
 }
 
@@ -82,6 +85,7 @@ struct Claimed {
 struct DeliveryContent {
     subject: String,
     html: String,
+    text: Option<String>,
 }
 
 impl Store {
@@ -233,22 +237,24 @@ impl Store {
         .await
     }
 
-    /// 用稳定 ID 新建或编辑草稿；重复提交已入队的相同内容安全无副作用。
-    /// Create or edit a draft by stable ID; repeating identical queued content is a no-op.
+    /// 用稳定 ID 新建或编辑三部分内容快照；已入队内容只允许逐字相同的重放。
+    /// Create or edit a three-part content snapshot by stable ID; queued content permits only an identical replay.
     pub async fn upsert_draft(
         &self,
         id: &str,
         subject: &str,
         html: &str,
+        text: Option<&str>,
         now: i64,
     ) -> Result<CampaignWrite> {
         let inserted: Option<String> = worker::query!(
             &self.db,
-            "INSERT INTO campaigns(id,subject,html,status,created_at,updated_at) \
-             VALUES (?1,?2,?3,'draft',?4,?4) ON CONFLICT(id) DO NOTHING RETURNING id",
+            "INSERT INTO campaigns(id,subject,html,text,status,created_at,updated_at) \
+             VALUES (?1,?2,?3,?4,'draft',?5,?5) ON CONFLICT(id) DO NOTHING RETURNING id",
             id,
             subject,
             html,
+            text,
             now
         )?
         .first(Some("id"))
@@ -258,7 +264,7 @@ impl Store {
         }
         let current: Option<Campaign> = worker::query!(
             &self.db,
-            "SELECT subject,html,status FROM campaigns WHERE id=?1",
+            "SELECT subject,html,text,status FROM campaigns WHERE id=?1",
             id
         )?
         .first(None)
@@ -267,18 +273,24 @@ impl Store {
             return Ok(CampaignWrite::Conflict);
         };
         if current.status != "draft" {
-            return Ok(if current.subject == subject && current.html == html {
-                CampaignWrite::AlreadyQueued
-            } else {
-                CampaignWrite::Conflict
-            });
+            return Ok(
+                if current.subject == subject
+                    && current.html == html
+                    && current.text.as_deref() == text
+                {
+                    CampaignWrite::AlreadyQueued
+                } else {
+                    CampaignWrite::Conflict
+                },
+            );
         }
         let updated: Option<String> = worker::query!(
             &self.db,
-            "UPDATE campaigns SET subject=?2,html=?3,updated_at=?4 WHERE id=?1 AND status='draft' RETURNING id",
+            "UPDATE campaigns SET subject=?2,html=?3,text=?4,updated_at=?5 WHERE id=?1 AND status='draft' RETURNING id",
             id,
             subject,
             html,
+            text,
             now
         )?
         .first(Some("id"))
@@ -367,7 +379,7 @@ impl Store {
         for row in claimed {
             let content: Option<DeliveryContent> = worker::query!(
                 &self.db,
-                "SELECT subject,html FROM campaigns WHERE id=?1",
+                "SELECT subject,html,text FROM campaigns WHERE id=?1",
                 row.campaign_id,
             )?
             .first(None)
@@ -378,6 +390,7 @@ impl Store {
                     email: row.email,
                     subject: content.subject,
                     html: content.html,
+                    text: content.text,
                     attempts: row.attempts,
                     lease_expires_at: row.lease_expires_at,
                 });

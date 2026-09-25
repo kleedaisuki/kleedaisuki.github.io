@@ -12,6 +12,8 @@ pub enum ValidationError {
     InvalidLocale,
     InvalidSubject,
     InvalidHtml,
+    InvalidText,
+    InvalidFormat,
     MissingUnsubscribeLink,
     InvalidUnsubscribeUrl,
 }
@@ -115,12 +117,7 @@ pub fn normalize_locale(input: &str) -> Result<Locale, ValidationError> {
 /// 主题最多 160 个字符且不得包含控制字符；HTML 最多 256 KiB，并须包含退订占位符。
 /// Subject is at most 160 characters with no controls; HTML is at most 256 KiB and needs the unsubscribe placeholder.
 pub fn validate_campaign(subject: &str, html: &str) -> Result<(), ValidationError> {
-    if subject.trim().is_empty()
-        || subject.chars().count() > 160
-        || subject.chars().any(char::is_control)
-    {
-        return Err(ValidationError::InvalidSubject);
-    }
+    validate_subject(subject)?;
     if html.trim().is_empty() || html.len() > 256 * 1024 || html.contains('\0') {
         return Err(ValidationError::InvalidHtml);
     }
@@ -128,6 +125,96 @@ pub fn validate_campaign(subject: &str, html: &str) -> Result<(), ValidationErro
         return Err(ValidationError::MissingUnsubscribeLink);
     }
     Ok(())
+}
+
+/// 在完整文档与片段格式间共享主题限制。 / Share subject limits across document and fragment formats.
+pub fn validate_subject(subject: &str) -> Result<(), ValidationError> {
+    if subject.trim().is_empty()
+        || subject.chars().count() > 160
+        || subject.chars().any(char::is_control)
+    {
+        return Err(ValidationError::InvalidSubject);
+    }
+    Ok(())
+}
+
+/// 显式区分旧完整文档与新版片段；缺省保留旧 API 语义。
+/// Explicitly distinguish legacy full documents from the new fragment; omission preserves the old API contract.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CampaignFormat {
+    Document,
+    AtelierFragmentV1,
+}
+
+impl CampaignFormat {
+    /// 解析公开格式名，不猜测 HTML 内容。 / Parse the public format name without guessing from HTML.
+    pub fn parse(value: Option<&str>) -> Result<Self, ValidationError> {
+        match value.unwrap_or("document") {
+            "document" => Ok(Self::Document),
+            "atelier-fragment-v1" => Ok(Self::AtelierFragmentV1),
+            _ => Err(ValidationError::InvalidFormat),
+        }
+    }
+}
+
+/// 校验由共享外壳包装的可信管理员 HTML 片段和手写纯文本。
+/// Validate a trusted-admin HTML fragment and authored text before the common shell wraps them.
+///
+/// 这是编写约束而非 HTML 清洗器；真实的退订占位符只由外壳追加。
+/// This is an authoring contract, not an HTML sanitizer; only the shell appends unsubscribe placeholders.
+pub fn validate_fragment(fragment: &str, text: &str) -> Result<(), ValidationError> {
+    let lower = fragment.to_ascii_lowercase();
+    if fragment.trim().is_empty()
+        || fragment.len() > 256 * 1024
+        || fragment.contains('\0')
+        || fragment.contains(UNSUBSCRIBE_PLACEHOLDER)
+        || ["<!doctype", "<html", "<head", "<body", "<script", "<form"]
+            .iter()
+            .any(|tag| lower.contains(tag))
+    {
+        return Err(ValidationError::InvalidHtml);
+    }
+    if text.trim().chars().count() < 40
+        || text.len() > 16 * 1024
+        || text
+            .chars()
+            .any(|ch| ch == '\0' || (ch.is_control() && ch != '\n' && ch != '\r' && ch != '\t'))
+        || text.contains(UNSUBSCRIBE_PLACEHOLDER)
+        || !has_canonical_https_link(text)
+    {
+        return Err(ValidationError::InvalidText);
+    }
+    Ok(())
+}
+
+/// 校验可选的旧文档纯文本模板；未提供时保留既有发送回退。
+/// Validate an optional legacy-document text template; absence preserves the old send fallback.
+pub fn validate_document_text(text: &str) -> Result<(), ValidationError> {
+    if text.trim().is_empty()
+        || text.len() > 16 * 1024
+        || text.contains('\0')
+        || !text.contains(UNSUBSCRIBE_PLACEHOLDER)
+    {
+        return Err(ValidationError::InvalidText);
+    }
+    Ok(())
+}
+
+/// 只认可带具体内容路径的 HTTPS 正文地址，避免把首页当作内容 CTA。
+/// Require an HTTPS URL with a content path, rather than treating a homepage as the canonical CTA.
+fn has_canonical_https_link(text: &str) -> bool {
+    text.split_whitespace().any(|word| {
+        let candidate = word
+            .trim_matches(|ch: char| matches!(ch, '<' | '>' | '(' | ')' | '，' | '。' | ',' | '.'));
+        let Ok(url) = url::Url::parse(candidate) else {
+            return false;
+        };
+        url.scheme() == "https"
+            && url.host_str().is_some()
+            && url.username().is_empty()
+            && url.password().is_none()
+            && url.path() != "/"
+    })
 }
 
 /// 将文本转义为 HTML 文本或双引号属性中的安全内容。 / Escape text for HTML text or double-quoted attributes.
@@ -248,6 +335,79 @@ mod tests {
                 &format!("{}{{{{unsubscribe_url}}}}", "x".repeat(256 * 1024))
             ),
             Err(ValidationError::InvalidHtml)
+        );
+    }
+
+    #[test]
+    fn explicit_format_preserves_document_default_and_rejects_unknown() {
+        assert_eq!(CampaignFormat::parse(None), Ok(CampaignFormat::Document));
+        assert_eq!(
+            CampaignFormat::parse(Some("document")),
+            Ok(CampaignFormat::Document)
+        );
+        assert_eq!(
+            CampaignFormat::parse(Some("atelier-fragment-v1")),
+            Ok(CampaignFormat::AtelierFragmentV1)
+        );
+        assert_eq!(
+            CampaignFormat::parse(Some("atelier-fragment-v2")),
+            Err(ValidationError::InvalidFormat)
+        );
+    }
+
+    #[test]
+    fn fragment_requires_substantive_text_and_content_link() {
+        let text = "A newly published essay about computing and writing. Read the complete essay: https://atelier.moesegfault.dev/zh/essays/real-item/";
+        assert_eq!(
+            validate_fragment("<h1>New essay</h1><p>Why it matters.</p>", text),
+            Ok(())
+        );
+        for invalid in [
+            "<html><p>Hi</p></html>",
+            "<!DOCTYPE html><p>Hi</p>",
+            "<SCRIPT src='x'></SCRIPT>",
+            "<form></form>",
+            "<p>{{unsubscribe_url}}</p>",
+        ] {
+            assert_eq!(
+                validate_fragment(invalid, text),
+                Err(ValidationError::InvalidHtml),
+                "{invalid}"
+            );
+        }
+        assert_eq!(
+            validate_fragment("<h1>New essay</h1>", "See https://atelier.moesegfault.dev/"),
+            Err(ValidationError::InvalidText)
+        );
+        assert_eq!(
+            validate_fragment("<h1>New essay</h1>", &text.replace("https://", "http://")),
+            Err(ValidationError::InvalidText)
+        );
+        assert_eq!(
+            validate_fragment("<h1>New essay</h1>", &text.replace("real-item/", "")),
+            Ok(())
+        );
+        assert_eq!(
+            validate_fragment(
+                "<h1>New essay</h1>",
+                &text.replace(
+                    "https://atelier.moesegfault.dev/zh/essays/real-item/",
+                    "https://atelier.moesegfault.dev/"
+                )
+            ),
+            Err(ValidationError::InvalidText)
+        );
+    }
+
+    #[test]
+    fn authored_document_text_requires_unsubscribe_template() {
+        assert_eq!(
+            validate_document_text("Read more\n{{unsubscribe_url}}"),
+            Ok(())
+        );
+        assert_eq!(
+            validate_document_text("Read more"),
+            Err(ValidationError::InvalidText)
         );
     }
 
