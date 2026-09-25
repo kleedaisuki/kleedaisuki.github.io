@@ -1,6 +1,10 @@
 # Atelier email template architecture: a compatibility-preserving path
 
-Status: design decision, 2026-09-26; **not implemented**. This note specifies the smallest coherent change for the subscription-confirmation/update/action-page consistency request. Product language and colors are defined in [atelier-email-design.md](atelier-email-design.md); email-client evidence is in [email-client-compatibility.md](email-client-compatibility.md). This proposal does not alter Cloudflare's bounce `Return-Path`, consent state, or already-sent mail.
+Status: design implemented in the current source tree on 2026-09-26; **remote migration/deployment and received-client rendering are not established by this document**. This note preserves the rationale and implementation contract for subscription-confirmation/update/action-page consistency. Product language and colors are defined in [atelier-email-design.md](atelier-email-design.md); email-client evidence is in [email-client-compatibility.md](email-client-compatibility.md). The change does not alter Cloudflare's bounce `Return-Path`, consent state, or already-sent mail.
+
+### Implemented source snapshot
+
+[`worker/src/mail.rs`](../worker/src/mail.rs) now renders a shared confirmation/update mail shell, with a substantive localized confirmation text part and a fixed update footer in HTML and text. [`worker/src/domain.rs`](../worker/src/domain.rs) and the protected Worker API accept explicit `atelier-fragment-v1` input while omitted/`document` retains legacy full-document behavior. [`worker/migrations/0002_campaign_text.sql`](../worker/migrations/0002_campaign_text.sql) adds nullable `campaigns.text`; Rust stores complete HTML/text snapshots before queueing and uses the old text fallback for `NULL` legacy rows. [`scripts/dispatch-notifications.mjs`](../scripts/dispatch-notifications.mjs) handles optional `format`/`text_file` and selects referencing manifests on text-only edits. [`notifications/atelier-update.json`](../notifications/atelier-update.json) is a new-format **`send:false` draft** with issue-specific HTML fragment and authored text. These are code/artifact observations, not proof that the new template has been sent or rendered correctly by real mail clients.
 
 ## Current ownership and hard constraints
 
@@ -8,10 +12,10 @@ Status: design decision, 2026-09-26; **not implemented**. This note specifies th
 | --- | --- | --- |
 | Subscribe/confirm/unsubscribe and generated per-recipient URLs | Rust `worker/src/lib.rs`, `worker/src/store.rs`, `worker/src/mail.rs`; D1 `subscribers` | Keep GET as review page and POST as state change; keep token/expiry, status, List-Unsubscribe/one-click, and subscriber rows unchanged. |
 | Action-page visual language | `worker/src/lib.rs::render_action_html`, `public/action.css` | Keep URL/form behavior, public website layout and established paper/ink/vermilion theme. Align wording and visual details, not the underlying route or consent contract. |
-| Update authoring and send gate | `notifications/*.json` + sibling `.html`; `scripts/dispatch-notifications.mjs`; `.github/workflows/deploy.yml` | Admin edits HTML, `send:false` is a draft, only changed manifests dispatch on a main push, `send:true` queues once. Existing IDs and already queued campaigns remain immutable. |
-| Campaign snapshot | D1 `campaigns(id, subject, html, status, ...)`; `deliveries` | Already queued full HTML is a frozen snapshot; no rewrapping, no resend, no rewriting records on deployment. |
+| Update authoring and send gate | `notifications/*.json` + sibling `.html` and optional `.txt`; `scripts/dispatch-notifications.mjs`; `.github/workflows/deploy.yml` | Admin edits issue content, `send:false` is a draft, only changed manifests dispatch on a main push, `send:true` queues once. Existing IDs and already queued campaigns remain immutable. |
+| Campaign snapshot | D1 `campaigns(id, subject, html, text, status, ...)`; `deliveries` | Already queued complete HTML/text is frozen; legacy `text=NULL` rows remain valid. No rewrapping, resend, or historical rewrite on deployment. |
 
-At present the confirmation HTML is three bare paragraphs, while the two checked-in update documents use different complete-page designs. `mail.rs::update_text` discards the actual summary, so the multipart text alternative does not represent the same information. This is a source-level observation; actual recipient-client rendering remains untested. [RFC 2046 §5.1.4](https://www.rfc-editor.org/rfc/rfc2046.html#section-5.1.4) makes the two MIME parts alternative representations of the same data.
+Before this change, confirmation HTML was three bare paragraphs and checked-in update documents used different complete-page designs. The legacy `mail.rs::update_text` fallback discards the actual summary; the new fragment format instead requires authored text. The fallback remains for old `NULL`-text campaigns. This is a source-level distinction; actual new-template rendering in recipient clients remains untested. [RFC 2046 §5.1.4](https://www.rfc-editor.org/rfc/rfc2046.html#section-5.1.4) makes the two MIME parts alternative representations of the same data.
 
 ## Chosen model: one shell, two explicit authoring formats, stored snapshots
 
@@ -45,14 +49,14 @@ notifications/issue.json + issue.html + issue.txt (send:false)
   -> Email Service sends; delivery state follows current retry/unknown rules
 ```
 
-## File ownership and implementation slices
+## File ownership and implementation record
 
-1. **Pure rendering contract.** In `worker/src/mail.rs` (or a small `worker/src/mail_template.rs` only if keeping `mail.rs` short), implement one `render_shell(kind, locale, body)`/equivalent with two narrow kinds: confirmation and update. Inline essential email-safe styles, a plain text wordmark, and a single fluid reading column. Keep generated confirmation copy in Rust and escape its URL exactly once. Source colors from the literal mappings in [the design spec](atelier-email-design.md); the web `action.css` is not an email stylesheet. In `worker/src/domain.rs`, retain old document validation and add a separate fragment/text validation path; avoid a general template engine.
-2. **Additive data/API evolution.** `worker/migrations/0002_campaign_text.sql`: `ALTER TABLE campaigns ADD COLUMN text TEXT;`. Extend `NotifyInput`, `Store::upsert_draft`, campaign reads/structs, and `send_update` to carry nullable text. Render at `/api/admin/notify` ingest, before `upsert_draft`; the stored full HTML/text is the immutable comparison unit. Do not migrate/rewrite existing campaign HTML, delivery rows, subscribers, or tokens. Keep existing API fields valid and old Worker compatible with the new nullable column.
-3. **CI authoring.** Extend `scripts/dispatch-notifications.mjs` validation, load, and changed-file index for optional explicit format/text sibling. Extend `tests/notification-dispatch.test.mjs` with document-default acceptance, fragment text-required rejection, `.txt`-only draft selection, and `send:false` non-queueing. New production update content must name a genuinely published item and direct canonical URL; the generic `atelier-update-draft-2026-09` must stay unsent or be replaced by a **new** reviewed ID. Never toggle the already-sent `atelier-worker-launch-2026-09-25` manifest to test styling.
-4. **Wording/visual integration.** Align home subscribe promise (`src/components/home/SubscribeForm.astro`), confirmation/update shell, and action-page title/verbs in `worker/src/lib.rs`, without changing public page layout, POST-only semantics, or externally visible routes. Leave `public/action.css` as the web action-page owner. Add screenshot/received-message review, not a second parallel CSS system.
+1. **Pure rendering contract.** `worker/src/mail.rs::render_shell` supplies a compact inline-styled shared frame for generated confirmation and fragment updates; `worker/src/domain.rs` retains separate document and fragment/text validation. The web `action.css` is not imported into mail.
+2. **Additive data/API evolution.** Migration `0002_campaign_text.sql` adds nullable `text`. `NotifyInput`, store reads/writes, and send path carry that field. `/api/admin/notify` renders the complete fragment HTML/text **before** draft persistence; queued snapshots are not re-rendered. Existing campaign HTML, delivery rows, subscribers, and tokens are not rewritten. The old Worker remains compatible with the additive column.
+3. **CI authoring.** The dispatch script validates explicit formats and sibling text paths; text-only edits select their referencing manifests. The new draft names a published work and canonical URL. Keep it `send:false` through review; never toggle or edit the already-sent `atelier-worker-launch-2026-09-25` campaign to test styling.
+4. **Wording/visual integration.** Generated confirmation/update mail uses the shared identity while action pages remain owned by `public/action.css`. Any further home/action-page copy refinement must preserve public layout and POST-only consent semantics. Received-message review is still outstanding.
 
-## Tests and rollout gates
+## Verification and rollout gates
 
 | Gate | Evidence needed |
 | --- | --- |
