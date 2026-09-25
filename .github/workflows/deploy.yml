@@ -1,22 +1,27 @@
-name: Deploy Astro to GitHub Pages
+# 中文：PR 只验证；main 的已验证构建才发布到 Workers，避免绕过检查或泄露部署凭据。
+# English: Validate pull requests; deploy only a validated main build without exposing credentials to PRs.
+name: Test and deploy Cloudflare Worker
 on:
+  pull_request:
   push:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: atelier-worker-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
-  build:
+  verify-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 11.17.0
@@ -24,7 +29,20 @@ jobs:
         with:
           node-version: '24'
           cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: worker
       - run: pnpm install --frozen-lockfile
+      # 中文：根配置的构建命令依赖 worker-build；Rust/Wasm 入口不能只靠 cargo test 验证。
+      # English: Root config invokes worker-build; cargo test alone cannot validate the Rust/Wasm entrypoint.
+      - run: cargo install worker-build --version '^0.8' --locked
+      - run: node --test tests/notification-dispatch.test.mjs
+      - run: cargo fmt --manifest-path worker/Cargo.toml --all -- --check
+      - run: cargo test --manifest-path worker/Cargo.toml --locked
       - run: pnpm run check
       - run: pnpm test
       - run: pnpm format:check
@@ -32,6 +50,7 @@ jobs:
       - run: pnpm run verify:atelier
       - run: pnpm run build
       - run: pnpm run verify:seo
+      - run: pnpm exec wrangler d1 migrations apply DB --local --persist-to .cache/wrangler
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm run test:e2e:ci
       - name: Upload browser-test diagnostics
@@ -43,15 +62,38 @@ jobs:
             playwright-report/
             test-results/
           if-no-files-found: ignore
-      - uses: actions/upload-pages-artifact@v3
+      # 中文：干运行会从根目录 wrangler.jsonc 编译 Rust/Wasm 并验证与 SSG 资产的打包。
+      # English: Dry-run compiles Rust/Wasm from root wrangler.jsonc and checks the SSG asset bundle.
+      - run: pnpm exec wrangler deploy --dry-run
+      - name: Check deployment credentials
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo 'CLOUDFLARE_API_TOKEN is not configured' >&2; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo 'CLOUDFLARE_ACCOUNT_ID is not configured' >&2; exit 1; }
+      # 中文：先应用远程 D1 迁移，再发布会使用新表结构的 Worker。
+      # English: Apply remote D1 migrations before deploying the Worker that needs the schema.
+      - name: Apply D1 migrations
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm exec wrangler d1 migrations apply DB --remote
+      - name: Deploy Worker and static assets
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: cloudflare/wrangler-action@v4
         with:
-          path: dist
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+      # 中文：仅推送到 main 时提交发生变化的清单；草稿 send=false 不发送邮件。
+      # English: Submit changed manifests only on a main push; send=false remains a draft.
+      - name: Dispatch changed notification manifests
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          NOTIFY_BASE_SHA: ${{ github.event.before }}
+          ATELIER_WORKER_URL: ${{ vars.ATELIER_WORKER_URL }}
+          ATELIER_NOTIFY_TOKEN: ${{ secrets.ATELIER_NOTIFY_TOKEN }}
+        run: node scripts/dispatch-notifications.mjs
