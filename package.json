@@ -53,6 +53,7 @@
     "shiki": "4.4.3",
     "typescript": "^5.9.2",
     "unified": "^11.0.5",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "wrangler": "4.140.0"
   }
 }

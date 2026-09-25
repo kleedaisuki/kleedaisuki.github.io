@@ -28,3 +28,11 @@ pnpm-debug.log*
 # browser compatibility artifacts
 playwright-report/
 test-results/
+
+# repository-local experiments and Rust build output
+.cache/
+.temp/
+worker/target/
+worker/build/
+# Wrangler 生成的本地元数据；权威配置是 wrangler.jsonc。 / Wrangler-generated metadata; wrangler.jsonc is authoritative.
+.wrangler/

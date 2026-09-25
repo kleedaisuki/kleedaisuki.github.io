@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // 站点 HTML 仍在构建期生成，Rust 只处理 API。 / Keep HTML pre-rendered; Rust handles only API requests.
+  "name": "atelier-moesegfault",
+  "main": "worker/build/index.js",
+  "compatibility_date": "2026-09-25",
+  "workers_dev": true,
+  // 现有 DNS-only CNAME 先保留以便回滚；将该记录开启代理后，Worker Route 即成为站点入口。
+  // Keep the existing DNS-only CNAME for rollback; enabling proxy activates this Worker Route.
+  "routes": [{ "pattern": "atelier.moesegfault.dev/*", "zone_name": "moesegfault.dev" }],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "atelier-subscriptions",
+      "database_id": "97f2c5f6-7c97-410c-bcf7-96a9945a60c6",
+      "migrations_dir": "worker/migrations"
+    }
+  ],
+  "send_email": [{ "name": "EMAIL" }],
+  "ratelimits": [
+    { "name": "SUBSCRIBE_LIMIT", "namespace_id": "43051", "simple": { "limit": 10, "period": 60 } }
+  ],
+  "triggers": { "crons": ["*/5 * * * *"] },
+  "build": {
+    "command": "cd worker && worker-build --release"
+  },
+  "observability": { "enabled": true }
+}
