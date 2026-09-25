@@ -1,6 +1,6 @@
 # Cloudflare migration validation record
 
-Status: local verification plus read-only `workers.dev` preview smoke on 2026-09-25; **canonical-domain cutover and real email delivery are not established by these results**.
+Status: local verification, successful GitHub Actions deploy and DNS cutover, deployed `workers.dev` preview, and independent read-only canonical-domain smoke on 2026-09-25. **Real email delivery, paid-plan entitlement, and worldwide DNS propagation are not established by these results.**
 
 ## Independent contracts and environment
 
@@ -21,6 +21,13 @@ Local environment: Windows PowerShell, Node 26.8.2, pnpm 11.17.0 via `corepack.c
 | Worker route smoke | HTTP GET `/api/health`, `/zh/`, `/en/blog/`, `/llms.txt`, `/sitemap-index.xml`, `/missing-validator-path/` | Statuses respectively 200, 200, 200, 200, 200, 404. API health has `Cache-Control: no-store` and `X-Robots-Tag: noindex, nofollow`. Chromium rendered Worker-served `/zh/` with hero and subscription form, and no page error. | Not a full browser matrix against Wrangler. |
 | Safe admin draft | POST `/api/admin/notify` with local bearer token, valid HTML containing `{{unsubscribe_url}}`, `send:false`; GET `/api/admin/status?id=validator-draft`; edit same draft; inspect local D1 | Valid create/edit 200, status `draft`, all delivery counts zero, edited subject persisted. Missing unsubscribe placeholder 400; unauthenticated status request 401. | No `send:true`, no public subscribe, no actual email. |
 
+## GitHub Actions release and DNS activation
+
+| Evidence | Observed result | Limit |
+| --- | --- | --- |
+| [Deploy Action 36132611731](https://github.com/kleedaisuki/kleedaisuki.github.io/actions/runs/36132611731), `main` push | Workflow succeeded: 84 end-to-end browser tests passed, 7 skipped; remote D1 migration applied; Worker version `de9e3e28-faa4-4b3e-8e0b-38cca6918b18` deployed. The changed notification manifest was accepted with `send:false`; remote D1 campaign remained `draft`. | Proves that this revision's CI/deploy path and safe draft path ran. It does not prove `send:true`, scheduled dispatch, provider acceptance, or recipient delivery. |
+| [Manual cutover Action 36133244601](https://github.com/kleedaisuki/kleedaisuki.github.io/actions/runs/36133244601), `activate` from `main` | Succeeded: exact existing CNAME was switched to `proxied: true` at 12:08:45 UTC; canonical page and Worker health checks converged at 12:13:46 UTC. | The Action's sampled checks and the independent canonical smoke below show the Worker route functioning from tested vantage points, not globally complete DNS propagation. Rollback path was not exercised. |
+
 ## Deployed preview smoke (read-only)
 
 Target: `https://atelier-moesegfault.moesegfault.workers.dev` after the root agent deployed it and migrated remote D1. This verifies actual Cloudflare routing and static assets, not only local Wrangler. No subscription, admin send, or mail request was made against the remote Worker.
@@ -35,10 +42,21 @@ Target: `https://atelier-moesegfault.moesegfault.workers.dev` after the root age
 
 To reproduce the browser probe, launch Playwright Chromium, create separate pages at the two viewports above, and navigate to the preview `/zh/` with `waitUntil: "networkidle"`. Await `document.fonts.ready`; inspect `main h1`, `html[lang]`, `link[rel=canonical]`, computed root `--bg-color` and `--accent-color`, `document.documentElement.scrollWidth - clientWidth`, and the two `.studio-door` bounding boxes. Capture `pageerror` events and read `performance.getEntriesByType("navigation")[0]` for response-end and DOMContentLoaded timings. Any screenshots should be written to repository-local ignored `.cache/` and inspected locally, not committed as golden images. This procedure is a smoke comparison; the committed `tests/e2e/migration-contract.spec.ts` is the repeatable regression gate.
 
+## Canonical-domain cutover smoke (read-only)
+
+Target: `https://atelier.moesegfault.dev`, after the successful [manual cutover Action](https://github.com/kleedaisuki/kleedaisuki.github.io/actions/runs/36133244601). These are independent direct requests to the canonical hostname, not merely the Action's checks or preview hostname. Each sampled response carried a Cloudflare `CF-Ray` header ending in `-LAX`; `/api/health` returned `{"ok":true,"service":"atelier-worker"}` with `no-store` and `X-Robots-Tag: noindex, nofollow`. The Cloudflare header plus Rust health result support that the canonical route reached the new Worker from this vantage point, not that DNS propagated globally.
+
+| Probe | Observation |
+| --- | --- |
+| PowerShell `Invoke-WebRequest -SkipHttpErrorCheck` GET `/api/health`, `/zh/`, `/en/`, `/zh/blog/2026-08-24-1-zh/`, `/zh/articrafts/cinder-cuda-tensor-library/1.0.0/`, `/zh/rss.xml`, `/sitemap-index.xml`, `/llms.txt` | All 200. HTML pages, RSS/sitemap XML and `llms.txt` text had matching content types. Public HTML used `Cache-Control: public, must-revalidate, max-age=0`; health used `no-store`. |
+| GET `/missing-validator-path/` | 404 HTML, not a crawlable 200 shell. |
+| Googlebot-UA raw GET of `/zh/`, `/en/`, the representative blog post and versioned Articrafts detail | All 200, with `<main>`, `<h1>`, canonical link, English hreflang and JSON-LD in the response body. The three home/blog pages had no `noindex`; the **versioned Articrafts detail did have `noindex`**, consistent with the existing policy excluding version URLs from sitemap. A separate GET of its stable work URL `/zh/articrafts/cinder-cuda-tensor-library/` returned 200 without `noindex` and with a matching canonical URL. |
+| Chromium browser at 1280×900 and 390×900, `/zh/` with `networkidle` and fonts ready | Both 200, `main h1` = `Atelier`, no page errors or horizontal overflow. Light theme retained `#fff6ea` background / `#e66a3f` accent; clicking the toggle produced `#21130f` / `#f27a50`. Door coordinates were desktop `[50,705]` and `[652,705]`, mobile `[10,865]` and `[10,1169]`, confirming desktop columns and mobile stacking. |
+
 ## Issues and boundaries
 
 - Wrangler 4.130.0 initially could not start a Worker configured with compatibility date `2026-09-25` because its bundled workerd supported only through `2026-09-15`. Upgrading the pinned Wrangler/workerd dependency to 4.140.0 resolved this; no date override was needed in the passing run.
 - The existing PDF.js client build emits a chunk-size warning (`PdfReader` about 607 kB before gzip), but the interactive reader is a lazy enhancement, not a dependency of initial HTML. This is a performance watch item, not a failed regression here.
-- Real subscription, confirmation, unsubscribe, Cloudflare Email Sending eligibility, account/DNS authorization, remote D1 state transitions, cron dispatch, and live custom-domain behavior require separate evidence. A local binding's presence or a read-only remote preview cannot prove email acceptance or delivery.
+- Real subscription, confirmation, unsubscribe, Cloudflare Email Sending paid entitlement and arbitrary-recipient eligibility, consent-state transitions in remote D1, and cron dispatch require separate evidence. The remote `send:false` draft is established, but cannot establish email acceptance/delivery. Canonical-domain read-only smoke does not prove globally completed DNS propagation.
 
-Verdict: **local compatibility, safe Worker/D1 draft workflow, and deployed Workers preview reading/search routes verified; canonical-domain cutover and mail delivery remain unverified by this record**.
+Verdict: **CI deployment, remote D1 draft, DNS proxy cutover, local compatibility, preview and sampled canonical-domain reading/search routes verified; real mail delivery, paid entitlement, and global DNS propagation remain unverified by this record**.
