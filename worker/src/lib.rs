@@ -571,8 +571,8 @@ fn json_reply(status: u16, body: serde_json::Value) -> Result<Response> {
     Ok(response)
 }
 
-/// 生成双语操作页，独立于公开页面的静态布局。
-/// Render a bilingual action page without changing static public-page layout.
+/// 生成双语操作页，复用 Atelier 配色但不改变公开首页布局。
+/// Render a bilingual action page in Atelier's visual language without changing public-page layout.
 fn action_page(
     status: u16,
     zh: &str,
@@ -581,17 +581,63 @@ fn action_page(
 ) -> Result<Response> {
     let form = action
         .map(|(path, token, label)| format!(
-            "<form method=\"post\" action=\"{path}\"><input type=\"hidden\" name=\"token\" value=\"{}\"><button type=\"submit\">{label}</button></form>",
+            "<form class=\"action-form\" method=\"post\" action=\"{path}\"><input type=\"hidden\" name=\"token\" value=\"{}\"><button type=\"submit\">{label}<span aria-hidden=\"true\"> →</span></button></form>",
             escape_html(token)
         ))
         .unwrap_or_default();
-    let html = format!(
-        "<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex,nofollow\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Atelier</title><style>body{{font:16px/1.7 system-ui,sans-serif;max-width:38rem;margin:10vh auto;padding:1.5rem;background:#f5f0eb;color:#27211e}}main{{background:#fff;padding:2rem;border:1px solid #d8cbc3;border-radius:1rem}}button{{padding:.7rem 1rem;background:#a34c44;color:#fff;border:0;border-radius:.5rem;cursor:pointer}}a{{color:#a34c44}}</style></head><body><main><h1>Atelier</h1><p>{}</p><p lang=\"en\">{}</p>{form}<p><a href=\"/zh/\">返回首页 / Home</a></p></main></body></html>",
-        escape_html(zh), escape_html(en)
-    );
+    let html = render_action_html(zh, en, &form);
     let mut response = Response::from_html(html)?.with_status(status);
     api_headers(&mut response)?;
     Ok(response)
+}
+
+/// 渲染无令牌外泄的静态操作页；主题引导脚本只恢复既有站点偏好。
+/// Render static action HTML without exposing tokens; the tiny theme bootstrap only restores site preference.
+fn render_action_html(zh: &str, en: &str, form: &str) -> String {
+    const THEME_BOOTSTRAP: &str = r#"try{const theme=localStorage.getItem('site-theme');if(theme==='light'||theme==='dark')document.documentElement.dataset.theme=theme}catch{}"#;
+    let title = escape_html(zh);
+    let english = escape_html(en);
+    format!(
+        r#"<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <title>{title} · Atelier</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script>{THEME_BOOTSTRAP}</script>
+  <link rel="stylesheet" href="/action.css">
+</head>
+<body>
+  <div class="action-shell">
+    <header class="action-header">
+      <a class="action-brand" href="/zh/" aria-label="Atelier 首页">
+        <span class="action-brand__mark" aria-hidden="true">A/</span><strong>Atelier</strong>
+      </a>
+      <p>写作与制作 <span aria-hidden="true">·</span> <span lang="en">Writing &amp; making</span></p>
+    </header>
+    <main class="action-main">
+      <section class="action-card" aria-labelledby="action-title">
+        <p class="action-kicker">ATELIER <span aria-hidden="true">/</span> MAILROOM</p>
+        <h1 id="action-title">{title}</h1>
+        <p class="action-english" lang="en">{english}</p>
+        {form}
+        <nav class="action-links" aria-label="返回网站 / Return to site">
+          <a href="/zh/">返回中文首页 <span aria-hidden="true">↗</span></a>
+          <a href="/en/" lang="en">English home <span aria-hidden="true">↗</span></a>
+        </nav>
+      </section>
+    </main>
+    <footer class="action-footer">
+      <span>写下，也做成</span><span lang="en">written &amp; made here</span>
+    </footer>
+  </div>
+</body>
+</html>"#
+    )
 }
 
 /// 阻止 API 缓存、令牌索引及 Referer 泄漏。
@@ -610,6 +656,18 @@ fn api_headers(response: &mut Response) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn action_html_uses_site_assets_and_escapes_copy() {
+        let html = render_action_html("<确认>", "<Confirm>", "");
+        assert!(html.contains("href=\"/action.css\""));
+        assert!(html.contains("href=\"/favicon.svg\""));
+        assert!(html.contains("content=\"noindex,nofollow\""));
+        assert!(html.contains("content=\"no-referrer\""));
+        assert!(html.contains("&lt;确认&gt;"));
+        assert!(html.contains("&lt;Confirm&gt;"));
+        assert!(!html.contains("<style>"));
+    }
 
     #[test]
     fn campaign_ids_are_bounded_and_not_paths() {

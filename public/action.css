@@ -1,0 +1,173 @@
+/** @brief 邮件操作页沿用 Atelier 日间语义配色 / Reuse Atelier's light semantic palette for mail action pages. */
+:root {
+  color-scheme: light;
+  --bg: #fff6ea;
+  --bg-accent: #ffe4c3;
+  --surface: rgba(255, 251, 244, 0.9);
+  --text: #4b2a1e;
+  --text-soft: #805648;
+  --heading: #26110b;
+  --accent: #e66a3f;
+  --accent-strong: #bd4525;
+  --border: #f3bf98;
+  --shadow: 0 16px 34px rgba(158, 78, 37, 0.16);
+  --focus: #542516;
+  --on-accent: #fffaf2;
+  --gradient-top: #fffaf2;
+  --gradient-bottom: #fff1e2;
+  --header-start: rgba(255, 252, 247, 0.95);
+  --header-end: rgba(255, 238, 215, 0.9);
+  --footer: rgba(255, 250, 242, 0.8);
+}
+
+/** @brief 无脚本时跟随系统夜间主题 / Follow the system dark preference without JavaScript. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #21130f;
+    --bg-accent: #3a211a;
+    --surface: rgba(47, 28, 23, 0.92);
+    --text: #f6e7dc;
+    --text-soft: #d9b8a6;
+    --heading: #fff6ef;
+    --accent: #f27a50;
+    --accent-strong: #ffb18c;
+    --border: #714531;
+    --shadow: 0 16px 34px rgba(0, 0, 0, 0.38);
+    --focus: #ffe0a3;
+    --on-accent: #21130f;
+    --gradient-top: #281712;
+    --gradient-bottom: #19100e;
+    --header-start: rgba(56, 33, 27, 0.96);
+    --header-end: rgba(47, 27, 23, 0.94);
+    --footer: rgba(48, 29, 24, 0.88);
+  }
+}
+
+/** @brief 明确选择的夜间主题优先于系统设置 / An explicitly saved dark theme overrides system preference. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #21130f;
+  --bg-accent: #3a211a;
+  --surface: rgba(47, 28, 23, 0.92);
+  --text: #f6e7dc;
+  --text-soft: #d9b8a6;
+  --heading: #fff6ef;
+  --accent: #f27a50;
+  --accent-strong: #ffb18c;
+  --border: #714531;
+  --shadow: 0 16px 34px rgba(0, 0, 0, 0.38);
+  --focus: #ffe0a3;
+  --on-accent: #21130f;
+  --gradient-top: #281712;
+  --gradient-bottom: #19100e;
+  --header-start: rgba(56, 33, 27, 0.96);
+  --header-end: rgba(47, 27, 23, 0.94);
+  --footer: rgba(48, 29, 24, 0.88);
+}
+
+/** @brief 使用站点自托管的拉丁字体 / Use the site's self-hosted Latin typeface. */
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("/fonts/atkinson-regular.woff") format("woff");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("/fonts/atkinson-bold.woff") format("woff");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+* { box-sizing: border-box; }
+html { min-height: 100%; }
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--text);
+  background: linear-gradient(180deg, var(--gradient-top), var(--bg) 54%, var(--gradient-bottom));
+  font-family: "Atkinson Hyperlegible", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/** @brief 保持与公开页面同样的宽度和留白尺度 / Match the public site's width and spacing scale. */
+.action-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(1.5rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(1.5rem, env(safe-area-inset-left));
+}
+.action-header,
+.action-footer { width: min(100%, 1180px); margin-inline: auto; }
+.action-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 5rem;
+  padding: 0.9rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: linear-gradient(90deg, var(--header-start), var(--header-end));
+  box-shadow: var(--shadow);
+}
+.action-brand { display: inline-flex; align-items: baseline; gap: 0.5rem; color: var(--heading); text-decoration: none; }
+.action-brand__mark { color: var(--accent); font-weight: 700; }
+.action-brand strong { font-family: Georgia, "Noto Sans SC", serif; font-size: 1.8rem; letter-spacing: -0.035em; }
+.action-header p { margin: 0; color: var(--text-soft); font-size: 0.78rem; letter-spacing: 0.035em; }
+
+.action-main {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  width: min(100%, 1180px);
+  margin-inline: auto;
+  padding-block: clamp(2.5rem, 8vw, 5.5rem);
+}
+.action-card {
+  position: relative;
+  width: min(100%, 680px);
+  overflow: hidden;
+  padding: clamp(1.75rem, 5vw, 3.5rem);
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.action-card::before { position: absolute; inset: 0 auto auto 0; width: 6rem; height: 3px; background: var(--accent); content: ""; }
+.action-kicker { margin: 0 0 1.25rem; color: var(--accent-strong); font-family: "Atkinson Hyperlegible", monospace; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.13em; }
+.action-kicker span { padding-inline: 0.25rem; }
+.action-card h1 { margin: 0; color: var(--heading); font-family: Georgia, "Noto Sans SC", serif; font-size: clamp(2.2rem, 6vw, 3.5rem); line-height: 1.2; letter-spacing: -0.035em; text-wrap: balance; }
+.action-english { margin: 1.25rem 0 0; color: var(--text-soft); font-size: clamp(1rem, 2vw, 1.2rem); line-height: 1.7; }
+.action-form { margin: clamp(1.7rem, 4vw, 2.5rem) 0 0; }
+.action-form button {
+  min-height: 3rem;
+  padding: 0.7rem 1.25rem;
+  border: 1px solid var(--accent-strong);
+  border-radius: 10px;
+  background: var(--accent-strong);
+  color: var(--on-accent);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.action-form button:hover { filter: brightness(1.08); }
+.action-links { display: flex; flex-wrap: wrap; gap: 0.7rem 1.5rem; margin-top: clamp(2rem, 5vw, 3rem); padding-top: 1.2rem; border-top: 1px solid var(--border); }
+.action-links a { color: var(--accent-strong); font-size: 0.92rem; font-weight: 700; text-decoration-thickness: 1px; text-underline-offset: 0.25em; }
+.action-links a:hover { color: var(--accent); }
+a:focus-visible,
+button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.action-footer { display: flex; justify-content: space-between; gap: 0.5rem; padding: 1.1rem 1.25rem; border: 1px solid var(--border); border-radius: 18px; background: var(--footer); color: var(--text-soft); font-size: 0.78rem; letter-spacing: 0.035em; }
+
+@media (max-width: 520px) {
+  .action-header { align-items: flex-start; flex-direction: column; gap: 0; }
+  .action-header p { font-size: 0.72rem; }
+  .action-form button { width: 100%; }
+  .action-footer { flex-direction: column; gap: 0; }
+}
