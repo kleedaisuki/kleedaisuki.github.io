@@ -39,46 +39,28 @@ pub async fn send_confirmation(
     send(env, &recipient, subject, &html, &text, None).await
 }
 
-/// 生成双语 HTML 和纯文本确认信。 / Build localized HTML and plain-text confirmation content.
+/// 生成本地化的 HTML 和纯文本确认信。 / Build localized HTML and plain-text confirmation content.
 fn confirmation_content(locale: Locale, confirm_url: &str) -> (&'static str, String, String) {
-    let (subject, title, lead, action, note, companion) = match locale {
+    let (subject, action, note) = match locale {
         Locale::Zh => (
             "确认订阅 Atelier 更新",
-            "确认订阅工坊更新",
-            "我们收到了订阅工坊更新的请求。确认邮箱后，才会收到新文章与作品的消息。",
             "确认订阅",
-            "链接将在 24 小时后失效。如果不是你提出的请求，直接忽略这封邮件即可。",
-            "Confirm your subscription to Atelier updates.",
+            "链接将在 24 小时后失效。如果不是你提出的请求，忽略这封邮件即可。",
         ),
         Locale::En => (
             "Confirm your Atelier subscription",
-            "Confirm your subscription",
-            "We received a request for Atelier updates. Confirm your email to receive notes about new articles and work.",
             "Confirm subscription",
-            "This link expires in 24 hours. If you did not make this request, you can ignore this email.",
-            "确认订阅工坊更新。",
+            "This link expires in 24 hours. If you did not make this request, ignore this email.",
         ),
     };
     let safe_url = escape_html(confirm_url);
-    let companion_lang = if locale == Locale::Zh { "en" } else { "zh-CN" };
-    let link_help = if locale == Locale::Zh {
-        "按钮无法打开？请复制以下链接到浏览器："
-    } else {
-        "Button not working? Copy this link into your browser:"
-    };
     let body = format!(
-        "<h1 style=\"margin:0 0 16px;color:#26110b;font-family:Georgia,Arial,'PingFang SC','Microsoft YaHei',serif;font-size:27px;line-height:1.25;font-weight:700;\">{title}</h1>\
-         <p style=\"margin:0 0 24px;color:#4b2a1e;font-size:16px;line-height:1.6;\">{lead}</p>\
-         <p style=\"margin:0 0 24px;\"><a href=\"{safe_url}\" style=\"display:inline-block;padding:13px 20px;background-color:#bd4525;color:#fffaf2;font-size:16px;line-height:1.4;font-weight:700;text-decoration:underline;\">{action}</a></p>\
-         <p style=\"margin:0 0 8px;color:#805648;font-size:14px;line-height:1.6;\">{link_help}</p>\
-         <p style=\"margin:0;color:#ad3d1d;font-size:13px;line-height:1.5;word-break:break-all;overflow-wrap:anywhere;\"><a href=\"{safe_url}\" style=\"color:#ad3d1d;text-decoration:underline;word-break:break-all;\">{safe_url}</a></p>"
+        "<h1 style=\"margin:0 0 24px;color:#221315;font-size:28px;line-height:1.25;font-weight:600;\">{subject}</h1>\
+         <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin:0 0 24px;border-collapse:separate;\"><tr><td class=\"action\" bgcolor=\"#bf2029\" style=\"border-radius:6px;background-color:#bf2029;\"><a href=\"{safe_url}\" style=\"display:inline-block;padding:12px 20px;color:#fffdf9;font-size:16px;line-height:1.25;font-weight:500;text-decoration:none;\">{action}</a></td></tr></table>\
+         <p style=\"margin:0;font-family:Menlo,Consolas,monospace;font-size:12px;line-height:1.6;word-break:break-all;overflow-wrap:anywhere;\"><a href=\"{safe_url}\" style=\"color:#795a4d;text-decoration:underline;\">{safe_url}</a></p>"
     );
-    let footer = format!(
-        "<p style=\"margin:0 0 12px;color:#805648;font-size:14px;line-height:1.6;\">{note}</p>\
-         <p lang=\"{companion_lang}\" style=\"margin:0;color:#805648;font-size:13px;line-height:1.5;\">{companion}</p>"
-    );
-    let html = render_shell(subject, locale.as_str(), &body, &footer);
-    let text = format!("A/ Atelier — Mailroom / 邮件室\n\n{title}\n{lead}\n\n{action}: {confirm_url}\n\n{note}\n{companion}");
+    let html = render_shell(subject, locale.as_str(), &body, note);
+    let text = format!("{subject}\n\n{action}: {confirm_url}\n\n{note}");
     (subject, html, text)
 }
 
@@ -97,30 +79,85 @@ fn confirmation_content(locale: Locale, confirm_url: &str) -> (&'static str, Str
 /// );
 /// ```
 pub fn render_update_snapshot(subject: &str, fragment: &str, text_body: &str) -> (String, String) {
-    let footer = "<p style=\"margin:0 0 12px;color:#805648;font-size:14px;line-height:1.6;\">你收到这封邮件，是因为你订阅了工坊更新。<br><span lang=\"en\">You received this because you subscribe to Atelier updates.</span></p>\
-        <p style=\"margin:0;color:#805648;font-size:14px;line-height:1.6;\"><a href=\"{{unsubscribe_url}}\" style=\"color:#ad3d1d;text-decoration:underline;\">退订 / Unsubscribe</a></p>";
-    let html = render_shell(subject, "zh-CN", fragment, footer);
+    const UNSUBSCRIBE: &str = "退订工坊更新 / Unsubscribe from Atelier updates";
+    let footer = format!(
+        "<a href=\"{{{{unsubscribe_url}}}}\" style=\"color:#795a4d;text-decoration:underline;\">{UNSUBSCRIBE}</a>"
+    );
+    let html = render_shell(subject, "zh-CN", fragment, &footer);
     let text = format!(
-        "{}\n\n你收到这封邮件，是因为你订阅了工坊更新。\nYou received this because you subscribe to Atelier updates.\n\n退订 / Unsubscribe: {{{{unsubscribe_url}}}}",
+        "{}\n\n{UNSUBSCRIBE}: {{{{unsubscribe_url}}}}",
         text_body.trim_end()
     );
     (html, text)
 }
 
+/// `src/lib/pixel/hearth.ts` 的一帧定格；邮件不能运行模拟。
+/// One settled frame of `src/lib/pixel/hearth.ts`; mail cannot run the simulation.
+const EMBERS: [&str; 14] = [
+    ".................ggg.g.............",
+    "..............g.......ggggggg.g.g.g",
+    ".............g.....g.g.............",
+    "..................g.g.fgffffffg.g..",
+    "....................gggfgggf.g.....",
+    "........g.g.g..g......ggfgfff......",
+    ".g.....g...g........gfgggfgf.......",
+    "....g.g.ggg.g...g.ggfgfffffg.......",
+    ".......ggg..........gggfff.g.g.....",
+    "......ffggggf.g....fgffffffgfggg...",
+    "......gggfgg.g.....ggffffhffgf.....",
+    "g.g.ggfgffggg.g.g.gggfffhfhffgggg.g",
+    ".g.g.ggfgfgfgg.g.ggfgffhfhffgfgg.g.",
+    "g.ggg.ggfffgg.ggggggffhhhhhffgggg.g",
+];
+
+/// 以纯色单元格绘制余烬，屏蔽图片时仍然可见。 / Draw embers as plain cells, so they survive blocked images.
+fn render_embers() -> String {
+    EMBERS.iter().fold(String::new(), |rows, row| {
+        let cells: String = row.chars().map(ember_cell).collect();
+        rows + "<tr height=\"7\">" + &cells + "</tr>"
+    })
+}
+
+fn ember_cell(tone: char) -> &'static str {
+    match tone {
+        'g' => "<td width=\"7\" bgcolor=\"#d13e2a\"></td>",
+        'f' => "<td width=\"7\" bgcolor=\"#ff9c4f\"></td>",
+        'h' => "<td width=\"7\" bgcolor=\"#fae19c\"></td>",
+        's' => "<td width=\"7\" bgcolor=\"#fffdf9\"></td>",
+        _ => "<td width=\"7\"></td>",
+    }
+}
+
+/// 仅作增强：不支持的客户端保留浅色。内联底色的链接是主按钮。
+/// Enhancement only; other clients keep the light palette. A link with an inline background is a primary action.
+const DARK_STYLE: &str = "@media (prefers-color-scheme:dark){\
+.page{background-color:#100708!important}\
+.card{background-color:#160b0c!important;border-color:#322829!important}\
+.rule{border-color:#322829!important}\
+.card h1,.card h2,.card strong{color:#fffdf9!important}\
+.card p{color:#f3e6d8!important}\
+.card a{color:#ff6a5c!important}\
+.card .action{background-color:#ff6a5c!important}\
+.card .action a{color:#160b0c!important}\
+.card a[style*=background]{background-color:#ff6a5c!important;color:#160b0c!important}\
+.band{background-color:#77131d!important}\
+.foot,.foot a{color:#c3a698!important}}";
+
 /// 渲染轻量邮件表格外壳，正文和页脚由调用方提供。 / Render the shared table shell around caller-owned body and footer.
 fn render_shell(subject: &str, lang: &str, body: &str, footer: &str) -> String {
     let title = escape_html(subject);
+    let embers = render_embers();
+    // Word-based Outlook gives an empty cell a full line of text, so it gets the plain band instead.
     format!(
-        "<!doctype html><html lang=\"{lang}\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>{title}</title></head>\
-         <body style=\"margin:0;padding:0;background-color:#fff6ea;color:#4b2a1e;font-family:Arial,'PingFang SC','Microsoft YaHei',sans-serif;\">\
-         <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"width:100%;table-layout:fixed;border-collapse:collapse;background-color:#fff6ea;\"><tr><td align=\"center\" style=\"padding:24px 16px;\">\
-         <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"width:100%;max-width:600px;table-layout:fixed;border-collapse:collapse;background-color:#fffdf8;border:1px solid #f3bf98;\">\
-         <tr><td style=\"height:4px;line-height:4px;font-size:0;background-color:#e66a3f;\">&nbsp;</td></tr>\
-         <tr><td style=\"padding:25px 24px 18px;\"><p style=\"margin:0;color:#26110b;font-family:Georgia,Arial,'PingFang SC','Microsoft YaHei',serif;font-size:24px;line-height:1.25;font-weight:700;\">A/ Atelier</p>\
-         <p style=\"margin:10px 0 0;color:#805648;font-size:12px;line-height:1.5;letter-spacing:1px;\">MAILROOM / 邮件室</p></td></tr>\
-         <tr><td style=\"padding:0 24px 28px;color:#4b2a1e;font-size:16px;line-height:1.6;overflow-wrap:anywhere;word-break:break-word;\">{body}</td></tr>\
-         <tr><td style=\"padding:18px 24px 24px;border-top:1px solid #f3bf98;color:#805648;\">{footer}\
-         <p style=\"margin:20px 0 0;color:#805648;font-size:13px;line-height:1.5;\">Atelier · 工坊更新 / Atelier updates</p></td></tr>\
+        "<!doctype html><html lang=\"{lang}\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"color-scheme\" content=\"light dark\"><meta name=\"supported-color-schemes\" content=\"light dark\"><title>{title}</title><style>{DARK_STYLE}</style></head>\
+         <body class=\"page\" style=\"margin:0;padding:0;background-color:#fdf7ec;color:#4b312a;font-family:Geist,Inter,'Helvetica Neue',Arial,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;\">\
+         <table class=\"page\" role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"width:100%;table-layout:fixed;border-collapse:collapse;background-color:#fdf7ec;\"><tr><td align=\"center\" style=\"padding:24px 16px;\">\
+         <table class=\"card\" role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"width:100%;max-width:600px;table-layout:fixed;border-collapse:collapse;background-color:#fffdf9;border:1px solid #e5e1dd;\">\
+         <tr><td class=\"band\" align=\"right\" bgcolor=\"#bf2029\" style=\"padding:20px 0 0;background-color:#bf2029;\">\
+         <div align=\"left\" style=\"padding:0 24px 8px;color:#fffdf9;font-size:32px;line-height:1;font-weight:600;letter-spacing:-1px;\">Atelier</div>\
+         <!--[if !mso]><!--><table role=\"presentation\" aria-hidden=\"true\" cellpadding=\"0\" cellspacing=\"1\" border=\"0\" style=\"border-collapse:separate;font-size:0;line-height:0;\">{embers}</table><!--<![endif]--></td></tr>\
+         <tr><td style=\"padding:32px 24px;color:#4b312a;font-size:16px;line-height:1.65;overflow-wrap:anywhere;word-break:break-word;\">{body}</td></tr>\
+         <tr><td class=\"rule foot\" style=\"padding:16px 24px;border-top:1px solid #e5e1dd;color:#795a4d;font-size:13px;line-height:1.6;\">{footer}</td></tr>\
          </table></td></tr></table></body></html>"
     )
 }
@@ -293,6 +330,12 @@ mod tests {
     }
 
     #[test]
+    fn ember_rows_share_one_width() {
+        assert!(EMBERS.iter().all(|row| row.len() == EMBERS[0].len()));
+        assert!(EMBERS.concat().chars().all(|tone| ".gfhs".contains(tone)));
+    }
+
+    #[test]
     fn confirmation_link_requires_https_without_header_injection() {
         assert!(valid_https_url(
             "https://atelier.moesegfault.dev/api/confirm?token=a&b=2"
@@ -325,8 +368,7 @@ mod tests {
         assert!(zh_text.contains(url));
         assert!(zh_html.contains("24 小时"));
         assert!(zh_text.contains("24 小时"));
-        assert!(zh_html.contains("A/ Atelier"));
-        assert!(zh_html.contains("MAILROOM / 邮件室"));
+        assert!(zh_html.contains(">Atelier</div>"));
         assert_eq!(zh_html.matches("<!doctype html>").count(), 1);
         assert!(!zh_html.contains("{{unsubscribe_url}}"));
         let (en_subject, en_html, en_text) = confirmation_content(Locale::En, url);
@@ -346,14 +388,14 @@ mod tests {
             "Article title\nUseful summary.\nhttps://atelier.moesegfault.dev/en/blog/example/";
         let (html, text) = render_update_snapshot("Atelier｜Article title", fragment, authored);
         assert_eq!(html.matches("<!doctype html>").count(), 1);
-        assert_eq!(html.matches("A/ Atelier").count(), 1);
+        assert_eq!(html.matches(">Atelier</div>").count(), 1);
         assert!(html.contains(fragment));
         assert_eq!(html.matches("{{unsubscribe_url}}").count(), 1);
         assert!(html.contains("href=\"{{unsubscribe_url}}\""));
         assert_eq!(text.matches("{{unsubscribe_url}}").count(), 1);
         assert!(text.contains(authored));
-        assert!(text.contains("You received this because"));
-        assert!(html.contains("#fff6ea"));
+        assert!(text.contains("Unsubscribe from Atelier updates"));
+        assert!(html.contains("bgcolor=\"#bf2029\""));
     }
 
     #[test]

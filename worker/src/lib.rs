@@ -635,7 +635,7 @@ fn action_page(
 ) -> Result<Response> {
     let form = action
         .map(|(path, token, label)| format!(
-            "<form class=\"action-form\" method=\"post\" action=\"{path}\"><input type=\"hidden\" name=\"token\" value=\"{}\"><button type=\"submit\">{label}<span aria-hidden=\"true\"> →</span></button></form>",
+            "<form class=\"action-form\" method=\"post\" action=\"{path}\"><input type=\"hidden\" name=\"token\" value=\"{}\"><button type=\"submit\">{label}</button></form>",
             escape_html(token)
         ))
         .unwrap_or_default();
@@ -669,25 +669,20 @@ fn render_action_html(zh: &str, en: &str, form: &str) -> String {
   <div class="action-shell">
     <header class="action-header">
       <a class="action-brand" href="/zh/" aria-label="Atelier 首页">
-        <span class="action-brand__mark" aria-hidden="true">A/</span><strong>Atelier</strong>
+        <span class="action-brand__mark" aria-hidden="true"></span><strong>Atelier</strong>
       </a>
-      <p>写作与制作 <span aria-hidden="true">·</span> <span lang="en">Writing &amp; making</span></p>
     </header>
     <main class="action-main">
       <section class="action-card" aria-labelledby="action-title">
-        <p class="action-kicker">MAILROOM <span aria-hidden="true">/</span> 邮件室</p>
         <h1 id="action-title">{title}</h1>
         <p class="action-english" lang="en">{english}</p>
         {form}
         <nav class="action-links" aria-label="返回网站 / Return to site">
-          <a href="/zh/">返回中文首页 <span aria-hidden="true">↗</span></a>
-          <a href="/en/" lang="en">English home <span aria-hidden="true">↗</span></a>
+          <a href="/zh/">中文首页</a>
+          <a href="/en/" lang="en">English home</a>
         </nav>
       </section>
     </main>
-    <footer class="action-footer">
-      <span>写下，也做成</span><span lang="en">written &amp; made here</span>
-    </footer>
   </div>
 </body>
 </html>"#

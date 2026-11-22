@@ -22,7 +22,7 @@ test("confirmation and actual authored update fit a narrow mail viewport", async
   try {
     for (const name of ["confirmation", "update"]) {
       const html = await readFile(path.join(root, ".temp", `email-${name}-preview.html`), "utf8");
-      assert.match(html, /A\/ Atelier/);
+      assert.match(html, />Atelier<\/div>/);
       assert.equal((html.match(/<!doctype html>/gi) ?? []).length, 1);
       for (const width of [320, 600]) {
         const page = await browser.newPage({ viewport: { width, height: 720 } });
