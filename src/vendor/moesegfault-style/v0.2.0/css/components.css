@@ -1,0 +1,2357 @@
+@layer moe.tokens, moe.reset, moe.foundation, moe.components, moe.utilities;
+
+@layer moe.components {
+  /* 修饰类与 data 属性等价，React、Astro 与纯 HTML 共用一条规则。Modifier classes equal data attributes: one rule for React, Astro, and plain HTML. */
+  .moe-button {
+    --moe-button-bg: var(--moe-action);
+    --moe-button-bg-hover: var(--moe-action-hover);
+    --moe-button-fg: var(--moe-on-action);
+    --moe-button-line: transparent;
+    --moe-button-size: var(--moe-control-md);
+    display: inline-flex;
+    position: relative;
+    min-height: var(--moe-button-size);
+    align-items: center;
+    justify-content: center;
+    gap: var(--moe-space-2);
+    padding: 0 0.875rem;
+    border: 1px solid var(--moe-button-line);
+    border-radius: var(--moe-radius-sm);
+    color: var(--moe-button-fg);
+    background: var(--moe-button-bg);
+    font-family: var(--moe-font-family-sans);
+    font-size: var(--moe-font-size-sm);
+    font-weight: var(--moe-font-weight-medium);
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      background-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+      border-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+      color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+      scale var(--moe-bounce);
+  }
+  .moe-button:hover:not(:disabled, [aria-disabled="true"]) {
+    background: var(--moe-button-bg-hover);
+  }
+  .moe-button:active:not(:disabled, [aria-disabled="true"]) {
+    background: color-mix(in srgb, var(--moe-button-bg-hover) 88%, var(--moe-heading));
+    scale: var(--moe-press);
+    transition-duration: 60ms;
+  }
+  .moe-button .moe-icon {
+    transition: translate var(--moe-spring);
+  }
+  .moe-button:hover .moe-icon--arrow-right {
+    translate: 0.2em;
+  }
+  .moe-button:hover .moe-icon--arrow-up {
+    translate: 0 -0.2em;
+  }
+  .moe-button:hover .moe-icon--arrow-up-right {
+    translate: 0.15em -0.15em;
+  }
+  /* 完成的勾自己画出来。A check that arrives draws itself. */
+  .moe-button .moe-icon--check > path {
+    animation: moe-draw var(--moe-spring);
+  }
+  .moe-button:disabled,
+  .moe-button[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .moe-button:is([data-variant="contrast"], .moe-button--contrast) {
+    --moe-button-bg: var(--moe-heading);
+    --moe-button-bg-hover: color-mix(in srgb, var(--moe-heading) 86%, var(--moe-background));
+    --moe-button-fg: var(--moe-background);
+  }
+  .moe-button:is([data-variant="secondary"], .moe-button--secondary) {
+    --moe-button-bg: var(--moe-surface-strong);
+    --moe-button-bg-hover: var(--moe-surface-muted);
+    --moe-button-fg: var(--moe-heading);
+    --moe-button-line: var(--moe-line-strong);
+  }
+  .moe-button:is([data-variant="ghost"], .moe-button--ghost) {
+    --moe-button-bg: transparent;
+    --moe-button-bg-hover: var(--moe-hover);
+    --moe-button-fg: var(--moe-text);
+  }
+  .moe-button:is([data-variant="danger"], .moe-button--danger) {
+    /* Outlined on purpose: the action role is red, so a filled danger button would read as primary. */
+    --moe-button-bg: color-mix(in srgb, var(--moe-danger) 8%, var(--moe-surface-strong));
+    --moe-button-bg-hover: color-mix(in srgb, var(--moe-danger) 16%, var(--moe-surface-strong));
+    --moe-button-fg: color-mix(in srgb, var(--moe-danger) 86%, var(--moe-heading));
+    --moe-button-line: color-mix(in srgb, var(--moe-danger) 48%, transparent);
+  }
+  .moe-button:is([data-size="sm"], .moe-button--sm) {
+    --moe-button-size: var(--moe-control-sm);
+    gap: 0.375rem;
+    padding-inline: 0.625rem;
+    font-size: 0.8125rem;
+  }
+  .moe-button:is([data-size="lg"], .moe-button--lg) {
+    --moe-button-size: var(--moe-control-lg);
+    padding-inline: 1.25rem;
+    font-size: var(--moe-font-size-md);
+  }
+  .moe-button[data-icon-only] {
+    width: var(--moe-button-size);
+    padding-inline: 0;
+  }
+  .moe-button[data-loading] > :not(.moe-spinner) {
+    visibility: hidden;
+  }
+  .moe-button[data-loading] > .moe-spinner {
+    position: absolute;
+    transition: scale var(--moe-bounce);
+  }
+  @starting-style {
+    .moe-button[data-loading] > .moe-spinner {
+      scale: 0;
+    }
+  }
+  .moe-button-group {
+    display: inline-flex;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    isolation: isolate;
+    --moe-press: 1;
+  }
+  .moe-button-group > .moe-button:not(:first-child) {
+    margin-inline-start: -1px;
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+  }
+  .moe-button-group > .moe-button:not(:last-child) {
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+  }
+  .moe-button-group > .moe-button:is(:hover, :focus-visible) {
+    z-index: 1;
+  }
+
+  .moe-card,
+  .moe-panel {
+    overflow: hidden;
+    min-width: 0;
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-md);
+    color: var(--moe-text);
+    background: var(--moe-surface-strong);
+  }
+  .moe-card[data-variant="muted"] {
+    background: var(--moe-surface-sunken);
+  }
+  .moe-card[data-variant="elevated"] {
+    box-shadow: var(--moe-shadow-md);
+  }
+  .moe-card[data-interactive] {
+    position: relative;
+    transition:
+      border-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+      background-color var(--moe-motion-fast) var(--moe-motion-ease-standard);
+  }
+  .moe-card[data-interactive]:is(:hover, :focus-within) {
+    border-color: var(--moe-line-strong);
+    background: color-mix(in srgb, var(--moe-surface-strong) 60%, var(--moe-surface-muted));
+  }
+  /* 一圈描边，只从四个角露出来；悬停时角标生长。One outline revealed only at its corners, which grow on hover. */
+  .moe-card[data-interactive]::before {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    border: 2px solid var(--moe-accent);
+    border-radius: inherit;
+    content: "";
+    mask-image:
+      linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0),
+      linear-gradient(#000 0 0);
+    mask-position:
+      0 0,
+      100% 0,
+      0 100%,
+      100% 100%;
+    mask-repeat: no-repeat;
+    mask-size: 0 0;
+    pointer-events: none;
+    transition: mask-size var(--moe-spring);
+  }
+  .moe-card[data-interactive]:is(:hover, :focus-within)::before {
+    mask-size: 1.25rem 1.25rem;
+  }
+  /* 整卡可点但只有一个链接语义。The whole card is a target while exposing a single link. */
+  .moe-card[data-interactive] .moe-card__title > a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .moe-card[data-interactive] .moe-card__title > a::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+  }
+  .moe-card__header,
+  .moe-card__body,
+  .moe-card__content,
+  .moe-card__footer {
+    padding: var(--moe-space-5);
+  }
+  .moe-card__header + :is(.moe-card__body, .moe-card__content) {
+    padding-block-start: 0;
+  }
+  .moe-card__footer {
+    border-block-start: 1px solid var(--moe-line);
+    padding-block: var(--moe-space-4);
+  }
+  :is(.moe-card__body, .moe-card__content, .moe-panel__body) > :last-child {
+    margin-block-end: 0;
+  }
+  .moe-card__eyebrow {
+    margin-block-end: var(--moe-space-2);
+    color: var(--moe-text-soft);
+    font-family: var(--moe-font-family-mono);
+    font-size: var(--moe-font-size-xs);
+  }
+  .moe-card__title {
+    margin-block-end: var(--moe-space-2);
+    font-size: 1.0625rem;
+    letter-spacing: -0.015em;
+    line-height: 1.35;
+  }
+  .moe-card__description {
+    margin-block-end: 0;
+    color: var(--moe-text-soft);
+    font-size: var(--moe-font-size-sm);
+  }
+
+  .moe-panel__header {
+    display: flex;
+    min-height: 2.5rem;
+    align-items: center;
+    gap: var(--moe-space-2);
+    padding: var(--moe-space-1) var(--moe-space-2) var(--moe-space-1) var(--moe-space-4);
+    border-block-end: 1px solid var(--moe-line);
+    color: var(--moe-text-soft);
+    background: var(--moe-surface-sunken);
+    font-family: var(--moe-font-family-mono);
+    font-size: var(--moe-font-size-xs);
+  }
+  .moe-panel__title {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .moe-panel__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--moe-space-1);
+  }
+  .moe-panel__body {
+    padding: var(--moe-space-4);
+  }
+  .moe-panel[data-flush] > .moe-panel__body {
+    padding: 0;
+  }
+
+  .moe-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--moe-text);
+    text-decoration: none;
+  }
+  .moe-brand-mark__glyph,
+  .moe-brand-mark__symbol {
+    display: grid;
+    width: 1.75rem;
+    flex: none;
+    aspect-ratio: 1;
+    place-items: center;
+    overflow: hidden;
+    border-radius: var(--moe-radius-sm);
+    color: var(--moe-color-snow-50);
+    background: var(--moe-color-klee-600);
+    font-weight: var(--moe-font-weight-semibold);
+  }
+  :is(.moe-brand-mark__glyph, .moe-brand-mark__symbol) > svg {
+    width: 100%;
+    height: 100%;
+  }
+  .moe-brand-mark__spark {
+    fill: var(--moe-color-honey-200);
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      rotate var(--moe-bounce),
+      scale var(--moe-bounce);
+  }
+  .moe-brand-mark:hover .moe-brand-mark__spark {
+    rotate: 90deg;
+    scale: 1.25;
+  }
+  .moe-brand-mark__text {
+    min-width: 0;
+  }
+  .moe-brand-mark__title,
+  .moe-brand-mark__name,
+  .moe-brand-mark__subtitle,
+  .moe-brand-mark__tagline {
+    display: block;
+    line-height: 1.3;
+  }
+  .moe-brand-mark__title,
+  .moe-brand-mark__name {
+    color: var(--moe-heading);
+    font-size: 0.9375rem;
+    font-weight: var(--moe-font-weight-semibold);
+    letter-spacing: -0.015em;
+  }
+  .moe-brand-mark__subtitle,
+  .moe-brand-mark__tagline {
+    overflow: hidden;
+    color: var(--moe-text-soft);
+    font-size: var(--moe-font-size-xs);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .moe-brand-mark--compact .moe-brand-mark__text {
+    display: none;
+  }
+
+  /* 色调只设置一个变量，徽章、通知与指标共用推导。A tone sets one variable; badges, notices, and stats derive the rest. */
+  :is(.moe-badge, .moe-notice, .moe-stat, .moe-progress) {
+    --moe-tone: var(--moe-accent);
+  }
+  :is(.moe-badge, .moe-notice, .moe-stat, .moe-progress):is(
+    [data-tone="neutral"],
+    [data-tone="info"]
+  ) {
+    --moe-tone: var(--moe-neutral);
+  }
+  :is(.moe-badge, .moe-notice, .moe-stat, .moe-progress)[data-tone="success"] {
+    --moe-tone: var(--moe-success);
+  }
+  :is(.moe-badge, .moe-notice, .moe-stat, .moe-progress)[data-tone="warning"] {
+    --moe-tone: var(--moe-warning);
+  }
+  :is(.moe-badge, .moe-notice, .moe-stat, .moe-progress)[data-tone="danger"] {
+    --moe-tone: var(--moe-danger);
+  }
+
+  .moe-badge {
+    display: inline-flex;
+    min-height: 1.375rem;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--moe-tone) 34%, transparent);
+    border-radius: var(--moe-radius-xs);
+    color: color-mix(in srgb, var(--moe-tone) 42%, var(--moe-heading));
+    background: color-mix(in srgb, var(--moe-tone) 12%, transparent);
+    font-family: var(--moe-font-family-mono);
+    font-size: var(--moe-font-size-2xs);
+    font-weight: var(--moe-font-weight-medium);
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .moe-badge[data-tone="neutral"] {
+    border-color: var(--moe-line);
+    color: var(--moe-text);
+    background: var(--moe-hover);
+  }
+
+  .moe-notice {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--moe-space-3);
+    padding: var(--moe-space-3) var(--moe-space-4);
+    border: 1px solid color-mix(in srgb, var(--moe-tone) 38%, var(--moe-line));
+    border-radius: var(--moe-radius-md);
+    color: var(--moe-text);
+    background: color-mix(in srgb, var(--moe-tone) 7%, var(--moe-surface-strong));
+    font-size: var(--moe-font-size-sm);
+  }
+  /* 无图标的旧标记自然占满整行。Icon-less legacy markup simply spans the row. */
+  .moe-notice > :not(.moe-notice__icon) {
+    grid-column: 2;
+  }
+  .moe-notice:not(:has(> .moe-notice__icon)) {
+    display: block;
+  }
+  .moe-notice__icon {
+    grid-row: 1 / span 2;
+    margin-block-start: 0.2em;
+    color: color-mix(in srgb, var(--moe-tone) 78%, var(--moe-heading));
+  }
+  .moe-notice__title {
+    display: block;
+    color: var(--moe-heading);
+    font-weight: var(--moe-font-weight-semibold);
+  }
+
+  .moe-status-dot {
+    display: inline-block;
+    width: 0.5rem;
+    flex: none;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    color: var(--moe-success);
+    background: currentColor;
+    box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 20%, transparent);
+  }
+  .moe-status-dot[data-status="offline"] {
+    color: var(--moe-neutral);
+  }
+  .moe-status-dot[data-status="error"] {
+    color: var(--moe-danger);
+  }
+  .moe-status-dot[data-status="busy"] {
+    color: var(--moe-warning);
+  }
+
+  .moe-prose {
+    max-width: var(--moe-layout-reading);
+    color: var(--moe-text);
+  }
+  .moe-prose > * + * {
+    margin-block-start: 1.25em;
+  }
+  .moe-prose :where(h2, h3) {
+    margin-block-start: 1.8em;
+  }
+  .moe-prose :where(blockquote) {
+    margin-inline: 0;
+    padding-inline-start: var(--moe-space-4);
+    border-inline-start: 2px solid var(--moe-accent);
+    color: var(--moe-text-soft);
+  }
+  .moe-prose :where(code) {
+    padding: 0.12em 0.36em;
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-xs);
+    color: var(--moe-heading);
+    background: var(--moe-hover);
+    font-size: 0.875em;
+  }
+  .moe-prose :where(pre) {
+    overflow-x: auto;
+    padding: var(--moe-space-4);
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-md);
+    background: var(--moe-surface-strong);
+  }
+  .moe-prose :where(pre code) {
+    padding: 0;
+    border: 0;
+    color: inherit;
+    background: transparent;
+  }
+  .moe-prose :where(table) {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .moe-prose :where(th, td) {
+    padding: var(--moe-space-2) var(--moe-space-3);
+    border-block-end: 1px solid var(--moe-line);
+    text-align: start;
+  }
+  @keyframes moe-draw {
+    from {
+      stroke-dasharray: 1 1;
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dasharray: 1 1;
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes moe-pop {
+    from {
+      scale: 0.6;
+    }
+  }
+  @media (forced-colors: active) {
+    .moe-button,
+    .moe-badge {
+      border-color: ButtonText;
+    }
+    .moe-status-dot {
+      forced-color-adjust: none;
+    }
+  }
+}
+
+@layer moe.tokens, moe.reset, moe.foundation, moe.components, moe.utilities;
+
+@layer moe.components {
+  .moe-field {
+    display: grid;
+    gap: 0.375rem;
+    min-width: 0;
+  }
+  .moe-field__label {
+    color: var(--moe-heading);
+    font-size: 0.8125rem;
+    font-weight: var(--moe-font-weight-medium);
+    line-height: 1.4;
+  }
+  .moe-field__required {
+    color: var(--moe-accent-strong);
+  }
+  .moe-field__hint,
+  .moe-field__error {
+    margin: 0;
+    color: var(--moe-text-soft);
+    font-size: var(--moe-font-size-xs);
+    line-height: 1.5;
+  }
+  .moe-field__error {
+    color: color-mix(in srgb, var(--moe-danger) 72%, var(--moe-heading));
+    transition:
+      opacity var(--moe-spring),
+      translate var(--moe-spring);
+  }
+  @starting-style {
+    .moe-field__error {
+      opacity: 0;
+      translate: 0 -0.375rem;
+    }
+  }
+
+  .moe-input {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--moe-control-md);
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--moe-line-strong);
+    border-radius: var(--moe-radius-sm);
+    color: var(--moe-heading);
+    background: var(--moe-surface-strong);
+    font-family: inherit;
+    font-size: var(--moe-font-size-sm);
+    line-height: 1.5;
+    transition:
+      border-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+      box-shadow var(--moe-motion-fast) var(--moe-motion-ease-standard);
+  }
+  .moe-input::placeholder {
+    color: color-mix(in srgb, var(--moe-text-soft) 82%, transparent);
+    opacity: 1;
+  }
+  .moe-input:hover:not(:disabled, :focus-visible) {
+    border-color: color-mix(in srgb, var(--moe-heading) 38%, transparent);
+  }
+  .moe-input:focus-visible {
+    border-color: var(--moe-accent);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--moe-ring);
+  }
+  .moe-input[aria-invalid="true"] {
+    --moe-ring: 0 0 0 3px color-mix(in srgb, var(--moe-danger) 24%, transparent);
+    border-color: var(--moe-danger);
+  }
+  .moe-input:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .moe-input[data-size="sm"] {
+    min-height: var(--moe-control-sm);
+    padding-block: 0.125rem;
+    font-size: 0.8125rem;
+  }
+  .moe-input[data-size="lg"] {
+    min-height: var(--moe-control-lg);
+    font-size: var(--moe-font-size-md);
+  }
+  textarea.moe-input {
+    min-height: 6rem;
+    padding-block: 0.5rem;
+    resize: vertical;
+  }
+  .moe-select {
+    position: relative;
+    display: grid;
+  }
+  .moe-select > select {
+    padding-inline-end: 2.25rem;
+    appearance: none;
+    cursor: pointer;
+  }
+  .moe-select > svg {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: 0.75rem;
+    color: var(--moe-text-soft);
+    pointer-events: none;
+    translate: 0 -50%;
+    transition: rotate var(--moe-spring);
+  }
+  .moe-input-group {
+    position: relative;
+    display: grid;
+  }
+  .moe-input-group > :is(svg, .moe-kbd) {
+    position: absolute;
+    inset-block-start: 50%;
+    color: var(--moe-text-soft);
+    pointer-events: none;
+    translate: 0 -50%;
+  }
+  .moe-input-group > svg {
+    inset-inline-start: 0.75rem;
+  }
+  .moe-input-group > svg ~ .moe-input {
+    padding-inline-start: 2.25rem;
+  }
+  .moe-input-group > .moe-kbd {
+    inset-inline-end: 0.5rem;
+  }
+  .moe-select > select:open ~ svg {
+    rotate: 180deg;
+  }
+
+  .moe-choice {
+    display: inline-grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    column-gap: 0.625rem;
+    color: var(--moe-text);
+    font-size: var(--moe-font-size-sm);
+    line-height: 1.5;
+    cursor: pointer;
+  }
+  .moe-choice:has(:disabled) {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .moe-choice__input {
+    display: grid;
+    width: 1rem;
+    height: 1rem;
+    place-content: center;
+    margin: 0.1875rem 0 0;
+    border: 1px solid color-mix(in srgb, var(--moe-heading) 42%, transparent);
+    background: var(--moe-surface-strong);
+    appearance: none;
+    cursor: inherit;
+    transition:
+      background-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+      border-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+      scale var(--moe-bounce);
+  }
+  .moe-choice:not(:has(:disabled)):active .moe-choice__input:not([role="switch"]) {
+    scale: calc(1 - 4 * (1 - var(--moe-press)));
+    transition-duration: 60ms;
+  }
+  .moe-choice__input::before {
+    content: "";
+    transform: scale(0);
+    transition:
+      transform var(--moe-bounce),
+      width var(--moe-spring),
+      background-color var(--moe-motion-fast) var(--moe-motion-ease-standard);
+  }
+  .moe-choice__input[type="checkbox"]:not([role="switch"]) {
+    border-radius: var(--moe-radius-xs);
+  }
+  .moe-choice__input[type="checkbox"]:not([role="switch"])::before {
+    width: 0.625rem;
+    height: 0.625rem;
+    background: var(--moe-on-action);
+    clip-path: polygon(14% 44%, 0 60%, 42% 100%, 100% 20%, 84% 6%, 40% 70%);
+  }
+  .moe-choice__input[type="radio"] {
+    border-radius: 50%;
+  }
+  .moe-choice__input[type="radio"]::before {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: var(--moe-on-action);
+  }
+  .moe-choice__input:is(:checked, :indeterminate):not([type="radio"]:not(:checked)) {
+    border-color: var(--moe-action);
+    background: var(--moe-action);
+  }
+  .moe-choice__input:checked::before {
+    transform: scale(1);
+  }
+  .moe-choice__input[type="checkbox"]:indeterminate::before {
+    height: 2px;
+    clip-path: none;
+    transform: scale(1);
+  }
+  .moe-choice__input[role="switch"] {
+    width: 1.875rem;
+    height: 1.125rem;
+    place-content: center start;
+    margin-block-start: 0.125rem;
+    padding-inline: 2px;
+    border-radius: var(--moe-radius-pill);
+    background: var(--moe-pressed);
+  }
+  .moe-choice__input[role="switch"]::before {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 0.375rem;
+    background: var(--moe-text-soft);
+    transform: none;
+    transition-timing-function: var(--moe-motion-ease-spring);
+  }
+  .moe-choice__input[role="switch"]:checked::before {
+    background: var(--moe-on-action);
+    transform: translateX(0.75rem);
+  }
+  /* 按住时拇指被压扁，松手弹向另一侧。Held down, the thumb squashes; released, it springs across. */
+  .moe-choice:not(:has(:disabled)):active .moe-choice__input[role="switch"]::before {
+    width: 1rem;
+  }
+  .moe-choice:not(:has(:disabled)):active .moe-choice__input[role="switch"]:checked::before {
+    transform: translateX(0.5rem);
+  }
+  .moe-choice__description {
+    display: block;
+    color: var(--moe-text-soft);
+    font-size: var(--moe-font-size-xs);
+  }
+
+  .moe-segmented {
+    display: inline-flex;
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 0;
+    padding: 2px;
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-sm);
+    background: var(--moe-surface-sunken);
+  }
+  .moe-segmented__option {
+    position: relative;
+    display: inline-flex;
+    min-height: calc(var(--moe-control-sm) - 2px);
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding-inline: 0.75rem;
+    border: 1px solid transparent;
+    border-radius: calc(var(--moe-radius-sm) - 2px);
+    color: var(--moe-text-soft);
+    font-size: 0.8125rem;
+    font-weight: var(--moe-font-weight-medium);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--moe-motion-base) var(--moe-motion-ease-standard);
+  }
+  .moe-segmented__option:hover {
+    color: var(--moe-heading);
+  }
+  .moe-segmented__option:has(:checked) {
+    border-color: var(--moe-line);
+    color: var(--moe-heading);
+    background: var(--moe-surface-strong);
+    box-shadow: var(--moe-shadow-sm);
+  }
+  /* 一枚滑块跟随选中项；不支持锚点定位时回到逐项底色。One thumb follows the choice; without anchor positioning each option paints its own. */
+  @supports (anchor-scope: all) {
+    .moe-segmented {
+      position: relative;
+      anchor-scope: --moe-segment;
+    }
+    .moe-segmented__option:has(:checked) {
+      border-color: transparent;
+      background: none;
+      box-shadow: none;
+      anchor-name: --moe-segment;
+    }
+    .moe-segmented:has(:checked)::before {
+      position: absolute;
+      inset: anchor(top) anchor(right) anchor(bottom) anchor(left);
+      border: 1px solid var(--moe-line);
+      border-radius: calc(var(--moe-radius-sm) - 2px);
+      background: var(--moe-surface-strong);
+      box-shadow: var(--moe-shadow-sm);
+      content: "";
+      position-anchor: --moe-segment;
+      transition: inset var(--moe-spring);
+    }
+  }
+  .moe-segmented__option:has(:focus-visible) {
+    outline: 2px solid var(--moe-focus);
+    outline-offset: 1px;
+  }
+  .moe-segmented__option:has(:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .moe-segmented__option > input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: inherit;
+  }
+  @media (forced-colors: active) {
+    .moe-choice__input,
+    .moe-choice__input::before {
+      forced-color-adjust: none;
+    }
+    .moe-segmented__option:has(:checked),
+    .moe-segmented:has(:checked)::before {
+      border-color: Highlight;
+    }
+  }
+}
+
+@layer moe.tokens, moe.reset, moe.foundation, moe.components, moe.utilities;
+
+@layer moe.components {
+  .moe-table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-md);
+    background: var(--moe-surface-strong);
+  }
+  .moe-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--moe-font-size-sm);
+    line-height: 1.5;
+    /* Keep words whole and let the wrapper scroll. */
+    overflow-wrap: break-word;
+  }
+  .moe-table :where(th, td) {
+    padding: 0.625rem var(--moe-space-4);
+    border-block-end: 1px solid var(--moe-line);
+    text-align: start;
+    vertical-align: middle;
+  }
+  .moe-table :where(thead th) {
+    padding-block: 0.5rem;
+    color: var(--moe-text-soft);
+    background: var(--moe-surface-sunken);
+    font-family: var(--moe-font-family-mono);
+    font-size: var(--moe-font-size-xs);
+    font-weight: var(--moe-font-weight-medium);
+    white-space: nowrap;
+  }
+  .moe-table :where(tbody tr:last-child > *) {
+    border-block-end: 0;
+  }
+  .moe-table :where(tbody tr > *) {
+    transition:
+      background-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+      box-shadow var(--moe-spring);
+  }
+  .moe-table :where(tbody tr:hover > *) {
+    background: var(--moe-hover);
+  }
+  .moe-table :where(tbody tr:hover > :first-child) {
+    box-shadow: inset 3px 0 var(--moe-accent);
+  }
+  .moe-table :where([data-numeric]) {
+    font-family: var(--moe-font-family-mono);
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+  }
+  .moe-table :where(caption) {
+    padding: var(--moe-space-3) var(--moe-space-4);
+    color: var(--moe-text-soft);
+    font-size: var(--moe-font-size-xs);
+    text-align: start;
+    caption-side: bottom;
+  }
+
+  .moe-stat {
+    display: grid;
+    align-content: start;
+    gap: var(--moe-space-1);
+    padding: var(--moe-space-4) var(--moe-space-5);
+  }
+  .moe-stat__label {
+    color: var(--moe-text-soft);
+    font-size: 0.8125rem;
+  }
+  .moe-stat__value {
+    color: var(--moe-heading);
+    font-size: 1.75rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--moe-font-weight-semibold);
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+  }
+  .moe-stat__detail {
+    color: color-mix(in srgb, var(--moe-tone) 50%, var(--moe-heading));
+    font-family: var(--moe-font-family-mono);
+    font-size: var(--moe-font-size-xs);
+  }
+
+  .moe-description-list {
+    display: grid;
+    grid-template-columns: minmax(7rem, auto) minmax(0, 1fr);
+    margin: 0;
+    font-size: var(--moe-font-size-sm);
+  }
+  .moe-description-list > :is(dt, dd) {
+    margin: 0;
+    padding-block: 0.5rem;
+    border-block-end: 1px solid var(--moe-line);
+  }
+  .moe-description-list > dt {
+    padding-inline-end: var(--moe-space-5);
+    color: var(--moe-text-soft);
+  }
+  .moe-description-list > dd {
+    color: var(--moe-heading);
+  }
+  .moe-description-list > :is(dt:last-of-type, dd:last-of-type) {
+    border-block-end: 0;
+  }
+
+  .moe-kbd {
+    display: inline-flex;
+    min-width: 1.25rem;
+    min-height: 1.25rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.3125rem;
+    border: 1px solid var(--moe-line-strong);
+    border-block-end-width: 2px;
+    border-radius: var(--moe-radius-xs);
+    color: var(--moe-text);
+    background: var(--moe-surface-strong);
+    font-family: var(--moe-font-family-mono);
+    font-size: var(--moe-font-size-2xs);
+    line-height: 1.3;
+  }
+
+  .moe-avatar {
+    display: inline-grid;
+    width: var(--moe-avatar-size, 2rem);
+    height: var(--moe-avatar-size, 2rem);
+    flex: none;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-sm);
+    color: var(--moe-heading);
+    background: var(--moe-accent-wash);
+    font-size: calc(var(--moe-avatar-size, 2rem) * 0.4);
+    font-weight: var(--moe-font-weight-medium);
+    line-height: 1;
+  }
+  .moe-avatar > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .moe-separator {
+    height: 1px;
+    margin: 0;
+    border: 0;
+    background: var(--moe-line);
+  }
+  .moe-separator[data-orientation="vertical"] {
+    width: 1px;
+    height: auto;
+    min-height: 1em;
+    align-self: stretch;
+  }
+
+  .moe-progress {
+    display: block;
+    width: 100%;
+    height: 0.375rem;
+    overflow: hidden;
+    border: 0;
+    border-radius: var(--moe-radius-pill);
+    background: var(--moe-pressed);
+    appearance: none;
+  }
+  .moe-progress::-webkit-progress-bar {
+    background: transparent;
+  }
+  .moe-progress::-webkit-progress-value {
+    border-radius: inherit;
+    background: var(--moe-tone);
+    transition: inline-size var(--moe-spring);
+  }
+  .moe-progress::-moz-progress-bar {
+    border-radius: inherit;
+    background: var(--moe-tone);
+    transition: width var(--moe-spring);
+  }
+
+  .moe-spinner {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    flex: none;
+    border: 2px solid color-mix(in srgb, currentColor 26%, transparent);
+    border-block-start-color: currentColor;
+    border-radius: 50%;
+    animation: moe-spin 0.8s linear infinite;
+  }
+  .moe-skeleton {
+    display: block;
+    min-height: 1em;
+    border-radius: var(--moe-radius-xs);
+    background:
+      linear-gradient(
+        100deg,
+        transparent 30%,
+        var(--moe-pressed) 45%,
+        var(--moe-pressed) 55%,
+        transparent 70%
+      )
+      var(--moe-hover) 120% 0 / 250% 100%;
+    animation: moe-shimmer 1.8s var(--moe-motion-ease-standard) infinite;
+  }
+  .moe-empty {
+    display: grid;
+    justify-items: center;
+    gap: var(--moe-space-2);
+    padding: var(--moe-space-7) var(--moe-space-5);
+    border: 1px dashed var(--moe-line-strong);
+    border-radius: var(--moe-radius-md);
+    text-align: center;
+  }
+  .moe-empty__icon {
+    color: var(--moe-text-soft);
+  }
+  .moe-empty__title {
+    margin: 0;
+    color: var(--moe-heading);
+    font-size: var(--moe-font-size-md);
+  }
+  .moe-empty__description {
+    max-width: 28rem;
+    margin: 0;
+    color: var(--moe-text-soft);
+    font-size: var(--moe-font-size-sm);
+  }
+  .moe-empty__actions {
+    margin-block-start: var(--moe-space-2);
+  }
+}
+@keyframes moe-spin {
+  to {
+    rotate: 1turn;
+  }
+}
+@keyframes moe-shimmer {
+  to {
+    background-position-x: -60%;
+  }
+}
+/* 减少动态时状态由文字承担，指示器静止。Under reduced motion text carries the state and indicators stay still. */
+@media (prefers-reduced-motion: reduce) {
+  .moe-spinner,
+  .moe-skeleton {
+    animation: none;
+  }
+}
+
+@layer moe.tokens, moe.reset, moe.foundation, moe.components, moe.utilities;
+
+@layer moe.components {
+  .moe-tabs {
+    min-width: 0;
+  }
+  .moe-tabs__list {
+    display: flex;
+    overflow-x: auto;
+    border-block-end: 1px solid var(--moe-line);
+    scrollbar-width: none;
+  }
+  .moe-tabs__tab {
+    position: relative;
+    display: inline-flex;
+    min-height: 2.5rem;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0 var(--moe-space-3);
+    border: 0;
+    color: var(--moe-text-soft);
+    background: none;
+    font-size: var(--moe-font-size-sm);
+    font-weight: var(--moe-font-weight-medium);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--moe-motion-base) var(--moe-motion-ease-standard);
+  }
+  .moe-tabs__tab:hover:not(:disabled) {
+    color: var(--moe-heading);
+  }
+  .moe-tabs__tab:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .moe-tabs__tab[aria-selected="true"] {
+    color: var(--moe-heading);
+  }
+  .moe-tabs__tab[aria-selected="true"]::after {
+    position: absolute;
+    inset: auto 0 0;
+    height: 2px;
+    background: var(--moe-accent);
+    content: "";
+  }
+  /* 一条下划线在标签间滑动；回退为逐项下划线。One underline slides between tabs; the per-tab underline is the fallback. */
+  @supports (anchor-scope: all) {
+    .moe-tabs__list {
+      position: relative;
+      anchor-scope: --moe-tab;
+    }
+    .moe-tabs__tab[aria-selected="true"] {
+      anchor-name: --moe-tab;
+    }
+    .moe-tabs__tab[aria-selected="true"]::after {
+      content: none;
+    }
+    .moe-tabs__list:has(> [aria-selected="true"])::after {
+      position: absolute;
+      inset: auto anchor(right) 0 anchor(left);
+      height: 2px;
+      background: var(--moe-accent);
+      content: "";
+      position-anchor: --moe-tab;
+      transition: inset var(--moe-spring);
+    }
+  }
+  .moe-tabs__tab:focus-visible {
+    outline-offset: -2px;
+  }
+  .moe-tabs__panel {
+    padding-block-start: var(--moe-space-4);
+    font-size: var(--moe-font-size-sm);
+    transition:
+      opacity var(--moe-spring),
+      translate var(--moe-spring);
+  }
+  @starting-style {
+    .moe-tabs__panel {
+      opacity: 0;
+      translate: 0 0.375rem;
+    }
+  }
+  .moe-tabs__panel[hidden] {
+    display: none;
+  }
+
+  .moe-breadcrumbs > ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--moe-space-2);
+    margin: 0;
+    padding: 0;
+    color: var(--moe-text-soft);
+    font-size: 0.8125rem;
+    list-style: none;
+  }
+  .moe-breadcrumbs li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--moe-space-2);
+  }
+  .moe-breadcrumbs li + li::before {
+    color: color-mix(in srgb, currentColor 60%, transparent);
+    content: "/";
+  }
+  .moe-breadcrumbs a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .moe-breadcrumbs a:hover {
+    color: var(--moe-heading);
+  }
+  .moe-breadcrumbs [aria-current="page"] {
+    color: var(--moe-heading);
+  }
+
+  .moe-accordion {
+    border-block: 1px solid var(--moe-line);
+    interpolate-size: allow-keywords;
+  }
+  .moe-accordion__item + .moe-accordion__item {
+    border-block-start: 1px solid var(--moe-line);
+  }
+  .moe-accordion__item > summary {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--moe-space-4);
+    padding-block: var(--moe-space-2);
+    color: var(--moe-heading);
+    font-size: var(--moe-font-size-sm);
+    font-weight: var(--moe-font-weight-medium);
+    list-style: none;
+    cursor: pointer;
+  }
+  .moe-accordion__item > summary::-webkit-details-marker {
+    display: none;
+  }
+  .moe-accordion__item > summary > svg {
+    flex: none;
+    color: var(--moe-text-soft);
+    transition: rotate var(--moe-spring);
+  }
+  .moe-accordion__item[open] > summary > svg {
+    rotate: 180deg;
+  }
+  .moe-accordion__item::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size var(--moe-exit),
+      content-visibility var(--moe-exit) allow-discrete;
+  }
+  .moe-accordion__item[open]::details-content {
+    block-size: auto;
+  }
+  .moe-accordion__content {
+    padding-block-end: var(--moe-space-4);
+    color: var(--moe-text-soft);
+    font-size: var(--moe-font-size-sm);
+  }
+  @media (forced-colors: active) {
+    .moe-tabs__tab[aria-selected="true"]::after,
+    .moe-tabs__list:has(> [aria-selected="true"])::after {
+      background: Highlight;
+    }
+  }
+}
+
+@layer moe.tokens, moe.reset, moe.foundation, moe.components, moe.utilities;
+
+@layer moe.components {
+  .moe-dialog {
+    width: min(30rem, calc(100vw - 2 * var(--moe-space-4)));
+    max-height: calc(100dvh - 2 * var(--moe-space-5));
+    padding: 0;
+    overflow: auto;
+    border: 1px solid var(--moe-line-strong);
+    border-radius: var(--moe-radius-lg);
+    color: var(--moe-text);
+    background: var(--moe-surface-strong);
+    box-shadow: var(--moe-shadow-lg);
+  }
+  .moe-dialog::backdrop {
+    background: var(--moe-overlay);
+  }
+  /* 进场用弹簧，退场只求利落；退场期间不拦截点击。Enter on a spring, leave briskly, and never intercept clicks while leaving. */
+  @supports (transition-behavior: allow-discrete) {
+    .moe-dialog,
+    .moe-dialog::backdrop {
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        opacity var(--moe-exit),
+        scale var(--moe-exit),
+        translate var(--moe-exit),
+        overlay var(--moe-exit) allow-discrete,
+        display var(--moe-exit) allow-discrete;
+    }
+    .moe-dialog {
+      scale: 0.97;
+      translate: 0 0.5rem;
+    }
+    .moe-dialog[open],
+    .moe-dialog[open]::backdrop {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .moe-dialog[open] {
+      scale: 1;
+      translate: 0;
+      transition:
+        opacity var(--moe-exit),
+        scale var(--moe-spring),
+        translate var(--moe-spring);
+    }
+    @starting-style {
+      .moe-dialog[open],
+      .moe-dialog[open]::backdrop {
+        opacity: 0;
+      }
+      .moe-dialog[open] {
+        scale: 0.94;
+        translate: 0 1rem;
+      }
+    }
+  }
+  .moe-dialog__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--moe-space-1) var(--moe-space-4);
+    padding: var(--moe-space-5) var(--moe-space-5) 0;
+  }
+  .moe-dialog__title {
+    margin: 0;
+    font-size: var(--moe-font-size-lg);
+  }
+  .moe-dialog__description {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--moe-text-soft);
+    font-size: var(--moe-font-size-sm);
+  }
+  .moe-dialog__body {
+    padding: var(--moe-space-4) var(--moe-space-5) var(--moe-space-5);
+  }
+  .moe-dialog__footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--moe-space-2);
+    padding: var(--moe-space-4) var(--moe-space-5);
+    border-block-start: 1px solid var(--moe-line);
+    background: var(--moe-surface-sunken);
+  }
+
+  .moe-tooltip {
+    position: relative;
+    display: inline-flex;
+  }
+  .moe-tooltip__bubble {
+    position: absolute;
+    z-index: 50;
+    inset-block-end: calc(100% + 6px);
+    inset-inline-start: 50%;
+    width: max-content;
+    max-width: 16rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--moe-radius-xs);
+    color: var(--moe-background);
+    background: var(--moe-heading);
+    font-size: var(--moe-font-size-xs);
+    line-height: 1.45;
+    opacity: 0;
+    visibility: hidden;
+    scale: 0.94;
+    transform-origin: 50% 100%;
+    translate: -50% 0.25rem;
+    transition:
+      opacity var(--moe-motion-fast) var(--moe-motion-ease-standard),
+      visibility var(--moe-motion-fast),
+      scale var(--moe-spring),
+      translate var(--moe-spring);
+  }
+  .moe-tooltip[data-side="bottom"] > .moe-tooltip__bubble {
+    inset-block: calc(100% + 6px) auto;
+    transform-origin: 50% 0;
+    translate: -50% -0.25rem;
+  }
+  .moe-tooltip:is(:hover, :focus-within):not([data-dismissed]) > .moe-tooltip__bubble {
+    opacity: 1;
+    visibility: visible;
+    scale: 1;
+    translate: -50% 0;
+  }
+}
+
+@layer moe.tokens, moe.reset, moe.foundation, moe.components, moe.utilities;
+
+@layer moe.components {
+  /* 实色优先，只有支持时才透明。Opaque first; translucency is progressive enhancement. */
+  .moe-glass {
+    --moe-glass-tint: var(--moe-surface-strong);
+    color: var(--moe-text);
+    background: var(--moe-surface-strong);
+    border: 1px solid var(--moe-line-strong);
+    border-radius: var(--moe-radius-md);
+    box-shadow: var(--moe-shadow-md);
+  }
+  .moe-glass[data-tone="warm"] {
+    --moe-glass-tint: color-mix(in srgb, var(--moe-surface-strong) 93%, var(--moe-highlight));
+  }
+  .moe-glass[data-tone="rose"] {
+    --moe-glass-tint: color-mix(in srgb, var(--moe-surface-strong) 94%, var(--moe-accent));
+  }
+  .moe-glass-panel,
+  .moe-glass-card {
+    padding: var(--moe-space-5);
+  }
+  .moe-glass-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--moe-space-3);
+    padding: var(--moe-space-2);
+  }
+  /* 染色使用主题表面色，明暗随主题切换；不降低容器 opacity，避免子内容变淡。Theme tint follows light/dark surfaces; keep container opacity intact for sharp content. */
+  /* 不对模糊做动画，也不强制建立永久合成层。Never animate blur or force permanent compositor layers. */
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .moe-glass {
+      background: color-mix(
+        in srgb,
+        var(--moe-glass-tint) var(--moe-glass-opacity, 42%),
+        transparent
+      );
+      -webkit-backdrop-filter: blur(var(--moe-glass-blur, 12px)) saturate(115%);
+      backdrop-filter: blur(var(--moe-glass-blur, 12px)) saturate(115%);
+    }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .moe-glass {
+      background: var(--moe-surface-strong);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+  @media (forced-colors: active) {
+    .moe-glass {
+      color: CanvasText;
+      background: Canvas;
+      border-color: CanvasText;
+      box-shadow: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+}
+
+@layer moe.tokens, moe.reset, moe.foundation, moe.components, moe.utilities;
+
+@layer moe.utilities {
+  /* 默认可见；只有明确未要求减少动态时才启用。Visible by default; opt in only with no motion preference. */
+  @media (prefers-reduced-motion: no-preference) {
+    .moe-motion:not([data-motion-disabled="true"]) {
+      animation-duration: var(--moe-enter-duration, var(--moe-motion-slow, 360ms));
+      animation-delay: var(--moe-enter-delay, 0ms);
+      animation-timing-function: var(--moe-motion-ease-emphasized);
+      animation-fill-mode: backwards;
+      animation-iteration-count: 1;
+    }
+    .moe-motion[data-motion="fade"]:not([data-motion-disabled="true"]) {
+      animation-name: moe-enter-fade;
+    }
+    .moe-motion[data-motion="rise"]:not([data-motion-disabled="true"]) {
+      animation-name: moe-enter-rise;
+    }
+    .moe-motion[data-motion="scale"]:not([data-motion-disabled="true"]) {
+      animation-name: moe-enter-scale;
+    }
+    .moe-motion[data-motion="slide"]:not([data-motion-disabled="true"]) {
+      animation-name: moe-enter-slide;
+    }
+    /* 聚焦立即显示，避免延时期间出现不可见的焦点。Focus reveals immediately, including during delay. */
+    .moe-motion[data-motion]:not([data-motion-disabled="true"]):focus-within {
+      animation: none;
+    }
+    .moe-hover-lift,
+    .moe-press {
+      transition: transform var(--moe-motion-spring) var(--moe-motion-ease-spring);
+    }
+    @media (hover: hover) {
+      .moe-hover-lift:hover:not(:disabled, [aria-disabled="true"]) {
+        transform: translateY(-2px);
+      }
+    }
+    .moe-press:active:not(:disabled, [aria-disabled="true"]) {
+      transform: scale(0.98);
+    }
+  }
+  /* 悬停或聚焦时重绘图标笔画。Redraw icon strokes on hover or focus. */
+  .moe-draw:is(:hover, :focus-visible) .moe-icon > path {
+    animation: moe-draw var(--moe-motion-slow) var(--moe-motion-ease-emphasized);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .moe-draw .moe-icon > path {
+      animation: none;
+    }
+  }
+  @keyframes moe-enter-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes moe-enter-rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes moe-enter-scale {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes moe-enter-slide {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @media (forced-colors: active) {
+    .moe-motion[data-motion]:not([data-motion-disabled="true"]) {
+      animation: none;
+    }
+  }
+}
+
+@layer moe.tokens, moe.reset, moe.foundation, moe.components, moe.utilities;
+
+@layer moe.components {
+  .moe-message-bubble {
+    position: relative;
+    display: grid;
+    max-width: min(88%, 46rem);
+    min-width: 0;
+    justify-items: start;
+    gap: var(--moe-space-1);
+  }
+  .moe-message-bubble__meta {
+    margin: 0;
+    color: var(--moe-text-soft);
+    font-family: var(--moe-font-family-mono);
+    font-size: var(--moe-font-size-xs);
+  }
+  .moe-message-bubble__content {
+    min-width: 0;
+    max-width: 100%;
+    padding: var(--moe-space-3) var(--moe-space-4);
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-md);
+    background: var(--moe-surface-strong);
+    font-size: 0.9375rem;
+    overflow-wrap: anywhere;
+    transform-origin: 0 100%;
+    transition:
+      opacity var(--moe-exit),
+      scale var(--moe-spring),
+      translate var(--moe-spring);
+  }
+  /* 只有最新一条弹入，历史消息不重演。Only the newest bubble springs in; history does not replay. */
+  @starting-style {
+    .moe-message-bubble:last-child .moe-message-bubble__content {
+      opacity: 0;
+      scale: 0.92;
+      translate: 0 0.5rem;
+    }
+  }
+  .moe-message-bubble__content > :first-child {
+    margin-block-start: 0;
+  }
+  .moe-message-bubble__content > :last-child {
+    margin-block-end: 0;
+  }
+  .moe-message-bubble[data-author="user"] {
+    margin-inline-start: auto;
+    justify-items: end;
+  }
+  .moe-message-bubble[data-author="user"] .moe-message-bubble__content {
+    border-color: transparent;
+    color: var(--moe-on-action);
+    background: var(--moe-action);
+    transform-origin: 100% 100%;
+  }
+  .moe-message-bubble[data-author="system"] {
+    max-width: 100%;
+    margin-inline: auto;
+  }
+  .moe-message-bubble[data-author="system"] .moe-message-bubble__content {
+    padding-block: var(--moe-space-1);
+    color: var(--moe-text-soft);
+    background: var(--moe-surface-sunken);
+    font-size: 0.8125rem;
+  }
+  .moe-message-bubble[data-avatar] {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    column-gap: var(--moe-space-3);
+  }
+  .moe-message-bubble[data-avatar] > :not(.moe-message-bubble__avatar) {
+    grid-column: 2;
+  }
+  .moe-message-bubble__avatar {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    grid-column: 1;
+    grid-row: 1 / span 4;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-sm);
+    color: var(--moe-heading);
+    background: var(--moe-surface-muted);
+  }
+  .moe-message-bubble__avatar > :is(img, svg) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .moe-message-bubble__footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--moe-space-2);
+  }
+  .moe-message-bubble[data-tone="soft"] .moe-message-bubble__content {
+    border-color: color-mix(in srgb, var(--moe-accent) 26%, transparent);
+    color: var(--moe-text);
+    background: color-mix(in srgb, var(--moe-accent) 9%, var(--moe-surface-strong));
+  }
+  .moe-message-bubble[data-tone="outline"] .moe-message-bubble__content {
+    border-style: dashed;
+    border-color: var(--moe-line-strong);
+    color: var(--moe-text);
+    background: transparent;
+  }
+  .moe-message-quote {
+    margin: 0 0 var(--moe-space-3);
+    padding-inline-start: var(--moe-space-3);
+    border-inline-start: 2px solid color-mix(in srgb, currentColor 45%, transparent);
+    font-size: var(--moe-font-size-sm);
+  }
+  .moe-message-quote__author {
+    font-weight: var(--moe-font-weight-medium);
+  }
+  .moe-message-attachment {
+    display: flex;
+    max-width: 100%;
+    align-items: center;
+    gap: var(--moe-space-3);
+    padding: var(--moe-space-2) var(--moe-space-3);
+    border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+    border-radius: var(--moe-radius-sm);
+    color: inherit;
+    text-decoration: none;
+  }
+  .moe-message-attachment:hover {
+    background: color-mix(in srgb, currentColor 7%, transparent);
+  }
+  .moe-message-attachment__icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+  }
+  .moe-message-attachment__icon svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+  .moe-message-attachment__body {
+    display: grid;
+    min-width: 0;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .moe-message-attachment__name {
+    font-size: var(--moe-font-size-sm);
+    font-weight: var(--moe-font-weight-medium);
+  }
+  .moe-message-attachment__description {
+    font-size: var(--moe-font-size-xs);
+  }
+  .moe-message-actions {
+    display: flex;
+    margin-inline-start: calc(-1 * var(--moe-space-2));
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: var(--moe-space-1);
+    margin-block: 0;
+    margin-inline-end: 0;
+    padding: 0;
+    border: 0;
+  }
+  .moe-message-action {
+    display: inline-flex;
+    min-width: var(--moe-control-sm);
+    min-height: var(--moe-control-sm);
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0 var(--moe-space-2);
+    border: 1px solid transparent;
+    border-radius: var(--moe-radius-sm);
+    color: var(--moe-text-soft);
+    background: transparent;
+    font-size: var(--moe-font-size-xs);
+    cursor: pointer;
+    transition:
+      background-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+      color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+      scale var(--moe-bounce);
+  }
+  .moe-message-action:active:not(:disabled) {
+    scale: var(--moe-press);
+    transition-duration: 60ms;
+  }
+  .moe-message-action[aria-pressed="true"] > svg {
+    animation: moe-pop var(--moe-bounce);
+  }
+  .moe-message-action:hover:not(:disabled) {
+    color: var(--moe-heading);
+    background: var(--moe-hover);
+  }
+  .moe-message-action[aria-pressed="true"] {
+    border-color: color-mix(in srgb, var(--moe-accent) 34%, transparent);
+    color: var(--moe-accent-strong);
+    background: color-mix(in srgb, var(--moe-accent) 10%, transparent);
+  }
+  .moe-message-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .moe-message-typing {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--moe-space-2);
+    color: var(--moe-text-soft);
+    font-family: var(--moe-font-family-mono);
+    font-size: var(--moe-font-size-xs);
+  }
+  .moe-message-typing__dots {
+    display: inline-flex;
+    gap: 0.1875rem;
+  }
+  .moe-message-typing__dots i {
+    width: 0.25rem;
+    height: 0.25rem;
+    background: var(--moe-accent);
+    /* 三次后静止，含延迟最多 4.52 秒；状态文字常驻。Stop after three cycles (4.52s including delay); status text persists. */
+    animation: moe-message-dot 1.4s ease-in-out 3;
+  }
+  .moe-message-typing__dots i:nth-child(2) {
+    animation-delay: 0.16s;
+  }
+  .moe-message-typing__dots i:nth-child(3) {
+    animation-delay: 0.32s;
+  }
+
+  .moe-composer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: var(--moe-space-2);
+    padding: var(--moe-space-2);
+    border: 1px solid var(--moe-line-strong);
+    border-radius: var(--moe-radius-md);
+    background: var(--moe-surface-strong);
+    transition:
+      border-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+      box-shadow var(--moe-motion-fast) var(--moe-motion-ease-standard);
+  }
+  .moe-composer:has(.moe-composer__input:focus-visible) {
+    border-color: var(--moe-accent);
+    box-shadow: var(--moe-ring);
+  }
+  .moe-composer__input {
+    width: 100%;
+    min-height: var(--moe-control-md);
+    max-height: 12rem;
+    padding: 0.375rem var(--moe-space-2);
+    border: 0;
+    color: var(--moe-heading);
+    background: transparent;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    resize: none;
+    field-sizing: content;
+  }
+  .moe-composer__input:focus-visible {
+    outline: 2px solid transparent;
+  }
+  .moe-composer__action {
+    align-self: end;
+  }
+  @media (forced-colors: active) {
+    .moe-message-action:focus-visible,
+    .moe-message-attachment:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+}
+/* 动画只移动装饰点；减少动态时完全静止。Only decorative dots move; reduced motion remains static. */
+@keyframes moe-message-dot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-0.1875rem);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .moe-message-typing__dots i {
+    animation: none;
+  }
+}
+
+@layer moe.tokens, moe.reset, moe.foundation, moe.components, moe.utilities;
+
+/* 本地可托管字体，无 CDN 请求；通过变量替换。Self-hostable fonts, no CDN requests; override with a custom property. */
+@layer moe.components {
+  .moe-code-block {
+    --moe-code-background: #fffdf9;
+    --moe-code-foreground: #3d2823;
+    --moe-code-comment: #7a6459;
+    --moe-code-keyword: #b3202b;
+    --moe-code-string: #2b6b3f;
+    --moe-code-number: #8a5208;
+    --moe-code-title: #8b2f6b;
+    --moe-code-attribute: #1f6376;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-md);
+    color: var(--moe-code-foreground);
+    background: var(--moe-code-background);
+  }
+
+  /* 显式深色与系统自动主题共享色板。Explicit dark and system-auto modes share a palette. */
+  :root[data-moe-theme="dark"] .moe-code-block {
+    --moe-code-background: #100708;
+    --moe-code-foreground: #f3e6d8;
+    --moe-code-comment: #b79d90;
+    --moe-code-keyword: #ff8d80;
+    --moe-code-string: #a5dcae;
+    --moe-code-number: #f5cd63;
+    --moe-code-title: #ffadc9;
+    --moe-code-attribute: #9fd3dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-moe-theme="light"]):not([data-moe-theme="dark"]) .moe-code-block {
+      --moe-code-background: #100708;
+      --moe-code-foreground: #f3e6d8;
+      --moe-code-comment: #b79d90;
+      --moe-code-keyword: #ff8d80;
+      --moe-code-string: #a5dcae;
+      --moe-code-number: #f5cd63;
+      --moe-code-title: #ffadc9;
+      --moe-code-attribute: #9fd3dc;
+    }
+  }
+  .moe-code-block__header {
+    display: flex;
+    min-height: 2.5rem;
+    align-items: center;
+    gap: var(--moe-space-3);
+    padding-inline: var(--moe-space-4);
+    border-block-end: 1px solid var(--moe-line);
+    background: var(--moe-hover);
+    font-family: var(--moe-font-family-mono);
+    font-size: var(--moe-font-size-xs);
+  }
+  .moe-code-block__title {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .moe-code-block__language {
+    color: var(--moe-code-comment);
+  }
+  .moe-code-block__copy {
+    margin-inline-end: -0.5rem;
+    min-height: calc(var(--moe-control-sm) - 2px);
+    padding: 0 0.5rem;
+    border: 1px solid transparent;
+    border-radius: calc(var(--moe-radius-sm) - 2px);
+    color: inherit;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+  }
+  .moe-code-block__copy:hover {
+    border-color: var(--moe-line);
+    background: var(--moe-surface-strong);
+  }
+  .moe-code-block__copy[hidden] {
+    display: none;
+  }
+  .moe-code-block__pre {
+    margin: 0;
+    /* 行高由 pre 决定，避免继承正文 strut。The pre sets line height so the body strut never leaks in. */
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: var(--moe-space-4);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--moe-line-strong) transparent;
+    tab-size: 2;
+  }
+  .moe-code-block__code {
+    padding: 0;
+    border: 0;
+    color: inherit;
+    background: transparent;
+    font-family: var(--moe-code-font-family, var(--moe-font-family-mono));
+    font-size: inherit;
+    font-variant-ligatures: none;
+    line-height: inherit;
+    white-space: pre;
+  }
+  .moe-code-block[data-wrap] .moe-code-block__code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .moe-code-block__pre:focus-visible {
+    outline: 2px solid var(--moe-focus);
+    outline-offset: -2px;
+  }
+  .moe-code-block__copy:focus-visible {
+    outline: 2px solid var(--moe-focus);
+    outline-offset: 1px;
+  }
+  /* 反馈浮在代码框内，不推动布局。Feedback floats inside the frame without shifting layout. */
+  .moe-code-block__status {
+    position: absolute;
+    inset: auto var(--moe-space-2) var(--moe-space-2) auto;
+    max-width: calc(100% - 2 * var(--moe-space-2));
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--moe-radius-xs);
+    color: var(--moe-background);
+    background: var(--moe-heading);
+    font-size: var(--moe-font-size-xs);
+    pointer-events: none;
+  }
+  .moe-code-block__status:empty {
+    padding: 0;
+  }
+  .moe-code-block :is(.hljs-comment, .hljs-quote) {
+    color: var(--moe-code-comment);
+    font-style: italic;
+  }
+  .moe-code-block :is(.hljs-keyword, .hljs-selector-tag, .hljs-tag, .hljs-name) {
+    color: var(--moe-code-keyword);
+  }
+  .moe-code-block :is(.hljs-string, .hljs-regexp, .hljs-addition) {
+    color: var(--moe-code-string);
+  }
+  .moe-code-block :is(.hljs-number, .hljs-literal, .hljs-built_in, .hljs-symbol) {
+    color: var(--moe-code-number);
+  }
+  .moe-code-block :is(.hljs-title, .hljs-section, .hljs-selector-class) {
+    color: var(--moe-code-title);
+  }
+  .moe-code-block :is(.hljs-attr, .hljs-attribute, .hljs-variable, .hljs-meta, .hljs-property) {
+    color: var(--moe-code-attribute);
+  }
+  .moe-code-block .hljs-deletion {
+    color: var(--moe-code-keyword);
+    text-decoration: line-through;
+  }
+  .moe-code-block .hljs-emphasis {
+    font-style: italic;
+  }
+  .moe-code-block .hljs-strong {
+    font-weight: 700;
+  }
+  @media (forced-colors: active) {
+    .moe-code-block {
+      border-color: CanvasText;
+      box-shadow: none;
+    }
+    .moe-code-block__copy {
+      border-color: ButtonText;
+    }
+  }
+}
+
+@layer moe.tokens, moe.reset, moe.foundation, moe.components, moe.utilities;
+
+/* 图标在文字和 flex 布局中保持尺寸。Icons keep their dimensions in text and flex layouts. */
+@layer moe.components {
+  .moe-icon {
+    display: inline-block;
+    flex-shrink: 0;
+    vertical-align: -0.125em;
+  }
+}
+
+@layer moe.tokens, moe.reset, moe.foundation, moe.components, moe.utilities;
+
+/* 文稿继承主题与字体；KaTeX 字体另由 math.css 自托管。Prose inherits theme and typography; math.css self-hosts KaTeX fonts. */
+@layer moe.components {
+  .moe-markdown {
+    min-width: 0;
+    color: var(--moe-text);
+    line-height: 1.75;
+    overflow-wrap: anywhere;
+  }
+  .moe-markdown .moe-code-block {
+    margin-block: 1em;
+  }
+  .moe-markdown > :first-child {
+    margin-top: 0;
+  }
+  .moe-markdown > :last-child {
+    margin-bottom: 0;
+  }
+  .moe-markdown :where(h1, h2, h3, h4, h5, h6) {
+    margin-block: 1.8em 0.65em;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+  }
+  .moe-markdown :where(p, ul, ol, blockquote, pre, table) {
+    margin-block: 1em;
+  }
+  .moe-markdown .moe-code-block > .moe-code-block__pre {
+    margin: 0;
+  }
+  .moe-markdown :where(ul, ol) {
+    padding-inline-start: 1.5em;
+  }
+  .moe-markdown li + li {
+    margin-block-start: 0.3em;
+  }
+  .moe-markdown a {
+    color: var(--moe-accent-strong);
+  }
+  .moe-markdown blockquote {
+    margin-inline: 0;
+    padding-inline-start: 1em;
+    border-inline-start: 2px solid var(--moe-accent);
+    color: var(--moe-text-soft);
+  }
+  .moe-markdown blockquote > :last-child {
+    margin-block-end: 0;
+  }
+  .moe-markdown :not(pre) > code {
+    padding: 0.12em 0.36em;
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-xs);
+    color: var(--moe-heading);
+    background: var(--moe-hover);
+    font-family: var(--moe-font-family-mono);
+    font-size: 0.875em;
+  }
+  .moe-markdown table {
+    display: block;
+    width: fit-content;
+    background: transparent;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 0.92em;
+  }
+  .moe-markdown :where(th, td) {
+    padding: 0.55em 1em;
+    border: 1px solid var(--moe-line);
+    text-align: start;
+  }
+  .moe-markdown th {
+    color: var(--moe-heading);
+    background: var(--moe-surface-sunken);
+    font-weight: var(--moe-font-weight-medium);
+  }
+  /* 保留 GFM 列对齐约定。Preserve GFM column alignment semantics. */
+  .moe-markdown :where(th, td)[align="center"] {
+    text-align: center;
+  }
+  .moe-markdown :where(th, td)[align="right"] {
+    text-align: right;
+  }
+  .moe-markdown :where(th, td)[align="left"] {
+    text-align: left;
+  }
+  .moe-markdown img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--moe-radius-md);
+  }
+  .moe-markdown hr {
+    margin-block: 2em;
+    border: 0;
+    border-top: 1px solid var(--moe-line);
+  }
+  .moe-markdown .contains-task-list {
+    padding-inline-start: 0;
+  }
+  .moe-markdown .task-list-item {
+    position: relative;
+    padding-inline-start: 1.75em;
+    list-style: none;
+  }
+  /* GFM task boxes are always disabled, and browsers ignore accent-color there. */
+  .moe-markdown .task-list-item > input[type="checkbox"],
+  .moe-markdown .task-list-item > p > input[type="checkbox"] {
+    position: absolute;
+    inset-block-start: 0.375em;
+    inset-inline-start: 0;
+    display: grid;
+    width: 1em;
+    height: 1em;
+    place-content: center;
+    margin: 0;
+    border: 1px solid var(--moe-line-strong);
+    border-radius: var(--moe-radius-xs);
+    appearance: none;
+    background: var(--moe-surface-strong);
+  }
+  .moe-markdown .task-list-item input:checked {
+    border-color: var(--moe-action);
+    background: var(--moe-action);
+  }
+  .moe-markdown .task-list-item input:checked::before {
+    width: 0.625em;
+    height: 0.625em;
+    background: var(--moe-on-action);
+    clip-path: polygon(14% 44%, 0 60%, 42% 100%, 100% 20%, 84% 6%, 40% 70%);
+    content: "";
+  }
+  @media (forced-colors: active) {
+    .moe-markdown .task-list-item input[type="checkbox"] {
+      appearance: auto;
+    }
+    .moe-markdown .task-list-item input:checked::before {
+      content: none;
+    }
+  }
+  .moe-markdown .footnotes {
+    margin-block-start: 2em;
+    border-top: 1px solid var(--moe-line);
+    font-size: 0.85em;
+  }
+  .moe-math {
+    max-width: 100%;
+    color: inherit;
+  }
+  .moe-math[data-display] {
+    display: block;
+    min-width: 0;
+    margin-block: 1em;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .moe-markdown .katex-display,
+  .moe-math .katex-display {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block: 0.35em;
+  }
+  .moe-math[data-display] > .katex-display {
+    margin-block: 0;
+  }
+  .moe-markdown__fallback,
+  .moe-math__fallback {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-family: var(--moe-font-family-mono);
+  }
+}
+
+@layer moe.tokens, moe.reset, moe.foundation, moe.components, moe.utilities;
+
+@layer moe.components {
+  .moe-editor {
+    overflow: hidden;
+    min-width: 0;
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-md);
+    color: var(--moe-text);
+    background: var(--moe-surface-strong);
+  }
+  .moe-editor__header,
+  .moe-editor__toolbar,
+  .moe-editor__link {
+    display: flex;
+    min-width: 0;
+    min-height: 2.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px;
+    margin: 0;
+    padding: var(--moe-space-1) var(--moe-space-2);
+    border: 0;
+    border-block-end: 1px solid var(--moe-line);
+  }
+  .moe-editor__header {
+    justify-content: space-between;
+    padding-inline-start: var(--moe-space-4);
+    background: var(--moe-surface-sunken);
+  }
+  .moe-editor__label {
+    color: var(--moe-text-soft);
+    font-family: var(--moe-font-family-mono);
+    font-size: var(--moe-font-size-xs);
+  }
+  .moe-editor__modes {
+    display: flex;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .moe-editor__link {
+    gap: var(--moe-space-2);
+    font-size: 0.8125rem;
+  }
+  .moe-editor button {
+    display: inline-flex;
+    min-width: var(--moe-control-sm);
+    min-height: var(--moe-control-sm);
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.375rem;
+    border: 1px solid transparent;
+    border-radius: calc(var(--moe-radius-sm) - 2px);
+    color: var(--moe-text-soft);
+    background: transparent;
+    font-size: 0.8125rem;
+    font-weight: var(--moe-font-weight-medium);
+    cursor: pointer;
+  }
+  .moe-editor :is(.moe-editor__modes, .moe-editor__link) button {
+    padding-inline: 0.625rem;
+  }
+  .moe-editor button:hover:not(:disabled) {
+    color: var(--moe-heading);
+    background: var(--moe-hover);
+  }
+  .moe-editor button[aria-pressed="true"] {
+    border-color: var(--moe-line);
+    color: var(--moe-accent-strong);
+    background: var(--moe-surface-strong);
+  }
+  .moe-editor button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .moe-editor__canvas,
+  .moe-editor__source,
+  .moe-editor__preview {
+    box-sizing: border-box;
+    min-height: 17rem;
+    padding: var(--moe-space-5);
+  }
+  .moe-editor__canvas:focus {
+    outline: 2px solid color-mix(in srgb, var(--moe-accent) 55%, transparent);
+    outline-offset: -2px;
+  }
+  .moe-editor__source {
+    display: block;
+    width: 100%;
+    resize: vertical;
+    border: 0;
+    border-radius: 0;
+    color: var(--moe-text);
+    background: var(--moe-surface-strong);
+    font-family: var(--moe-code-font-family, var(--moe-font-family-mono));
+    font-size: 0.8125rem;
+    line-height: 1.75;
+    tab-size: 2;
+  }
+  .moe-editor__source:focus-visible {
+    outline: 2px solid var(--moe-accent);
+    outline-offset: -2px;
+  }
+  .moe-editor__notice {
+    margin: 0;
+    padding: var(--moe-space-2) var(--moe-space-4);
+    color: var(--moe-text-soft);
+    background: var(--moe-surface-sunken);
+    font-size: var(--moe-font-size-xs);
+    line-height: 1.6;
+  }
+  .moe-editor__link input {
+    flex: 1;
+    min-width: 8rem;
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-sm);
+    padding: 0.25rem 0.5rem;
+    color: var(--moe-text);
+    background: var(--moe-surface-strong);
+  }
+  .moe-editor__canvas li > p {
+    margin-block: 0.25em;
+  }
+  .moe-editor__canvas pre {
+    overflow-x: auto;
+    padding: var(--moe-space-4);
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-md);
+    background: var(--moe-surface-sunken);
+    font-size: 0.8125rem;
+    line-height: 1.7;
+  }
+  .moe-editor__canvas table {
+    width: 100%;
+    table-layout: fixed;
+  }
+  .moe-editor__canvas td,
+  .moe-editor__canvas th {
+    position: relative;
+    min-width: 2rem;
+  }
+  .moe-editor__canvas .selectedCell {
+    background: color-mix(in srgb, var(--moe-accent) 15%, var(--moe-surface));
+  }
+  .moe-editor__canvas ul[data-type="taskList"] {
+    list-style: none;
+    padding-inline-start: 0;
+  }
+  .moe-editor__canvas li[data-type="taskItem"] {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+  .moe-editor__canvas li[data-type="taskItem"] > div {
+    flex: 1;
+    min-width: 0;
+  }
+  .moe-editor__canvas li[data-type="taskItem"] p {
+    margin-block: 0.25rem;
+  }
+  .moe-editor__canvas input[type="checkbox"] {
+    accent-color: var(--moe-accent);
+  }
+  .moe-editor[data-disabled] {
+    opacity: 0.65;
+  }
+  @media (max-width: 480px) {
+    .moe-editor__canvas,
+    .moe-editor__source,
+    .moe-editor__preview {
+      padding: 1rem;
+    }
+  }
+}
+
+@layer moe.components {
+@font-face{font-display:block;font-family:KaTeX_AMS;font-style:normal;font-weight:400;src:url(../assets/katex/fonts/KaTeX_AMS-Regular.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_AMS-Regular.woff) format("woff"),url(../assets/katex/fonts/KaTeX_AMS-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Caligraphic;font-style:normal;font-weight:700;src:url(../assets/katex/fonts/KaTeX_Caligraphic-Bold.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Caligraphic-Bold.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Caligraphic-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Caligraphic;font-style:normal;font-weight:400;src:url(../assets/katex/fonts/KaTeX_Caligraphic-Regular.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Caligraphic-Regular.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Caligraphic-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Fraktur;font-style:normal;font-weight:700;src:url(../assets/katex/fonts/KaTeX_Fraktur-Bold.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Fraktur-Bold.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Fraktur-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Fraktur;font-style:normal;font-weight:400;src:url(../assets/katex/fonts/KaTeX_Fraktur-Regular.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Fraktur-Regular.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Fraktur-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:normal;font-weight:700;src:url(../assets/katex/fonts/KaTeX_Main-Bold.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Main-Bold.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Main-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:italic;font-weight:700;src:url(../assets/katex/fonts/KaTeX_Main-BoldItalic.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Main-BoldItalic.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Main-BoldItalic.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:italic;font-weight:400;src:url(../assets/katex/fonts/KaTeX_Main-Italic.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Main-Italic.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Main-Italic.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:normal;font-weight:400;src:url(../assets/katex/fonts/KaTeX_Main-Regular.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Main-Regular.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Main-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Math;font-style:italic;font-weight:700;src:url(../assets/katex/fonts/KaTeX_Math-BoldItalic.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Math-BoldItalic.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Math-BoldItalic.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Math;font-style:italic;font-weight:400;src:url(../assets/katex/fonts/KaTeX_Math-Italic.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Math-Italic.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Math-Italic.ttf) format("truetype")}@font-face{font-display:block;font-family:"KaTeX_SansSerif";font-style:normal;font-weight:700;src:url(../assets/katex/fonts/KaTeX_SansSerif-Bold.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_SansSerif-Bold.woff) format("woff"),url(../assets/katex/fonts/KaTeX_SansSerif-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:"KaTeX_SansSerif";font-style:italic;font-weight:400;src:url(../assets/katex/fonts/KaTeX_SansSerif-Italic.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_SansSerif-Italic.woff) format("woff"),url(../assets/katex/fonts/KaTeX_SansSerif-Italic.ttf) format("truetype")}@font-face{font-display:block;font-family:"KaTeX_SansSerif";font-style:normal;font-weight:400;src:url(../assets/katex/fonts/KaTeX_SansSerif-Regular.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_SansSerif-Regular.woff) format("woff"),url(../assets/katex/fonts/KaTeX_SansSerif-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Script;font-style:normal;font-weight:400;src:url(../assets/katex/fonts/KaTeX_Script-Regular.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Script-Regular.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Script-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size1;font-style:normal;font-weight:400;src:url(../assets/katex/fonts/KaTeX_Size1-Regular.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Size1-Regular.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Size1-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size2;font-style:normal;font-weight:400;src:url(../assets/katex/fonts/KaTeX_Size2-Regular.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Size2-Regular.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Size2-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size3;font-style:normal;font-weight:400;src:url(../assets/katex/fonts/KaTeX_Size3-Regular.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Size3-Regular.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Size3-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size4;font-style:normal;font-weight:400;src:url(../assets/katex/fonts/KaTeX_Size4-Regular.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Size4-Regular.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Size4-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Typewriter;font-style:normal;font-weight:400;src:url(../assets/katex/fonts/KaTeX_Typewriter-Regular.woff2) format("woff2"),url(../assets/katex/fonts/KaTeX_Typewriter-Regular.woff) format("woff"),url(../assets/katex/fonts/KaTeX_Typewriter-Regular.ttf) format("truetype")}.katex{font:normal 1.21em KaTeX_Main,math,Times New Roman,serif;line-height:1.2;position:relative;text-indent:0;text-rendering:auto}.katex *{-ms-high-contrast-adjust:none!important;border-color:currentColor}.katex .katex-version:after{content:"0.19.1"}.katex .katex-mathml{border:0;-webkit-clip-path:inset(50%);clip-path:inset(50%);height:1px;overflow:hidden;padding:0;position:absolute;width:1px}.katex .katex-html>.katex-newline{display:block}.katex .katex-base{position:relative;white-space:nowrap;width:-webkit-min-content;width:-moz-min-content;width:min-content}.katex .katex-base,.katex .katex-strut{display:inline-block}.katex .textbf{font-weight:700}.katex .textit{font-style:italic}.katex .textrm{font-family:KaTeX_Main}.katex .textsf{font-family:KaTeX_SansSerif}.katex .texttt{font-family:KaTeX_Typewriter}.katex .mathnormal{font-family:KaTeX_Math;font-style:italic}.katex .mathit{font-family:KaTeX_Main;font-style:italic}.katex .mathrm{font-style:normal}.katex .mathbf{font-family:KaTeX_Main;font-weight:700}.katex .boldsymbol{font-family:KaTeX_Math;font-style:italic;font-weight:700}.katex .amsrm,.katex .mathbb,.katex .textbb{font-family:KaTeX_AMS}.katex .mathcal{font-family:KaTeX_Caligraphic}.katex .mathfrak,.katex .textfrak{font-family:KaTeX_Fraktur}.katex .mathboldfrak,.katex .textboldfrak{font-family:KaTeX_Fraktur;font-weight:700}.katex .mathtt{font-family:KaTeX_Typewriter}.katex .mathscr,.katex .textscr{font-family:KaTeX_Script}.katex .mathsf,.katex .textsf{font-family:KaTeX_SansSerif}.katex .mathboldsf,.katex .textboldsf{font-family:KaTeX_SansSerif;font-weight:700}.katex .mathitsf,.katex .mathsfit,.katex .textitsf{font-family:KaTeX_SansSerif;font-style:italic}.katex .mainrm{font-family:KaTeX_Main;font-style:normal}.katex .vlist-t{border-collapse:collapse;display:inline-table;table-layout:fixed}.katex .vlist-r{display:table-row}.katex .vlist{display:table-cell;position:relative;vertical-align:bottom}.katex .vlist>span{display:block;height:0;position:relative}.katex .vlist>span>span{display:inline-block}.katex .vlist>span>.pstrut{overflow:hidden;width:0}.katex .vlist-t2{margin-right:-2px}.katex .vlist-s{display:table-cell;font-size:1px;min-width:2px;vertical-align:bottom;width:2px}.katex .katex-vbox{align-items:baseline;display:inline-flex;flex-direction:column}.katex .katex-thinbox{display:inline-flex;flex-direction:row;max-width:0;width:0}.katex .msupsub{text-align:left}.katex .mfrac>span>span{text-align:center}.katex .mfrac .frac-line{border-bottom-style:solid;display:inline-block;width:100%}.katex .katex-hdashline,.katex .katex-hline,.katex .katex-overline .overline-line,.katex .katex-rule,.katex .katex-underline .underline-line,.katex .mfrac .frac-line{min-height:1px}.katex .mspace{display:inline-block}.katex .katex-smash{display:inline;line-height:0}.katex .clap,.katex .llap,.katex .rlap{position:relative;width:0}.katex .clap>.katex-inner,.katex .llap>.katex-inner,.katex .rlap>.katex-inner{position:absolute}.katex .clap>.katex-fix,.katex .llap>.katex-fix,.katex .rlap>.katex-fix{display:inline-block}.katex .llap>.katex-inner{right:0}.katex .clap>.katex-inner,.katex .rlap>.katex-inner{left:0}.katex .clap>.katex-inner>span{margin-left:-50%;margin-right:50%}.katex .katex-rule{border:0 solid;display:inline-block;position:relative}.katex .katex-hline,.katex .katex-overline .overline-line,.katex .katex-underline .underline-line{border-bottom-style:solid;display:inline-block;width:100%}.katex .katex-hdashline{border-bottom-style:dashed;display:inline-block;width:100%}.katex .sqrt>.katex-root{margin-left:.2777777778em;margin-right:-.5555555556em}.katex .fontsize-ensurer.reset-size1.size1,.katex .katex-sizing.reset-size1.size1{font-size:1em}.katex .fontsize-ensurer.reset-size1.size2,.katex .katex-sizing.reset-size1.size2{font-size:1.2em}.katex .fontsize-ensurer.reset-size1.size3,.katex .katex-sizing.reset-size1.size3{font-size:1.4em}.katex .fontsize-ensurer.reset-size1.size4,.katex .katex-sizing.reset-size1.size4{font-size:1.6em}.katex .fontsize-ensurer.reset-size1.size5,.katex .katex-sizing.reset-size1.size5{font-size:1.8em}.katex .fontsize-ensurer.reset-size1.size6,.katex .katex-sizing.reset-size1.size6{font-size:2em}.katex .fontsize-ensurer.reset-size1.size7,.katex .katex-sizing.reset-size1.size7{font-size:2.4em}.katex .fontsize-ensurer.reset-size1.size8,.katex .katex-sizing.reset-size1.size8{font-size:2.88em}.katex .fontsize-ensurer.reset-size1.size9,.katex .katex-sizing.reset-size1.size9{font-size:3.456em}.katex .fontsize-ensurer.reset-size1.size10,.katex .katex-sizing.reset-size1.size10{font-size:4.148em}.katex .fontsize-ensurer.reset-size1.size11,.katex .katex-sizing.reset-size1.size11{font-size:4.976em}.katex .fontsize-ensurer.reset-size2.size1,.katex .katex-sizing.reset-size2.size1{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size2.size2,.katex .katex-sizing.reset-size2.size2{font-size:1em}.katex .fontsize-ensurer.reset-size2.size3,.katex .katex-sizing.reset-size2.size3{font-size:1.1666666667em}.katex .fontsize-ensurer.reset-size2.size4,.katex .katex-sizing.reset-size2.size4{font-size:1.3333333333em}.katex .fontsize-ensurer.reset-size2.size5,.katex .katex-sizing.reset-size2.size5{font-size:1.5em}.katex .fontsize-ensurer.reset-size2.size6,.katex .katex-sizing.reset-size2.size6{font-size:1.6666666667em}.katex .fontsize-ensurer.reset-size2.size7,.katex .katex-sizing.reset-size2.size7{font-size:2em}.katex .fontsize-ensurer.reset-size2.size8,.katex .katex-sizing.reset-size2.size8{font-size:2.4em}.katex .fontsize-ensurer.reset-size2.size9,.katex .katex-sizing.reset-size2.size9{font-size:2.88em}.katex .fontsize-ensurer.reset-size2.size10,.katex .katex-sizing.reset-size2.size10{font-size:3.4566666667em}.katex .fontsize-ensurer.reset-size2.size11,.katex .katex-sizing.reset-size2.size11{font-size:4.1466666667em}.katex .fontsize-ensurer.reset-size3.size1,.katex .katex-sizing.reset-size3.size1{font-size:.7142857143em}.katex .fontsize-ensurer.reset-size3.size2,.katex .katex-sizing.reset-size3.size2{font-size:.8571428571em}.katex .fontsize-ensurer.reset-size3.size3,.katex .katex-sizing.reset-size3.size3{font-size:1em}.katex .fontsize-ensurer.reset-size3.size4,.katex .katex-sizing.reset-size3.size4{font-size:1.1428571429em}.katex .fontsize-ensurer.reset-size3.size5,.katex .katex-sizing.reset-size3.size5{font-size:1.2857142857em}.katex .fontsize-ensurer.reset-size3.size6,.katex .katex-sizing.reset-size3.size6{font-size:1.4285714286em}.katex .fontsize-ensurer.reset-size3.size7,.katex .katex-sizing.reset-size3.size7{font-size:1.7142857143em}.katex .fontsize-ensurer.reset-size3.size8,.katex .katex-sizing.reset-size3.size8{font-size:2.0571428571em}.katex .fontsize-ensurer.reset-size3.size9,.katex .katex-sizing.reset-size3.size9{font-size:2.4685714286em}.katex .fontsize-ensurer.reset-size3.size10,.katex .katex-sizing.reset-size3.size10{font-size:2.9628571429em}.katex .fontsize-ensurer.reset-size3.size11,.katex .katex-sizing.reset-size3.size11{font-size:3.5542857143em}.katex .fontsize-ensurer.reset-size4.size1,.katex .katex-sizing.reset-size4.size1{font-size:.625em}.katex .fontsize-ensurer.reset-size4.size2,.katex .katex-sizing.reset-size4.size2{font-size:.75em}.katex .fontsize-ensurer.reset-size4.size3,.katex .katex-sizing.reset-size4.size3{font-size:.875em}.katex .fontsize-ensurer.reset-size4.size4,.katex .katex-sizing.reset-size4.size4{font-size:1em}.katex .fontsize-ensurer.reset-size4.size5,.katex .katex-sizing.reset-size4.size5{font-size:1.125em}.katex .fontsize-ensurer.reset-size4.size6,.katex .katex-sizing.reset-size4.size6{font-size:1.25em}.katex .fontsize-ensurer.reset-size4.size7,.katex .katex-sizing.reset-size4.size7{font-size:1.5em}.katex .fontsize-ensurer.reset-size4.size8,.katex .katex-sizing.reset-size4.size8{font-size:1.8em}.katex .fontsize-ensurer.reset-size4.size9,.katex .katex-sizing.reset-size4.size9{font-size:2.16em}.katex .fontsize-ensurer.reset-size4.size10,.katex .katex-sizing.reset-size4.size10{font-size:2.5925em}.katex .fontsize-ensurer.reset-size4.size11,.katex .katex-sizing.reset-size4.size11{font-size:3.11em}.katex .fontsize-ensurer.reset-size5.size1,.katex .katex-sizing.reset-size5.size1{font-size:.5555555556em}.katex .fontsize-ensurer.reset-size5.size2,.katex .katex-sizing.reset-size5.size2{font-size:.6666666667em}.katex .fontsize-ensurer.reset-size5.size3,.katex .katex-sizing.reset-size5.size3{font-size:.7777777778em}.katex .fontsize-ensurer.reset-size5.size4,.katex .katex-sizing.reset-size5.size4{font-size:.8888888889em}.katex .fontsize-ensurer.reset-size5.size5,.katex .katex-sizing.reset-size5.size5{font-size:1em}.katex .fontsize-ensurer.reset-size5.size6,.katex .katex-sizing.reset-size5.size6{font-size:1.1111111111em}.katex .fontsize-ensurer.reset-size5.size7,.katex .katex-sizing.reset-size5.size7{font-size:1.3333333333em}.katex .fontsize-ensurer.reset-size5.size8,.katex .katex-sizing.reset-size5.size8{font-size:1.6em}.katex .fontsize-ensurer.reset-size5.size9,.katex .katex-sizing.reset-size5.size9{font-size:1.92em}.katex .fontsize-ensurer.reset-size5.size10,.katex .katex-sizing.reset-size5.size10{font-size:2.3044444444em}.katex .fontsize-ensurer.reset-size5.size11,.katex .katex-sizing.reset-size5.size11{font-size:2.7644444444em}.katex .fontsize-ensurer.reset-size6.size1,.katex .katex-sizing.reset-size6.size1{font-size:.5em}.katex .fontsize-ensurer.reset-size6.size2,.katex .katex-sizing.reset-size6.size2{font-size:.6em}.katex .fontsize-ensurer.reset-size6.size3,.katex .katex-sizing.reset-size6.size3{font-size:.7em}.katex .fontsize-ensurer.reset-size6.size4,.katex .katex-sizing.reset-size6.size4{font-size:.8em}.katex .fontsize-ensurer.reset-size6.size5,.katex .katex-sizing.reset-size6.size5{font-size:.9em}.katex .fontsize-ensurer.reset-size6.size6,.katex .katex-sizing.reset-size6.size6{font-size:1em}.katex .fontsize-ensurer.reset-size6.size7,.katex .katex-sizing.reset-size6.size7{font-size:1.2em}.katex .fontsize-ensurer.reset-size6.size8,.katex .katex-sizing.reset-size6.size8{font-size:1.44em}.katex .fontsize-ensurer.reset-size6.size9,.katex .katex-sizing.reset-size6.size9{font-size:1.728em}.katex .fontsize-ensurer.reset-size6.size10,.katex .katex-sizing.reset-size6.size10{font-size:2.074em}.katex .fontsize-ensurer.reset-size6.size11,.katex .katex-sizing.reset-size6.size11{font-size:2.488em}.katex .fontsize-ensurer.reset-size7.size1,.katex .katex-sizing.reset-size7.size1{font-size:.4166666667em}.katex .fontsize-ensurer.reset-size7.size2,.katex .katex-sizing.reset-size7.size2{font-size:.5em}.katex .fontsize-ensurer.reset-size7.size3,.katex .katex-sizing.reset-size7.size3{font-size:.5833333333em}.katex .fontsize-ensurer.reset-size7.size4,.katex .katex-sizing.reset-size7.size4{font-size:.6666666667em}.katex .fontsize-ensurer.reset-size7.size5,.katex .katex-sizing.reset-size7.size5{font-size:.75em}.katex .fontsize-ensurer.reset-size7.size6,.katex .katex-sizing.reset-size7.size6{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size7.size7,.katex .katex-sizing.reset-size7.size7{font-size:1em}.katex .fontsize-ensurer.reset-size7.size8,.katex .katex-sizing.reset-size7.size8{font-size:1.2em}.katex .fontsize-ensurer.reset-size7.size9,.katex .katex-sizing.reset-size7.size9{font-size:1.44em}.katex .fontsize-ensurer.reset-size7.size10,.katex .katex-sizing.reset-size7.size10{font-size:1.7283333333em}.katex .fontsize-ensurer.reset-size7.size11,.katex .katex-sizing.reset-size7.size11{font-size:2.0733333333em}.katex .fontsize-ensurer.reset-size8.size1,.katex .katex-sizing.reset-size8.size1{font-size:.3472222222em}.katex .fontsize-ensurer.reset-size8.size2,.katex .katex-sizing.reset-size8.size2{font-size:.4166666667em}.katex .fontsize-ensurer.reset-size8.size3,.katex .katex-sizing.reset-size8.size3{font-size:.4861111111em}.katex .fontsize-ensurer.reset-size8.size4,.katex .katex-sizing.reset-size8.size4{font-size:.5555555556em}.katex .fontsize-ensurer.reset-size8.size5,.katex .katex-sizing.reset-size8.size5{font-size:.625em}.katex .fontsize-ensurer.reset-size8.size6,.katex .katex-sizing.reset-size8.size6{font-size:.6944444444em}.katex .fontsize-ensurer.reset-size8.size7,.katex .katex-sizing.reset-size8.size7{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size8.size8,.katex .katex-sizing.reset-size8.size8{font-size:1em}.katex .fontsize-ensurer.reset-size8.size9,.katex .katex-sizing.reset-size8.size9{font-size:1.2em}.katex .fontsize-ensurer.reset-size8.size10,.katex .katex-sizing.reset-size8.size10{font-size:1.4402777778em}.katex .fontsize-ensurer.reset-size8.size11,.katex .katex-sizing.reset-size8.size11{font-size:1.7277777778em}.katex .fontsize-ensurer.reset-size9.size1,.katex .katex-sizing.reset-size9.size1{font-size:.2893518519em}.katex .fontsize-ensurer.reset-size9.size2,.katex .katex-sizing.reset-size9.size2{font-size:.3472222222em}.katex .fontsize-ensurer.reset-size9.size3,.katex .katex-sizing.reset-size9.size3{font-size:.4050925926em}.katex .fontsize-ensurer.reset-size9.size4,.katex .katex-sizing.reset-size9.size4{font-size:.462962963em}.katex .fontsize-ensurer.reset-size9.size5,.katex .katex-sizing.reset-size9.size5{font-size:.5208333333em}.katex .fontsize-ensurer.reset-size9.size6,.katex .katex-sizing.reset-size9.size6{font-size:.5787037037em}.katex .fontsize-ensurer.reset-size9.size7,.katex .katex-sizing.reset-size9.size7{font-size:.6944444444em}.katex .fontsize-ensurer.reset-size9.size8,.katex .katex-sizing.reset-size9.size8{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size9.size9,.katex .katex-sizing.reset-size9.size9{font-size:1em}.katex .fontsize-ensurer.reset-size9.size10,.katex .katex-sizing.reset-size9.size10{font-size:1.2002314815em}.katex .fontsize-ensurer.reset-size9.size11,.katex .katex-sizing.reset-size9.size11{font-size:1.4398148148em}.katex .fontsize-ensurer.reset-size10.size1,.katex .katex-sizing.reset-size10.size1{font-size:.2410800386em}.katex .fontsize-ensurer.reset-size10.size2,.katex .katex-sizing.reset-size10.size2{font-size:.2892960463em}.katex .fontsize-ensurer.reset-size10.size3,.katex .katex-sizing.reset-size10.size3{font-size:.337512054em}.katex .fontsize-ensurer.reset-size10.size4,.katex .katex-sizing.reset-size10.size4{font-size:.3857280617em}.katex .fontsize-ensurer.reset-size10.size5,.katex .katex-sizing.reset-size10.size5{font-size:.4339440694em}.katex .fontsize-ensurer.reset-size10.size6,.katex .katex-sizing.reset-size10.size6{font-size:.4821600771em}.katex .fontsize-ensurer.reset-size10.size7,.katex .katex-sizing.reset-size10.size7{font-size:.5785920926em}.katex .fontsize-ensurer.reset-size10.size8,.katex .katex-sizing.reset-size10.size8{font-size:.6943105111em}.katex .fontsize-ensurer.reset-size10.size9,.katex .katex-sizing.reset-size10.size9{font-size:.8331726133em}.katex .fontsize-ensurer.reset-size10.size10,.katex .katex-sizing.reset-size10.size10{font-size:1em}.katex .fontsize-ensurer.reset-size10.size11,.katex .katex-sizing.reset-size10.size11{font-size:1.1996142719em}.katex .fontsize-ensurer.reset-size11.size1,.katex .katex-sizing.reset-size11.size1{font-size:.2009646302em}.katex .fontsize-ensurer.reset-size11.size2,.katex .katex-sizing.reset-size11.size2{font-size:.2411575563em}.katex .fontsize-ensurer.reset-size11.size3,.katex .katex-sizing.reset-size11.size3{font-size:.2813504823em}.katex .fontsize-ensurer.reset-size11.size4,.katex .katex-sizing.reset-size11.size4{font-size:.3215434084em}.katex .fontsize-ensurer.reset-size11.size5,.katex .katex-sizing.reset-size11.size5{font-size:.3617363344em}.katex .fontsize-ensurer.reset-size11.size6,.katex .katex-sizing.reset-size11.size6{font-size:.4019292605em}.katex .fontsize-ensurer.reset-size11.size7,.katex .katex-sizing.reset-size11.size7{font-size:.4823151125em}.katex .fontsize-ensurer.reset-size11.size8,.katex .katex-sizing.reset-size11.size8{font-size:.578778135em}.katex .fontsize-ensurer.reset-size11.size9,.katex .katex-sizing.reset-size11.size9{font-size:.6945337621em}.katex .fontsize-ensurer.reset-size11.size10,.katex .katex-sizing.reset-size11.size10{font-size:.8336012862em}.katex .fontsize-ensurer.reset-size11.size11,.katex .katex-sizing.reset-size11.size11{font-size:1em}.katex .delimsizing.size1{font-family:KaTeX_Size1}.katex .delimsizing.size2{font-family:KaTeX_Size2}.katex .delimsizing.size3{font-family:KaTeX_Size3}.katex .delimsizing.size4{font-family:KaTeX_Size4}.katex .delimsizing.mult .delim-size1>span{font-family:KaTeX_Size1}.katex .delimsizing.mult .delim-size4>span{font-family:KaTeX_Size4}.katex .nulldelimiter{display:inline-block;width:.12em}.katex .delimcenter,.katex .op-symbol{position:relative}.katex .op-symbol.small-op{font-family:KaTeX_Size1}.katex .op-symbol.large-op{font-family:KaTeX_Size2}.katex .katex-accent>.vlist-t,.katex .op-limits>.vlist-t{text-align:center}.katex .katex-accent .accent-body{position:relative}.katex .katex-accent .accent-body:not(.accent-full){width:0}.katex .katex-overlay{display:block}.katex .mtable .vertical-separator{display:inline-block;min-width:1px}.katex .mtable .arraycolsep{display:inline-block}.katex .mtable .col-align-c>.vlist-t{text-align:center}.katex .mtable .col-align-l>.vlist-t{text-align:left}.katex .mtable .col-align-r>.vlist-t{text-align:right}.katex .svg-align{text-align:left}.katex svg{fill:currentColor;stroke:currentColor;display:block;height:inherit;position:absolute;width:100%}.katex svg path{stroke:none}.katex svg{fill-rule:nonzero;fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1}.katex img{border-style:none;max-height:none;max-width:none;min-height:0;min-width:0}.katex .katex-stretchy{display:block;overflow:hidden;position:relative;width:100%}.katex .katex-stretchy:after,.katex .katex-stretchy:before{content:""}.katex .hide-tail{overflow:hidden;position:relative;width:100%}.katex .halfarrow-left{left:0;overflow:hidden;position:absolute;width:50.2%}.katex .halfarrow-right{overflow:hidden;position:absolute;right:0;width:50.2%}.katex .brace-left{left:0;overflow:hidden;position:absolute;width:25.1%}.katex .brace-center{left:25%;overflow:hidden;position:absolute;width:50%}.katex .brace-right{overflow:hidden;position:absolute;right:0;width:25.1%}.katex .x-arrow-pad{padding:0 .5em}.katex .cd-arrow-pad{padding:0 .55556em 0 .27778em}.katex .mover,.katex .munder,.katex .x-arrow{text-align:center}.katex .boxpad{padding:0 .3em}.katex .fbox,.katex .fcolorbox{border:.04em solid;box-sizing:border-box}.katex .cancel-pad{padding:0 .2em}.katex .cancel-lap{margin-left:-.2em;margin-right:-.2em}.katex .katex-sout{border-bottom-style:solid;border-bottom-width:.08em}.katex .angl{border-right:.049em solid;border-top:.049em solid;box-sizing:border-box;margin-right:.03889em}.katex .anglpad{padding:0 .03889em}.katex .reflectbox{display:inline-block;transform:scaleX(-1)}.katex .eqn-num:before{content:"(" counter(katexEqnNo) ")";counter-increment:katexEqnNo}.katex .mml-eqn-num:before{content:"(" counter(mmlEqnNo) ")";counter-increment:mmlEqnNo}.katex .mtr-glue{width:50%}.katex .cd-vert-arrow{display:inline-block;position:relative}.katex .cd-label-left{display:inline-block;position:absolute;right:calc(50% + .3em);text-align:left}.katex .cd-label-right{display:inline-block;left:calc(50% + .3em);position:absolute;text-align:right}.katex-display{display:block;margin:1em 0;text-align:center}.katex-display>.katex{display:block;text-align:center;white-space:nowrap}.katex-display>.katex>.katex-html{display:block;position:relative}.katex-display>.katex>.katex-html>.katex-tag{position:absolute;right:0}.katex-display.leqno>.katex>.katex-html>.katex-tag{left:0;right:auto}.katex-display.fleqn>.katex{padding-left:2em;text-align:left}body{counter-reset:katexEqnNo mmlEqnNo}
+
+}

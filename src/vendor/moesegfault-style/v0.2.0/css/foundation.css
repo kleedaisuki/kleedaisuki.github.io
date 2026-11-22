@@ -1,0 +1,279 @@
+@layer moe.tokens, moe.reset, moe.foundation, moe.components, moe.utilities;
+
+@layer moe.reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  html {
+    scroll-behavior: smooth;
+    text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+  }
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+  img,
+  picture,
+  svg,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
+  :where(h1, h2, h3, h4, p, figure, blockquote, dl, dd) {
+    margin-block-start: 0;
+  }
+}
+
+@layer moe.foundation {
+  /* 品牌表面：整块换角色，内部组件无需知情。Brand surface: remap roles for a region; components inside stay unaware. */
+  [data-moe-surface="brand"] {
+    --moe-background: var(--moe-brand);
+    --moe-surface: color-mix(in srgb, var(--moe-brand) 84%, black);
+    --moe-surface-strong: color-mix(in srgb, var(--moe-brand) 84%, black);
+    --moe-surface-muted: color-mix(in srgb, var(--moe-brand) 76%, black);
+    --moe-surface-sunken: color-mix(in srgb, var(--moe-brand) 76%, black);
+    --moe-heading: var(--moe-on-brand);
+    --moe-text: var(--moe-on-brand);
+    --moe-text-soft: var(--moe-color-klee-100);
+    --moe-accent: var(--moe-color-honey-200);
+    --moe-accent-strong: var(--moe-color-honey-200);
+    --moe-accent-wash: color-mix(in srgb, var(--moe-color-honey-200) 18%, transparent);
+    --moe-action: var(--moe-color-honey-200);
+    --moe-on-action: var(--moe-color-leather-950);
+    --moe-highlight: var(--moe-color-honey-200);
+    --moe-line: color-mix(in srgb, var(--moe-on-brand) 22%, transparent);
+    --moe-line-strong: color-mix(in srgb, var(--moe-on-brand) 44%, transparent);
+    --moe-focus: var(--moe-color-honey-200);
+    color: var(--moe-text);
+    background: var(--moe-background);
+  }
+  /* 时长与曲线成对；减少动态时归零，组件无需各写一份例外。Duration and curve travel as a pair; reduced motion zeroes them here so components carry no exceptions. */
+  :root {
+    --moe-spring: 0s linear;
+    --moe-bounce: 0s linear;
+    --moe-exit: 0s linear;
+    --moe-press: 1;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :root {
+      --moe-spring: var(--moe-motion-spring) var(--moe-motion-ease-spring);
+      --moe-bounce: var(--moe-motion-bounce) var(--moe-motion-ease-bounce);
+      --moe-exit: var(--moe-motion-base) var(--moe-motion-ease-standard);
+      --moe-press: 0.965;
+    }
+  }
+  :root,
+  [data-moe-surface] {
+    accent-color: var(--moe-action);
+    /* 派生状态色只在此处定义，组件不各自调色。Derived state colors live here so components never mix their own. */
+    --moe-action-hover: color-mix(in srgb, var(--moe-action) 86%, var(--moe-heading));
+    --moe-hover: color-mix(in srgb, var(--moe-heading) 6%, transparent);
+    --moe-pressed: color-mix(in srgb, var(--moe-heading) 11%, transparent);
+    --moe-ring: 0 0 0 3px color-mix(in srgb, var(--moe-accent) 26%, transparent);
+  }
+  /* 触屏放大控件高度，桌面保持紧凑。Touch input enlarges controls; desktop stays compact. */
+  @media (pointer: coarse) {
+    :root {
+      --moe-control-sm: 36px;
+      --moe-control-md: 44px;
+      --moe-control-lg: 48px;
+    }
+  }
+
+  body {
+    min-height: 100vh;
+    color: var(--moe-text);
+    background: var(--moe-background);
+    font-family: var(--moe-font-family-sans);
+    font-size: var(--moe-font-size-md);
+    line-height: 1.65;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :where(h1, h2, h3, h4, h5, h6) {
+    color: var(--moe-heading);
+    font-family: var(--moe-font-family-display);
+    font-weight: var(--moe-font-weight-semibold);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    text-wrap-style: balance;
+  }
+  :where(p, li, dd) {
+    text-wrap-style: pretty;
+  }
+  :where(strong, b) {
+    font-weight: var(--moe-font-weight-semibold);
+  }
+  :where(code, kbd, samp, pre) {
+    font-family: var(--moe-font-family-mono);
+    font-variant-ligatures: none;
+  }
+
+  :where(a) {
+    color: var(--moe-accent-strong);
+    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+    transition: text-decoration-color var(--moe-motion-base) var(--moe-motion-ease-standard);
+  }
+  :where(a:hover) {
+    text-decoration-color: currentColor;
+  }
+  :where(:focus-visible) {
+    outline: 2px solid var(--moe-focus);
+    outline-offset: 2px;
+    animation: moe-focus var(--moe-spring);
+  }
+  :where(::selection) {
+    color: var(--moe-on-highlight);
+    background: var(--moe-highlight);
+  }
+
+  .moe-container {
+    width: min(
+      var(--moe-container-max-width, var(--moe-layout-content)),
+      calc(100% - 2 * var(--moe-container-gutter, var(--moe-space-5)))
+    );
+    margin-inline: auto;
+  }
+  .moe-container[data-size="narrow"] {
+    --moe-container-max-width: var(--moe-layout-reading);
+  }
+  .moe-container[data-size="wide"] {
+    --moe-container-max-width: var(--moe-layout-content);
+  }
+  .moe-container[data-size="full"] {
+    --moe-container-max-width: 100%;
+  }
+
+  .moe-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: var(--moe-stack-align, stretch);
+    gap: var(--moe-stack-gap, var(--moe-stack-space, var(--moe-space-4)));
+  }
+  .moe-cluster {
+    display: flex;
+    flex-wrap: var(--moe-cluster-wrap, wrap);
+    align-items: var(--moe-cluster-align, center);
+    justify-content: var(--moe-cluster-justify, flex-start);
+    gap: var(--moe-cluster-gap, var(--moe-cluster-space, var(--moe-space-3)));
+  }
+  .moe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--moe-grid-min, 16rem)), 1fr));
+    gap: var(--moe-grid-space, var(--moe-space-5));
+  }
+  /* 单元格各画末端与底部发丝线，余下的空位保持表面色。Cells draw their trailing hairlines, so leftover slots keep the surface color. */
+  .moe-grid[data-ruled] {
+    overflow: hidden;
+    border: 1px solid var(--moe-line);
+    border-radius: var(--moe-radius-md);
+    gap: 0;
+    background: var(--moe-surface-strong);
+  }
+  .moe-grid[data-ruled] > * {
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow:
+      1px 0 0 var(--moe-line),
+      0 1px 0 var(--moe-line);
+  }
+  .moe-center {
+    display: grid;
+    place-items: center;
+  }
+
+  .moe-sidebar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--moe-sidebar-space, var(--moe-space-5));
+  }
+  .moe-sidebar > .moe-sidebar__side {
+    flex-basis: var(--moe-sidebar-width, 18rem);
+    flex-grow: 1;
+  }
+  .moe-sidebar > .moe-sidebar__content {
+    flex-basis: 0;
+    flex-grow: 999;
+    min-width: min(100%, var(--moe-sidebar-breakpoint, 50%));
+  }
+
+  .moe-eyebrow {
+    margin: 0;
+    color: var(--moe-text-soft);
+    font-family: var(--moe-font-family-mono);
+    font-size: var(--moe-font-size-xs);
+    font-weight: var(--moe-font-weight-medium);
+    letter-spacing: 0;
+    line-height: 1.5;
+  }
+  /* 坐标纸背景与四角刻度，用于画布与规格图。Graph-paper ground and corner ticks for canvases and spec figures. */
+  .moe-blueprint {
+    background-image:
+      linear-gradient(var(--moe-blueprint-line, var(--moe-line)) 1px, transparent 1px),
+      linear-gradient(90deg, var(--moe-blueprint-line, var(--moe-line)) 1px, transparent 1px);
+    background-position: -1px -1px;
+    background-size: var(--moe-blueprint-size, 32px) var(--moe-blueprint-size, 32px);
+  }
+  .moe-ticks {
+    position: relative;
+  }
+  .moe-ticks::after {
+    position: absolute;
+    inset: -5px;
+    --tick: linear-gradient(var(--moe-accent) 0 0);
+    background:
+      var(--tick) 0 4px / 9px 1px,
+      var(--tick) 4px 0 / 1px 9px,
+      var(--tick) 100% 4px / 9px 1px,
+      var(--tick) calc(100% - 4px) 0 / 1px 9px,
+      var(--tick) 0 calc(100% - 4px) / 9px 1px,
+      var(--tick) 4px 100% / 1px 9px,
+      var(--tick) 100% calc(100% - 4px) / 9px 1px,
+      var(--tick) calc(100% - 4px) 100% / 1px 9px;
+    background-repeat: no-repeat;
+    content: "";
+    pointer-events: none;
+  }
+
+  .moe-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* 焦点环收拢到位，视线跟得上键盘。The ring closes in so the eye can follow the keyboard. */
+  @keyframes moe-focus {
+    from {
+      outline-color: transparent;
+      outline-offset: 8px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto;
+      animation-duration: 0.01ms;
+      animation-iteration-count: 1;
+      transition-duration: 0.01ms;
+    }
+  }
+}

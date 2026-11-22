@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="favicon-title">
+  <title id="favicon-title">moeSegFault</title>
+  <defs>
+    <linearGradient id="klee" x1="10" y1="8" x2="54" y2="57" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#e5403b" />
+      <stop offset="1" stop-color="#9c1823" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#klee)" />
+  <path fill="#fffdf9" d="M18 13h9v14.4L40.2 13H51L35.7 30.2 52 51H40.6L28.3 35.3 27 36.7V51h-9V13Z" />
+  <path fill="#fae19c" d="m49.5 7 1.8 4.7L56 13.5l-4.7 1.8L49.5 20l-1.8-4.7-4.7-1.8 4.7-1.8L49.5 7Z" />
+</svg>

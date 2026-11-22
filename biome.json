@@ -4,6 +4,7 @@
     "includes": [
       "src/**",
       "!src/content",
+      "!src/vendor",
       "astro.config.mjs",
       "vitest.config.ts",
       "package.json"
