@@ -1,0 +1,97 @@
+---
+import {
+  createHearth,
+  type Fuel,
+  packFuel,
+  toneAt,
+  unpackFuel,
+} from "../../lib/pixel/hearth";
+import { strokeRun, tonePaths } from "../../lib/pixel/raster";
+
+interface Props {
+  columns: number;
+  rows: number;
+  fuel: Fuel;
+  class?: string;
+}
+const { columns, rows, fuel, class: className } = Astro.props;
+const packed = packFuel(fuel);
+// Draw from the packed fuel so the browser's replay starts from exactly the same picture.
+const hearth = createHearth(unpackFuel(packed, columns * rows), columns, rows);
+const paths = tonePaths(columns, rows, (column, row) =>
+  toneAt(hearth, column, row),
+);
+---
+<div class:list={["hearth", className]} data-hearth data-columns={columns} data-rows={rows} data-fuel={packed} aria-hidden="true">
+  <svg class="hearth__still" viewBox={`0 0 ${columns} ${rows}`} focusable="false">
+    <g transform="translate(0.07 0.5)" fill="none" {...strokeRun}>
+      {paths.map(({ tone, d }) => <path class={`hearth__${tone}`} d={d} />)}
+    </g>
+  </svg>
+  <slot />
+</div>
+
+<script>
+  import { unpackFuel } from "../../lib/pixel/hearth";
+  import { HearthStage } from "../../lib/pixel/hearth-stage";
+
+  /** Power of a stroke per pixel of movement: a quick hand fans more than a slow one. */
+  const FAN = 1 / 110;
+  const BRUSH = { min: 0.06, max: 0.5 };
+  /** Holding feeds the fire gently; releasing spends what was gathered. */
+  const HOLD = { start: 0.6, gain: 0.09, max: 1.6, feed: 0.2, every: 80 };
+
+  function press(stage: HearthStage, field: HTMLElement, down: PointerEvent): void {
+    let { clientX: x, clientY: y } = down;
+    let gathered = HOLD.start;
+    const done = new AbortController();
+    const { signal } = done;
+    const timer = setInterval(() => {
+      gathered = Math.min(HOLD.max, gathered + HOLD.gain);
+      stage.stokeAt(x, y, HOLD.feed);
+    }, HOLD.every);
+    signal.addEventListener("abort", () => clearInterval(timer));
+    field.addEventListener("pointermove", (event) => {
+      x = event.clientX;
+      y = event.clientY;
+    }, { passive: true, signal });
+    addEventListener("pointerup", () => {
+      stage.stokeAt(x, y, gathered);
+      done.abort();
+    }, { signal });
+    addEventListener("pointercancel", () => done.abort(), { signal });
+  }
+
+  function light(hearth: HTMLElement): void {
+    const columns = Number(hearth.dataset.columns);
+    const rows = Number(hearth.dataset.rows);
+    const fuel = unpackFuel(hearth.dataset.fuel ?? "[]", columns * rows);
+
+    const canvas = document.createElement("canvas");
+    canvas.className = "hearth__stage";
+    hearth.querySelector(".hearth__still")?.after(canvas);
+    const stage = new HearthStage(canvas, fuel, columns, rows);
+    hearth.dataset.lit = "";
+
+    const field = hearth.closest<HTMLElement>("[data-hearth-field]") ?? hearth;
+    field.addEventListener("pointermove", (event) => {
+      const speed = Math.hypot(event.movementX, event.movementY);
+      stage.stokeAt(event.clientX, event.clientY, Math.min(BRUSH.max, BRUSH.min + speed * FAN));
+    }, { passive: true });
+    field.addEventListener("pointerdown", (event) => {
+      if (event.target instanceof Element && event.target.closest("a, button, input")) return;
+      press(stage, field, event);
+    }, { passive: true });
+    hearth.addEventListener("hearth:stoke", (event) => {
+      const { x, y, power } = (event as CustomEvent<{ x: number; y: number; power: number }>).detail;
+      stage.stokeAt(x, y, power);
+    });
+
+    const greeting = Number(hearth.dataset.greet ?? columns * 0.9);
+    setTimeout(() => stage.stokeCell(greeting, rows - 1, 0.8), 500);
+  }
+
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    for (const hearth of document.querySelectorAll<HTMLElement>("[data-hearth]")) light(hearth);
+  }
+</script>

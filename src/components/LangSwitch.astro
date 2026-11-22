@@ -54,31 +54,18 @@ const switcherLabel = currentLocale === "zh" ? "语言切换" : "Language switch
 ---
 
 <nav class="lang-switch" aria-label={switcherLabel}>
-  <span class="lang-switch__label" aria-hidden="true">LANG</span>
-  <span class="lang-switch__choices">
-    {
-      toZH && (
-        <a
-          href={toZH}
-          lang="zh"
-          hreflang="zh"
-          aria-current={currentLocale === "zh" ? "page" : undefined}
-        >
-          中<span class="lang-switch__long-label">文</span>
-        </a>
-      )
-    }
-    {
-      toEN && (
-        <a
-          href={toEN}
-          lang="en"
-          hreflang="en"
-          aria-current={currentLocale === "en" ? "page" : undefined}
-        >
-          EN
-        </a>
-      )
-    }
-  </span>
+  {
+    toZH && (
+      <a href={toZH} lang="zh" hreflang="zh" aria-current={currentLocale === "zh" ? "page" : undefined}>
+        中文
+      </a>
+    )
+  }
+  {
+    toEN && (
+      <a href={toEN} lang="en" hreflang="en" aria-current={currentLocale === "en" ? "page" : undefined}>
+        EN
+      </a>
+    )
+  }
 </nav>

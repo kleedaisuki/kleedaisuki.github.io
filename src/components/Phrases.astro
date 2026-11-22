@@ -1,0 +1,9 @@
+---
+import { phrases } from "../lib/phrases";
+
+interface Props {
+  text: string;
+}
+const parts = phrases(Astro.props.text);
+---
+{parts.map((part, index) => <Fragment>{index > 0 && <wbr />}{part}</Fragment>)}

@@ -1,9 +1,10 @@
 ---
 import { getCollection } from "astro:content";
 import WorkCard from "@components/atelier/WorkCard.astro";
+import Plate from "@components/pixel/Plate.astro";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import "@styles/atelier.css";
-import { asAtelierLocale, ATELIER_COPY, ATELIER_LOCALES } from "@i18n/atelier";
+import { ATELIER_COPY, ATELIER_LOCALES, asAtelierLocale } from "@i18n/atelier";
 import {
   getAtelierActivityDate,
   getAtelierPath,
@@ -81,7 +82,7 @@ const catalogueWorks = await Promise.all(
     ) {
       types.add(copy.source);
     }
-    return { work, latest, types: [...types] };
+    return { work, types: [...types] };
   }),
 );
 /** @brief 动态文件类型筛选项 / Dynamic file-type filters. */
@@ -109,42 +110,34 @@ const structuredData = createAtelierCollectionJsonLd({
   documentLocale={locale}
 >
   <div
-    class="atelier-catalogue"
+    class="page atelier-catalogue"
     data-atelier-catalogue
     data-showing-all={locale === "zh" ? "共展示 {count} 件作品。" : "Showing all {count} {noun}."}
     data-showing-some={locale === "zh" ? "展示 {visible}/{total} 件作品。" : "Showing {visible} of {total} works."}
   >
-    <header class="atelier-hero">
-      <p class="atelier-eyebrow">{copy.selectedWorks}</p>
+    <header class="page-intro">
       <h1>{copy.atelier}</h1>
-      <p class="atelier-hero__tagline">{copy.tagline}</p>
-      <p class="atelier-hero__description">{copy.heroDescription}</p>
+      <Plate seed="articrafts" />
     </header>
 
     {
       works.length > 0 ? (
         <>
-          {typeFilters.length > 0 && (
-            <nav class="atelier-filters" aria-label={copy.filterWorks}>
-              <div class="atelier-filter-group" data-filter-group="type">
-                <span class="atelier-filter-group__label">{copy.type}</span>
-                <div class="atelier-filter-group__options">
-                  <a href={cataloguePath} data-filter-value="" aria-current="true">{copy.allTypes}</a>
-                  {typeFilters.map((type) => (
-                    <a href={`?type=${encodeURIComponent(type.toLocaleLowerCase())}`} data-filter-value={type.toLocaleLowerCase()}>
-                      {type}
-                    </a>
-                  ))}
-                </div>
+          {typeFilters.length > 1 && (
+            <nav class="atelier-toolbar pad" aria-label={copy.filterWorks}>
+              <div class="moe-segmented slider" data-filter-group="type">
+                <a class="moe-segmented__option" href={cataloguePath} data-filter-value="" aria-current="true">{copy.allTypes}</a>
+                {typeFilters.map((type) => (
+                  <a class="moe-segmented__option" href={`?type=${encodeURIComponent(type.toLocaleLowerCase())}`} data-filter-value={type.toLocaleLowerCase()}>
+                    {type}
+                  </a>
+                ))}
               </div>
             </nav>
           )}
-
-          <p class="atelier-results-status" role="status" aria-live="polite" data-results-status>
-            {locale === "zh" ? `共展示 ${works.length} 件作品。` : `Showing all ${works.length} ${works.length === 1 ? "work" : "works"}.`}
-          </p>
+          <p class="moe-visually-hidden" role="status" aria-live="polite" data-results-status></p>
           <div class="atelier-grid" data-work-grid>
-            {catalogueWorks.map(({ work, latest, types }) => (
+            {catalogueWorks.map(({ work, types }) => (
               <WorkCard
                 slug={work.data.slug}
                 locale={locale}
@@ -156,25 +149,19 @@ const structuredData = createAtelierCollectionJsonLd({
                   work.data.releases,
                 )}
                 cover={work.data.cover}
-                version={latest?.version}
-                tags={work.data.tags}
                 types={types}
               />
             ))}
           </div>
-          <section class="atelier-no-results" data-no-results hidden>
-            <span class="atelier-empty__mark" aria-hidden="true">✦</span>
-            <h2>{copy.noMatch}</h2>
-            <p>{copy.tryAnother}</p>
-            <a class="atelier-button" href={cataloguePath} data-clear-filters>{copy.clearFilters}</a>
+          <section class="atelier-empty moe-empty" data-no-results hidden>
+            <h2 class="moe-empty__title">{copy.noMatch}</h2>
+            <a class="moe-button moe-button--secondary" href={cataloguePath} data-clear-filters>{copy.clearFilters}</a>
           </section>
         </>
       ) : (
-        <section class="atelier-empty">
-          <span class="atelier-empty__mark" aria-hidden="true">✦</span>
-          <h2>{copy.emptyTitle}</h2>
-          <p>{copy.emptyBody}</p>
-          <a class="atelier-button atelier-button--primary" href={`/${locale}/`}>{copy.visitBlog}</a>
+        <section class="atelier-empty moe-empty">
+          <h2 class="moe-empty__title">{copy.emptyTitle}</h2>
+          <a class="moe-button" href={`/${locale}/`}>{copy.visitBlog}</a>
         </section>
       )
     }
@@ -227,7 +214,7 @@ const structuredData = createAtelierCollectionJsonLd({
        * @brief 应用筛选并同步控件状态 / Apply filters and synchronize controls.
        * @param state 筛选状态 / Filter state.
        */
-      const applyFilters = (state: FilterState): void => {
+      const applyFilters = (state: FilterState, announce = true): void => {
         let visibleCount = 0;
         for (const card of cards) {
           const typeMatch = !state.type || readTypes(card).includes(state.type);
@@ -247,7 +234,7 @@ const structuredData = createAtelierCollectionJsonLd({
         }
 
         if (noResults) noResults.hidden = visibleCount !== 0;
-        if (status) {
+        if (status && announce) {
           const showingAll = catalogue.dataset.showingAll ?? "Showing all {count} {noun}.";
           const showingSome = catalogue.dataset.showingSome ?? "Showing {visible} of {total} works.";
           status.textContent = visibleCount === cards.length
@@ -289,7 +276,7 @@ const structuredData = createAtelierCollectionJsonLd({
         writeState({ type: "" });
       });
       window.addEventListener("popstate", () => applyFilters(readState()));
-      applyFilters(readState());
+      applyFilters(readState(), false);
     }
   </script>
 </BaseLayout>

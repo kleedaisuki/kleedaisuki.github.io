@@ -1,4 +1,6 @@
 ---
+import CopyButton from "@components/CopyButton.astro";
+import Icon from "@components/Icon.astro";
 import { ATELIER_COPY, type AtelierLocale } from "@i18n/atelier";
 
 /** @brief 源码查看器属性 (source viewer properties) / Properties accepted by the source viewer. */
@@ -6,7 +8,6 @@ interface Props {
   locale: AtelierLocale;
   path: string;
   sizeLabel: string;
-  language: string;
   rawUrl: string;
   archiveUrl: string;
   highlightedHtml?: string;
@@ -18,7 +19,6 @@ const {
   locale,
   path,
   sizeLabel,
-  language,
   rawUrl,
   archiveUrl,
   highlightedHtml,
@@ -31,24 +31,18 @@ const copy = ATELIER_COPY[locale];
 <article
   class="source-viewer"
   data-source-viewer
-  data-copied-label={copy.copied}
-  data-copy-unavailable-label={copy.copyUnavailable}
 >
   <header class="source-viewer__header">
     <div>
-      <p class="source-viewer__eyebrow">{language} · {sizeLabel}</p>
       <h2>{path}</h2>
+      <span class="source-viewer__size">{sizeLabel}</span>
     </div>
     <div class="source-viewer__actions">
       {
-        highlightedHtml && (
-          <button type="button" data-copy-source aria-live="polite">
-            {copy.copy}
-          </button>
-        )
+        highlightedHtml && <CopyButton locale={locale} subject={path} from="[data-source-code] code" />
       }
-      <a href={rawUrl} download>{copy.downloadFile}</a>
-      <a href={archiveUrl} download>{copy.downloadZip}</a>
+      <a class="moe-button moe-button--ghost moe-button--sm" href={rawUrl} download><Icon name="download" size={14} />{copy.downloadFile}</a>
+      <a class="moe-button moe-button--ghost moe-button--sm" href={archiveUrl} download><Icon name="download" size={14} />ZIP</a>
     </div>
   </header>
 
@@ -58,63 +52,7 @@ const copy = ATELIER_COPY[locale];
     ) : (
       <div class="source-viewer__unavailable">
         <p>{previewNote ?? copy.previewUnavailable}</p>
-        <dl>
-          <div>
-            <dt>{copy.path}</dt>
-            <dd>{path}</dd>
-          </div>
-          <div>
-            <dt>{copy.fileType}</dt>
-            <dd>{language}</dd>
-          </div>
-          <div>
-            <dt>{copy.size}</dt>
-            <dd>{sizeLabel}</dd>
-          </div>
-        </dl>
-        <a class="source-viewer__download" href={rawUrl} download>
-          {copy.downloadThisFile}
-        </a>
       </div>
     )
   }
 </article>
-
-<script>
-  /**
-   * @brief 初始化源码复制操作 (source copy action) / Wire copy buttons to their adjacent highlighted source.
-   * @return 无返回值 / No return value.
-   */
-  const initializeSourceCopy = (): void => {
-    /** @brief 当前页源码查看器 (current source viewer) / Source viewer on the current page. */
-    const viewer = document.querySelector<HTMLElement>("[data-source-viewer]");
-    /** @brief 源码复制按钮 (source copy button) / Copy button belonging to the current viewer. */
-    const button = viewer?.querySelector<HTMLButtonElement>("[data-copy-source]");
-    /** @brief 高亮源码代码节点 (highlighted code node) / Code element emitted by Shiki. */
-    const code = viewer?.querySelector<HTMLElement>("[data-source-code] code");
-
-    if (!viewer || !button || !code || button.dataset.copyInitialized === "true") return;
-    button.dataset.copyInitialized = "true";
-
-    button.addEventListener("click", async () => {
-      /** @brief 复制前的按钮文案 (original button label) / Button label restored after feedback. */
-      const originalLabel = button.textContent ?? "Copy";
-      const copiedLabel = viewer.dataset.copiedLabel ?? "Copied";
-      const copyUnavailableLabel = viewer.dataset.copyUnavailableLabel ?? "Copy unavailable";
-
-      try {
-        await navigator.clipboard.writeText(code.innerText);
-        button.textContent = copiedLabel;
-      } catch {
-        button.textContent = copyUnavailableLabel;
-      }
-
-      window.setTimeout(() => {
-        button.textContent = originalLabel;
-      }, 1800);
-    });
-  };
-
-  document.addEventListener("astro:page-load", initializeSourceCopy);
-  initializeSourceCopy();
-</script>

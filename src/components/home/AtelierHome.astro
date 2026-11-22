@@ -1,143 +1,213 @@
 ---
 import { getCollection } from "astro:content";
-import BaseLayout from "@layouts/BaseLayout.astro";
-import SubscribeForm from "./SubscribeForm.astro";
-import { useTranslations } from "@i18n/utils";
+import Icon from "@components/Icon.astro";
+import Phrases from "@components/Phrases.astro";
+import DitherEdge from "@components/pixel/DitherEdge.astro";
+import Hearth from "@components/pixel/Hearth.astro";
+import Plate from "@components/pixel/Plate.astro";
 import type { AtelierLocale } from "@i18n/atelier";
+import { useTranslations } from "@i18n/utils";
+import BaseLayout from "@layouts/BaseLayout.astro";
 import { getAtelierPath, getAtelierText } from "../../lib/atelier";
+import { isoDay } from "../../lib/dates";
+import { bedFuel, HEARTH } from "../../lib/pixel/hearth";
+import { placeSparks } from "../../lib/pixel/sparks";
+import { createTimeline } from "../../lib/pixel/timeline";
+import { createWebSiteJsonLd, getPostPath } from "../../lib/seo";
 import {
   getRecentStudioPosts,
   getRecentStudioWorks,
   getStudioMaterials,
   getStudioWorkActivity,
 } from "../../lib/studio-index";
-import { createWebSiteJsonLd } from "../../lib/seo";
+import SubscribeForm from "./SubscribeForm.astro";
 import "@styles/home.css";
 
-/** @brief Atelier 门厅组件属性 / Properties for the Atelier foyer component. */
 interface Props {
   locale: AtelierLocale;
 }
-
-/** @brief 当前门厅语言 / Current foyer locale. */
 const { locale } = Astro.props;
-/** @brief 当前语言的界面翻译函数 / UI translation function for the current locale. */
 const t = useTranslations(locale);
-/** @brief 当前语言的博客入口 / Blog entrance for the current locale. */
 const blogPath = `/${locale}/blog/`;
-/** @brief 当前语言的 Articrafts 入口 / Articrafts entrance for the current locale. */
 const articraftsPath = `/${locale}/articrafts/`;
-/** @brief 全部博客内容 / Entire blog collection. */
-const allPosts = await getCollection("blog");
-/** @brief 全部 Articrafts 内容 / Entire Articrafts collection. */
 const allWorks = await getCollection("atelier");
-/** @brief 当前语言最近发布的少量文章 / Small set of newest posts in the current locale. */
-const recentPosts = getRecentStudioPosts(allPosts, locale);
-/** @brief 最近活动的少量作品 / Small set of recently active works. */
-const recentWorks = getRecentStudioWorks(allWorks);
-/** @brief 当前语言全部公开文章 / All published posts in the current locale. */
-const publishedLocalePosts = getRecentStudioPosts(
-  allPosts,
+const posts = getRecentStudioPosts(
+  await getCollection("blog"),
   locale,
   Number.POSITIVE_INFINITY,
 );
-/** @brief 来自真实内容的材料与实践线索 / Material and practice cues derived from real content. */
-const materials = getStudioMaterials(publishedLocalePosts, allWorks);
-/** @brief 门厅页面标题 / Foyer page title. */
-const pageTitle = t("home.page_title");
-/** @brief 门厅结构化数据 / Structured data for the foyer. */
-const structuredData = createWebSiteJsonLd(locale);
-/** @brief HTML 日期语言 / Locale used to format visible dates. */
-const dateLocale = locale === "zh" ? "zh-CN" : "en";
+const works = getRecentStudioWorks(allWorks, Number.POSITIVE_INFINITY);
+const materials = getStudioMaterials(posts, allWorks, 12);
+
+const pieces = [
+  ...posts.map(({ data }) => ({
+    kind: "post" as const,
+    date: data.date,
+    title: data.title,
+    href: getPostPath(locale, data.slug),
+  })),
+  ...works.map(({ data }) => ({
+    kind: "work" as const,
+    date: data.published,
+    title: getAtelierText(data.title, locale),
+    href: getAtelierPath(locale, data.slug),
+  })),
+].sort((left, right) => left.date.getTime() - right.date.getTime());
+
+/** The fire has room for this many sparks; older pieces stay in the archives. */
+const HEARTH_PIECES = 48;
+const recent = pieces.slice(-HEARTH_PIECES);
+const timeline = createTimeline(recent.map(({ date }) => date));
+const { columns, rows } = HEARTH;
+const sparks = placeSparks(recent, timeline, rows);
+const percent = (value: number, extent: number) =>
+  `${((100 * value) / extent).toFixed(2)}%`;
 ---
 
-<BaseLayout pageTitle={pageTitle} description={t("home.intro")} structuredData={structuredData} documentLocale={locale}>
-  <div class="studio-home">
-    <header class="studio-hero">
-      <div class="studio-hero__copy">
-        <p class="studio-kicker">{t("home.kicker")}</p>
+<BaseLayout pageTitle={t("home.page_title")} description={t("home.intro")} structuredData={createWebSiteJsonLd(locale)} documentLocale={locale}>
+  <div class="page studio-home">
+    <section class="studio-hero bleed" data-moe-surface="brand" data-hearth-field>
+      <div class="studio-hero__copy framed pad">
         <h1>Atelier</h1>
-        <p class="studio-hero__lead">{t("home.greeting")}</p>
-        <p class="studio-hero__intro">{t("home.intro")}</p>
+        <p class="studio-hero__lead"><Phrases text={t("home.greeting")} /></p>
       </div>
-      <dl class="studio-process" aria-label={t("home.process_label")}>
-        <div><dt>{t("home.making_label")}</dt><dd>{t("home.making_text")}</dd></div>
-        <div><dt>{t("home.made_label")}</dt><dd>{t("home.made_text")}</dd></div>
-        <div><dt>{t("home.materials_label")}</dt><dd>{t("home.materials_text")}</dd></div>
-      </dl>
-    </header>
 
-    <nav class="studio-doors" aria-label={t("home.explore_label")}>
-      <a class="studio-door studio-door--writing" href={blogPath}>
-        <span class="studio-door__number" aria-hidden="true">01</span>
-        <span class="studio-door__eyebrow">{t("home.writing_desk")}</span>
-        <h2>Blog</h2>
-        <p>{t("home.blog_intro")}</p>
-        <span class="studio-door__action">{t("home.enter_blog")} <span aria-hidden="true">↗</span></span>
-      </a>
-      <a class="studio-door studio-door--articrafts" href={articraftsPath}>
-        <span class="studio-door__number" aria-hidden="true">02</span>
-        <span class="studio-door__eyebrow">{t("home.worktable")}</span>
-        <h2>Articrafts</h2>
-        <p>{t("home.articrafts_intro")}</p>
-        <span class="studio-door__action">{t("home.enter_articrafts")} <span aria-hidden="true">↗</span></span>
-      </a>
-    </nav>
-
-    <section class="studio-now" aria-labelledby="studio-now-title">
-      <header class="studio-section-heading">
-        <p class="studio-kicker">{t("home.on_tables")}</p>
-        <h2 id="studio-now-title">{t("home.recent_title")}</h2>
-        <p>{t("home.recent_intro")}</p>
-      </header>
-      <div class="studio-tracks">
-        <section class="studio-track" aria-labelledby="writing-track-title">
-          <header class="studio-track__heading">
-            <div><p>{t("home.writing_desk")}</p><h3 id="writing-track-title">{t("home.recent_writing")}</h3></div>
-            <a href={blogPath}>{t("home.view_all")} <span aria-hidden="true">→</span></a>
-          </header>
-          {recentPosts.length > 0 ? (
-            <ol class="studio-list">
-              {recentPosts.map((post) => (
-                <li><a href={`/${locale}/blog/${encodeURIComponent(post.data.slug)}/`}>
-                  <div class="studio-list__body"><h4>{post.data.title}</h4><p>{post.data.description}</p></div>
-                  <time datetime={post.data.date.toISOString()}>{post.data.date.toLocaleDateString(dateLocale, { year: "numeric", month: "short", day: "numeric" })}</time>
-                </a></li>
-              ))}
-            </ol>
-          ) : <p class="studio-empty">{t("home.empty_writing")}</p>}
-        </section>
-
-        <section class="studio-track" aria-labelledby="articrafts-track-title">
-          <header class="studio-track__heading">
-            <div><p>{t("home.worktable")}</p><h3 id="articrafts-track-title">{t("home.recent_articrafts")}</h3></div>
-            <a href={articraftsPath}>{t("home.view_all")} <span aria-hidden="true">→</span></a>
-          </header>
-          {recentWorks.length > 0 ? (
-            <ol class="studio-list">
-              {recentWorks.map((work) => {
-                const activity = getStudioWorkActivity(work);
-                return <li><a href={getAtelierPath(locale, work.data.slug)}>
-                  <div class="studio-list__body"><h4>{getAtelierText(work.data.title, locale)}</h4><p>{getAtelierText(work.data.summary, locale)}</p></div>
-                  <time datetime={activity.toISOString()}>{activity.toLocaleDateString(dateLocale, { year: "numeric", month: "short", day: "numeric" })}</time>
-                </a></li>;
-              })}
-            </ol>
-          ) : <p class="studio-empty">{t("home.empty_articrafts")}</p>}
-        </section>
-      </div>
+      <Hearth columns={columns} rows={rows} fuel={bedFuel(timeline.profile, rows)}>
+        <div class="sparks">
+          {
+            sparks.map(({ kind, title, href, date, column, row }) => (
+              <a
+                class="spark"
+                data-kind={kind}
+                data-piece={href}
+                data-date={isoDay(date)}
+                data-title={title}
+                href={href}
+                tabindex="-1"
+                style={`left:${percent(column, columns)};top:${percent(row, rows)}`}
+              />
+            ))
+          }
+          <p class="spark-label" data-spark-label></p>
+        </div>
+        <div class="hearth-axis">
+          {
+            timeline.quarters.map((date) => (
+              <span style={`left:${percent(timeline.columnOf(date), columns)}`} data-year={date.getUTCMonth() === 0 || undefined}>
+                {isoDay(date).slice(0, 7)}
+              </span>
+            ))
+          }
+        </div>
+      </Hearth>
     </section>
 
-    {materials.length > 0 && (
-      <aside class="studio-materials" aria-labelledby="studio-materials-title">
-        <div>
-          <p class="studio-kicker">{t("home.materials_label")}</p>
-          <h2 id="studio-materials-title">{t("home.materials_title")}</h2>
-          <p>{t("home.materials_intro")}</p>
-        </div>
-        <ul aria-label={t("home.materials_title")}>{materials.map((material) => <li>{material}</li>)}</ul>
-      </aside>
-    )}
-    <SubscribeForm locale={locale} />
+    <div class="studio-doors">
+      <section class="studio-door pad" aria-labelledby="door-blog">
+        <header class="studio-door__head">
+          <h2 id="door-blog"><a href={blogPath}><span class="mark" data-kind="post"></span>Blog <Icon name="arrow-right" size={20} /></a></h2>
+        </header>
+        <ol class="studio-list">
+          {
+            posts.slice(0, 8).map(({ data }) => (
+              <li class="row-link" data-piece={getPostPath(locale, data.slug)}>
+                <time datetime={data.date.toISOString()}>{isoDay(data.date)}</time>
+                <h3><a href={getPostPath(locale, data.slug)}><Phrases text={data.title} /></a></h3>
+              </li>
+            ))
+          }
+        </ol>
+        {posts.length === 0 && <p>{t("home.empty_writing")}</p>}
+      </section>
+
+      <section class="studio-door pad" aria-labelledby="door-articrafts">
+        <header class="studio-door__head">
+          <h2 id="door-articrafts"><a href={articraftsPath}><span class="mark" data-kind="work"></span>Articrafts <Icon name="arrow-right" size={20} /></a></h2>
+        </header>
+        <ol class="studio-list studio-list--works">
+          {
+            works.slice(0, 4).map((work) => {
+              const activity = getStudioWorkActivity(work);
+              const { slug, cover } = work.data;
+              return (
+                <li class="row-link" data-piece={getAtelierPath(locale, slug)}>
+                  <div class="studio-list__plate" style={`view-transition-name:plate-${slug}`}>
+                    {cover ? <img src={cover} alt="" loading="lazy" /> : <Plate seed={slug} />}
+                  </div>
+                  <div>
+                    <h3><a href={getAtelierPath(locale, slug)}><Phrases text={getAtelierText(work.data.title, locale)} /></a></h3>
+                    <time datetime={activity.toISOString()}>{isoDay(activity)}</time>
+                  </div>
+                </li>
+              );
+            })
+          }
+        </ol>
+        {works.length === 0 && <p>{t("home.empty_articrafts")}</p>}
+      </section>
+    </div>
+
+    {
+      materials.length > 0 && (
+        <section class="studio-materials pad">
+          <ul class="tag-list" aria-label={t("home.materials_title")}>{materials.map((material) => <li>{material}</li>)}</ul>
+        </section>
+      )
+    }
+
+    <section class="studio-closing bleed" data-moe-surface="brand">
+      <DitherEdge side="top" />
+      <SubscribeForm locale={locale} />
+    </section>
   </div>
 </BaseLayout>
+
+<script>
+  // A spark in the fire and its row in a list are one piece: touching either lights both.
+  const home = document.querySelector<HTMLElement>(".studio-home");
+  const label = document.querySelector<HTMLElement>("[data-spark-label]");
+  const marks = [...document.querySelectorAll<HTMLElement>("[data-piece]")];
+  const WARMTH = 0.45;
+  let lit: string | undefined;
+
+  function name(spark: HTMLElement): void {
+    if (!label) return;
+    const date = document.createElement("time");
+    date.textContent = spark.dataset.date ?? "";
+    label.replaceChildren(date, spark.dataset.title ?? "");
+    label.style.left = spark.style.left;
+    label.style.top = spark.style.top;
+    // Shifting by the same share keeps the label inside the fire at either end.
+    label.style.setProperty("--shift", spark.style.left);
+    void label.offsetWidth;
+    label.dataset.active = "";
+  }
+
+  function warm(spark: HTMLElement): void {
+    const { x, y } = spark.getBoundingClientRect();
+    const detail = { x, y, power: WARMTH };
+    spark.dispatchEvent(new CustomEvent("hearth:stoke", { bubbles: true, detail }));
+  }
+
+  function light(piece: string | undefined, named = false): void {
+    if (piece === lit) return;
+    lit = piece;
+    delete label?.dataset.active;
+    for (const mark of marks) mark.toggleAttribute("data-active", piece !== undefined && mark.dataset.piece === piece);
+    const spark = home?.querySelector<HTMLElement>(".spark[data-active]");
+    if (!spark) return;
+    warm(spark);
+    if (named) name(spark);
+  }
+
+  const pieceOf = (target: EventTarget | null): string | undefined =>
+    target instanceof Element ? target.closest<HTMLElement>("[data-piece]")?.dataset.piece : undefined;
+
+  const isSpark = (target: EventTarget | null): boolean => target instanceof Element && target.matches(".spark");
+
+  // A row already shows its title, so only a spark needs the label.
+  home?.addEventListener("pointerover", ({ target }) => light(pieceOf(target), isSpark(target)));
+  home?.addEventListener("pointerleave", () => light(undefined));
+  home?.addEventListener("focusin", ({ target }) => light(pieceOf(target)));
+  home?.addEventListener("focusout", () => light(undefined));
+</script>

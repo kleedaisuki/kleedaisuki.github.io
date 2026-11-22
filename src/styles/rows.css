@@ -1,0 +1,39 @@
+/* A row is one target with one link, and its edge lights like a live wire. */
+.row-link {
+  position: relative;
+  transition:
+    background-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+    box-shadow var(--moe-spring);
+}
+.row-link :is(h2, h3) {
+  margin: 0;
+  font-size: 1.0625rem;
+  letter-spacing: -0.015em;
+  line-height: 1.45;
+  text-wrap-style: auto;
+}
+.row-link :is(h2, h3) > a {
+  color: inherit;
+  text-decoration: none;
+}
+.row-link :is(h2, h3) > a::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+}
+.row-link:is(:hover, :focus-within, [data-active]) {
+  background: var(--moe-hover);
+  box-shadow: inset 3px 0 var(--moe-accent);
+}
+.row-link:active {
+  background: var(--moe-pressed);
+}
+.row-link time {
+  color: var(--moe-text-soft);
+  font-size: var(--moe-font-size-xs);
+}
+.row-link p {
+  color: var(--moe-text-soft);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}

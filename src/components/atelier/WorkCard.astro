@@ -1,8 +1,10 @@
 ---
-import { ATELIER_COPY, type AtelierLocale } from "@i18n/atelier";
-import { DEFAULT_ATELIER_COVER, getAtelierPath } from "../../lib/atelier";
+import Phrases from "@components/Phrases.astro";
+import Plate from "@components/pixel/Plate.astro";
+import type { AtelierLocale } from "@i18n/atelier";
+import { getAtelierPath } from "../../lib/atelier";
+import { isoDay } from "../../lib/dates";
 
-/** @brief Atelier 卡片属性 / Atelier work-card properties. */
 interface Props {
   locale: AtelierLocale;
   slug: string;
@@ -10,73 +12,19 @@ interface Props {
   summary: string;
   activityDate: Date;
   cover?: string;
-  version?: string;
-  tags: string[];
   types: string[];
 }
-
-const {
-  locale,
-  slug,
-  title,
-  summary,
-  activityDate,
-  cover,
-  version,
-  tags,
-  types,
-} = Astro.props as Props;
-
-/** @brief 作品封面或统一默认封面 / Work cover or the shared default cover. */
-const coverUrl = cover ?? DEFAULT_ATELIER_COVER;
-/** @brief 当前语言的作品卡片文案 / Localized work-card copy. */
-const copy = ATELIER_COPY[locale];
-/** @brief 可读的最近活动日期 / Human-readable latest activity date. */
-const activityDateLabel = activityDate.toLocaleDateString(
-  locale === "zh" ? "zh-CN" : "en",
-  {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  },
-);
+const { locale, slug, title, summary, activityDate, cover, types } =
+  Astro.props;
 ---
 
-<article
-  class="atelier-card"
-  data-work-card
-  data-types={JSON.stringify(types.map((type) => type.toLocaleLowerCase()))}
->
-  <div class="atelier-card__cover">
-    <img src={coverUrl} alt="" loading="lazy" decoding="async" />
+<article class="atelier-card" data-work-card data-types={JSON.stringify(types.map((type) => type.toLocaleLowerCase()))}>
+  <div class="atelier-card__plate" style={`view-transition-name:plate-${slug}`}>
+    {cover ? <img src={cover} alt="" loading="lazy" decoding="async" /> : <Plate seed={slug} />}
   </div>
   <div class="atelier-card__body">
-    <p class="atelier-card__kind">{copy.artifact} / {slug}</p>
-    <h2><a href={getAtelierPath(locale, slug)}>{title}</a></h2>
-    <p>{summary}</p>
-    <dl class="atelier-card__manifest">
-      <div>
-        <dt>{copy.lastActivity}</dt>
-        <dd><time datetime={activityDate.toISOString()}>{activityDateLabel}</time></dd>
-      </div>
-      <div>
-        <dt>{copy.includedFiles}</dt>
-        <dd>{types.length > 0 ? types.join(" · ") : "—"}</dd>
-      </div>
-      <div>
-        <dt>{copy.releaseLabel}</dt>
-        <dd>{version ? `v${version}` : "—"}</dd>
-      </div>
-    </dl>
-    {
-      tags.length > 0 && (
-        <ul
-          class="atelier-card__chips"
-          aria-label={copy.workTags}
-        >
-          {tags.map((tag) => <li class="atelier-chip">{tag}</li>)}
-        </ul>
-      )
-    }
+    <time datetime={activityDate.toISOString()}>{isoDay(activityDate)}</time>
+    <h2><a href={getAtelierPath(locale, slug)}><Phrases text={title} /></a></h2>
+    <p class="atelier-card__summary">{summary}</p>
   </div>
 </article>

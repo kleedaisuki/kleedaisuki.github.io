@@ -1,55 +1,88 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * @brief 迁移前已发布主题色 / Published palette before the Workers migration.
+ * @brief moeSegFault Style v0.2.0 已发布主题色 / Palette published by moeSegFault Style v0.2.0.
  * @note 这是独立的用户可见合同，不从当前样式表读取期望值 / These are independent user-facing expectations, not values parsed from the current stylesheet.
  */
 const palette = {
-  light: { background: "#fff6ea", text: "#4b2a1e", accent: "#e66a3f" },
-  dark: { background: "#21130f", text: "#f6e7dc", accent: "#f27a50" },
+  light: { background: "rgb(255, 253, 249)", text: "rgb(75, 49, 42)", hero: "rgb(191, 32, 41)" },
+  dark: { background: "rgb(22, 11, 12)", text: "rgb(243, 230, 216)", hero: "rgb(119, 19, 29)" },
 } as const;
 
 /**
- * @brief 读取实际渲染后的语义主题色 / Read computed semantic theme colors after rendering.
+ * @brief 读取访客实际看到的颜色 / Read the colors a visitor actually sees.
  * @param page Playwright 页面 / Playwright page.
- * @returns 三个稳定的主题令牌 / Three stable theme tokens.
+ * @returns 页面、正文与首屏颜色 / Page, text, and hero colors.
  */
 async function renderedPalette(page: import("@playwright/test").Page) {
-  return page.evaluate(() => {
-    const styles = getComputedStyle(document.documentElement);
-    return {
-      background: styles.getPropertyValue("--bg-color").trim().toLowerCase(),
-      text: styles.getPropertyValue("--text-color").trim().toLowerCase(),
-      accent: styles.getPropertyValue("--accent-color").trim().toLowerCase(),
-    };
-  });
+  return page.evaluate(() => ({
+    background: getComputedStyle(document.body).backgroundColor,
+    text: getComputedStyle(document.body).color,
+    hero: getComputedStyle(document.querySelector(".studio-hero") as Element).backgroundColor,
+  }));
 }
 
-test("迁移保留明暗主题色和桌面双栏门厅", async ({ page }) => {
+test("明暗主题色和桌面双栏门厅", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
+  await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
   await page.goto("/zh/");
   await page.evaluate(() => document.fonts.ready);
-  await page.locator("html").evaluate((root) => (root.dataset.theme = "light"));
   expect(await renderedPalette(page)).toEqual(palette.light);
 
-  const hero = page.locator(".studio-hero");
-  const copy = hero.locator(".studio-hero__copy");
-  const process = hero.locator(".studio-process");
   const doors = page.locator(".studio-doors .studio-door");
-  await expect(hero).toBeVisible();
   await expect(doors).toHaveCount(2);
-  const [copyBox, processBox, blogBox, workBox] = await Promise.all([
-    copy.boundingBox(), process.boundingBox(), doors.nth(0).boundingBox(), doors.nth(1).boundingBox(),
+  const [titleBox, leadBox, blogBox, workBox] = await Promise.all([
+    page.locator(".studio-hero h1").boundingBox(),
+    page.locator(".studio-hero__lead").boundingBox(),
+    doors.nth(0).boundingBox(),
+    doors.nth(1).boundingBox(),
   ]);
-  expect(copyBox && processBox && copyBox.x + copyBox.width < processBox.x).toBeTruthy();
-  expect(blogBox && workBox && blogBox.x + blogBox.width < workBox.x).toBeTruthy();
+  expect(titleBox && leadBox && titleBox.x + titleBox.width <= leadBox.x).toBeTruthy();
+  expect(blogBox && workBox && blogBox.x + blogBox.width <= workBox.x + 1).toBeTruthy();
   expect(blogBox && workBox && Math.abs(blogBox.y - workBox.y) < 2).toBeTruthy();
 
-  await page.locator("html").evaluate((root) => (root.dataset.theme = "dark"));
-  expect(await renderedPalette(page)).toEqual(palette.dark);
+  await page.locator("[data-theme-toggle]").click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect.poll(() => renderedPalette(page)).toEqual(palette.dark);
 });
 
-test("迁移保留手机单栏和正文阅读宽度", async ({ page }) => {
+test("首屏火焰由真实作品点燃，并尊重减弱动态偏好", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/zh/");
+  await expect(page.locator(".hearth__still")).toBeVisible();
+  await expect(page.locator(".hearth__stage")).toHaveCount(0);
+  for (const href of await page.locator(".spark").evaluateAll((sparks) => sparks.map((spark) => spark.getAttribute("href")))) {
+    expect(href).toMatch(/^\/zh\/(blog|articrafts)\//);
+  }
+
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.reload();
+  await expect(page.locator(".hearth__stage")).toHaveCount(1);
+});
+
+test("火星与对应列表行互相点亮，只有火星需要标题", async ({ page, isMobile }) => {
+  test.skip(isMobile, "触屏没有悬停 / Touch screens have no hover");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/zh/");
+  const row = page.locator(".studio-door .row-link").first();
+  const piece = await row.getAttribute("data-piece");
+  const spark = page.locator(`.spark[data-piece="${piece}"]`);
+  const label = page.locator("[data-spark-label]");
+
+  await row.hover();
+  await expect(spark).toHaveAttribute("data-active", "");
+  await expect(label).toBeHidden();
+
+  await spark.dispatchEvent("pointerover");
+  await page.locator(".studio-hero h1").hover();
+  await expect(spark).not.toHaveAttribute("data-active", "");
+  await spark.dispatchEvent("pointerover");
+  await expect(row).toHaveAttribute("data-active", "");
+  await expect(label).toBeVisible();
+  await expect(label).toContainText((await row.locator("h3").textContent()) ?? "");
+});
+
+test("手机单栏和正文阅读宽度", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/zh/");
   const doors = page.locator(".studio-doors .studio-door");

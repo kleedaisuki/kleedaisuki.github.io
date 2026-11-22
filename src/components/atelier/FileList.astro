@@ -1,4 +1,6 @@
 ---
+import CopyButton from "@components/CopyButton.astro";
+import Icon from "@components/Icon.astro";
 import { ATELIER_COPY, type AtelierLocale } from "@i18n/atelier";
 import {
   type AtelierText,
@@ -9,7 +11,6 @@ import {
   getReleaseFileUrl,
 } from "../../lib/atelier";
 
-/** @brief Atelier 文件描述 / Atelier file descriptor. */
 interface AtelierFile {
   id: string;
   label: AtelierText;
@@ -21,115 +22,56 @@ interface AtelierFile {
   available?: boolean;
 }
 
-/** @brief 文件列表属性 / File-list properties. */
 interface Props {
   locale: AtelierLocale;
   slug: string;
   version: string;
   files: AtelierFile[];
 }
-
-const { locale, slug, version, files } = Astro.props as Props;
-/** @brief 当前文件列表文案 / Current localized file-list copy. */
+const { locale, slug, version, files } = Astro.props;
 const copy = ATELIER_COPY[locale];
 
-/** @brief 文件用途分组 / Purpose-oriented file group. */
-interface FileGroup {
-  id: string;
-  label: string;
-  files: AtelierFile[];
-}
-
-/**
- * @brief 推导面向读者的文件用途 / Infer a reader-facing file purpose.
- * @param file 文件描述 / File descriptor.
- * @return 分组标识 / Group identifier.
- */
-function getGroup(file: AtelierFile): string {
-  const mediaType = file.mediaType?.toLocaleLowerCase() ?? "";
-  const path = file.path.toLocaleLowerCase();
-  const capability = getFileCapability(file);
-
-  if (capability.kind === "pdf") return "documents";
-  if (
-    mediaType.startsWith("text/") ||
-    /\.(?:c|cc|cpp|cs|css|go|h|hpp|html|java|js|jsx|kt|md|py|rs|sh|ts|tsx)$/.test(
-      path,
-    )
-  )
-    return "source";
-  if (
-    mediaType.includes("csv") ||
-    mediaType.includes("json") ||
-    /\.(?:csv|json|parquet|tsv)$/.test(path)
-  )
-    return "data";
-  return "other";
-}
-
-/** @brief 固定顺序的非空文件分组 / Non-empty file groups in stable order. */
-const groups: FileGroup[] = [
-  { id: "documents", label: copy.documents, files: [] },
-  { id: "source", label: copy.sourceFiles, files: [] },
-  { id: "data", label: copy.data, files: [] },
-  { id: "other", label: copy.otherDownloads, files: [] },
-];
-
-for (const file of files) {
-  groups.find((group) => group.id === getGroup(file))?.files.push(file);
-}
+const items = files.map((file) => ({
+  ...file,
+  title: getAtelierText(file.label, locale),
+  note: file.description && getAtelierText(file.description, locale),
+  extension: file.path.match(/\.([^./]+)$/)?.[1]?.toUpperCase(),
+  downloadUrl: getReleaseFileUrl(slug, version, file),
+  readerUrl:
+    getFileCapability(file).kind === "pdf"
+      ? getPdfReaderUrl(locale, slug, version, file.id)
+      : undefined,
+  isAvailable: file.available !== false,
+}));
 ---
 
-<div class="file-groups">
+<ul class="file-list moe-panel">
   {
-    groups.filter((group) => group.files.length > 0).map((group) => (
-      <section class="file-group" aria-labelledby={`file-group-${group.id}-${version}`}>
-        <h3 id={`file-group-${group.id}-${version}`}>{group.label}</h3>
-        <ul class="file-list">
-          {group.files.map((file) => {
-            const capability = getFileCapability(file);
-            const downloadUrl = getReleaseFileUrl(slug, version, file);
-            const isPdf = capability.kind === "pdf";
-            const isAvailable = file.available !== false;
-
-            return (
-              <li class="file-item">
-                <div class="file-item__content">
-                  <p class="file-item__title">{getAtelierText(file.label, locale)}</p>
-                  {file.description && <p class="file-item__description">{getAtelierText(file.description, locale)}</p>}
-                  <dl class="file-item__meta">
-                    {file.mediaType && (
-                      <div><dt>{copy.format}</dt><dd>{file.mediaType}</dd></div>
-                    )}
-                    {file.size !== undefined && (
-                      <div><dt>{copy.size}</dt><dd>{formatFileSize(file.size)}</dd></div>
-                    )}
-                    {file.checksum && (
-                      <div class="file-item__checksum">
-                        <dt>SHA-256</dt><dd><code>{file.checksum}</code></dd>
-                      </div>
-                    )}
-                  </dl>
-                </div>
-                <div class="file-item__actions">
-                  {!isAvailable ? (
-                    <span class="atelier-inline-empty" role="status">{copy.fileUnavailable}</span>
-                  ) : isPdf ? (
-                    <a class="atelier-button atelier-button--primary" href={getPdfReaderUrl(locale, slug, version, file.id)}>
-                      {copy.readOnline}
-                    </a>
-                  ) : null}
-                  {isAvailable && (
-                    <a class="atelier-button" href={downloadUrl} download>
-                      {copy.download}
-                    </a>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+    items.map((file) => (
+      <li class="file-item">
+        <Icon name="file" size={20} class="file-item__icon" />
+        <div class="file-item__content">
+          <p class="file-item__title">{file.title}</p>
+          {file.note && <p class="file-item__description">{file.note}</p>}
+          <p class="file-item__meta">
+            {file.extension && <span>{file.extension}</span>}
+            {file.size !== undefined && <span>{formatFileSize(file.size)}</span>}
+          </p>
+          {file.checksum && (
+            <div class="file-item__checksum">
+              <code>{file.checksum}</code>
+              <CopyButton locale={locale} subject="SHA-256" text={file.checksum} />
+            </div>
+          )}
+        </div>
+        <div class="file-item__actions">
+          {!file.isAvailable && <span class="atelier-note" role="status">{copy.fileUnavailable}</span>}
+          {file.isAvailable && file.readerUrl && <a class="moe-button" href={file.readerUrl}>{copy.readOnline}</a>}
+          {file.isAvailable && (
+            <a class="moe-button moe-button--secondary" href={file.downloadUrl} download><Icon name="download" />{copy.download}</a>
+          )}
+        </div>
+      </li>
     ))
   }
-</div>
+</ul>

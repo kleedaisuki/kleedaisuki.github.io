@@ -1,0 +1,18 @@
+---
+import { strokeRun, tonePaths } from "../../lib/pixel/raster";
+import { pixelNumber } from "../../lib/pixel/type";
+
+interface Props {
+  value: number;
+  class?: string;
+}
+const { value, class: className } = Astro.props;
+const { columns, rows, lit } = pixelNumber(value);
+const [path] = tonePaths(columns, rows, (column, row) =>
+  lit(column, row) ? "ink" : undefined,
+);
+---
+<svg class:list={["pixel-number", className]} viewBox={`0 0 ${columns} ${rows}`} aria-hidden="true" focusable="false">
+  <path d={path?.d} transform="translate(0.07 0.5)" fill="none" stroke="currentColor" {...strokeRun} />
+</svg>
+<span class="moe-visually-hidden">{value}</span>

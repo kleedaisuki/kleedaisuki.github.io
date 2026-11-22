@@ -280,8 +280,8 @@ function verifyAtelier() {
           assert(detail.includes(expectedFileLabel), `Articrafts detail lacks a localized file label: ${detailPath}`);
           assert(!detail.includes(foreignFileLabel), `Articrafts detail mixes file-label languages: ${detailPath}`);
           assert(
-            detail.includes('src="/atelier-default-cover.svg"'),
-            `Articrafts detail lacks the default cover: ${detailPath}`,
+            detail.includes('class="plate"'),
+            `Articrafts detail lacks a generated plate: ${detailPath}`,
           );
         }
 

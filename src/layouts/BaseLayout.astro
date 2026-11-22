@@ -1,10 +1,10 @@
 ---
 import "@styles/global.css";
-import "@styles/fonts.css";
 import { getCollection } from "astro:content";
 import { getAbsoluteLocaleUrl } from "astro:i18n";
 import LangSwitch from "@components/LangSwitch.astro";
 import Nav from "@components/Nav.astro";
+import ThemeToggle from "@components/ThemeToggle.astro";
 import { type BlogLocale, getPublishedAlternates } from "../lib/localized-blog";
 import {
   getOpenGraphLocale,
@@ -105,35 +105,23 @@ const alternateOpenGraphLocales = alternates
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta name="color-scheme" content="light dark" />
-    <meta id="theme-color" name="theme-color" content="#fff6ea" />
+    <meta id="theme-color" name="theme-color" content="#fffdf9" />
     <script is:inline>
-      /**
-       * @brief 在首次绘制前恢复站点主题 (Restore theme before first paint).
-       * @note 主题仅保存在浏览器本地，系统偏好用作首次访问的回退值。
-       */
+      // Runs before first paint. `data-theme` and the `site-theme` key are older public contracts that the mail
+      // action pages also read; `data-moe-theme` is what the design system listens to.
       (() => {
-        const storageKey = "site-theme";
-        const root = document.documentElement;
-        let savedTheme = null;
-
+        let saved = null;
         try {
-          savedTheme = localStorage.getItem(storageKey);
+          saved = localStorage.getItem("site-theme");
         } catch {
-          // 隐私模式或受限环境下退回系统主题 (Fall back when storage is unavailable).
+          // Storage is unavailable in some embedded browsers; fall back to the system preference.
         }
-
-        const theme =
-          savedTheme === "light" || savedTheme === "dark"
-            ? savedTheme
-            : window.matchMedia("(prefers-color-scheme: dark)").matches
-              ? "dark"
-              : "light";
-
+        const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+        const theme = saved === "light" || saved === "dark" ? saved : dark ? "dark" : "light";
+        const root = document.documentElement;
         root.dataset.theme = theme;
-        root.style.colorScheme = theme;
-        document
-          .querySelector('meta[name="theme-color"]')
-          ?.setAttribute("content", theme === "dark" ? "#21130f" : "#fff6ea");
+        root.dataset.moeTheme = theme;
+        document.getElementById("theme-color").content = theme === "dark" ? "#160b0c" : "#fffdf9";
       })();
     </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -199,27 +187,25 @@ const alternateOpenGraphLocales = alternates
       {documentLocale === "zh" ? "跳至正文" : "Skip to content"}
     </a>
     <div class="site-wrapper">
-      <header class="container workshop-header">
-        <Nav locale={documentLocale} />
-        {effectiveShowLanguageSwitch && <LangSwitch />}
+      <header class="site-header">
+        <div class="site-header__inner">
+          <Nav locale={documentLocale} />
+          {effectiveShowLanguageSwitch && <LangSwitch />}
+          <ThemeToggle locale={documentLocale} />
+        </div>
+        {pageType === "article" && <div class="fuse" aria-hidden="true"></div>}
       </header>
-      <main id="main-content" class="container" tabindex="-1">
+      <main id="main-content" class="site-main" tabindex="-1">
         <slot />
       </main>
-      <footer class="container workshop-footer">
-        <p class="workshop-footer__mark" aria-hidden="true">
-          {documentLocale === "zh" ? "写下，也做成" : "written & made here"}
-        </p>
-        <p>
-          <span>© 2024-{new Date().getFullYear()} kleedaisuki</span>
-          <span aria-hidden="true"> · </span>
-          <a
-            href="http://creativecommons.org/licenses/by-nc-sa/4.0/"
-            rel="license"
-          >
-            CC BY-NC-SA 4.0
-          </a>
-        </p>
+      <footer class="site-footer">
+        <div class="site-footer__inner">
+          <p>© 2024–{new Date().getFullYear()} kleedaisuki</p>
+          <p>
+            <a href={rssPath}>RSS</a>
+            <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" rel="license">CC BY-NC-SA 4.0</a>
+          </p>
+        </div>
       </footer>
     </div>
   </body>

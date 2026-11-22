@@ -5,9 +5,6 @@ import path from "node:path";
 import { strToU8, zipSync } from "fflate";
 import type { AtelierLocale } from "../i18n/atelier";
 
-/** @brief 无自定义封面时使用的统一插图 / Shared illustration used when a work has no custom cover. */
-export const DEFAULT_ATELIER_COVER = "/atelier-default-cover.svg";
-
 /** @brief 单值或双语 Atelier 文本 / Scalar or bilingual Atelier text. */
 export type AtelierText = string | Readonly<Record<AtelierLocale, string>>;
 

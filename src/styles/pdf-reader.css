@@ -1,29 +1,16 @@
-/**
- * @brief Atelier PDF 阅读器视觉系统 (Atelier PDF reader visual system).
- * @note 保留 PDF.js 的布局约定，并用站点令牌统一工具栏与状态层。
- * Keep PDF.js layout contracts while styling chrome and states with site tokens.
- */
-
 .pdf-reader {
-  --reader-bar-height: 4.2rem;
+  --reader-bar-height: 3.25rem;
   --reader-viewport-height: 100vh;
   position: relative;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
   width: 100%;
-  height: min(var(--reader-viewport-height), 68rem);
-  min-height: min(38rem, var(--reader-viewport-height));
+  height: calc(var(--reader-viewport-height) - var(--site-header) - 1px);
+  min-height: 30rem;
   overflow: hidden;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-large);
-  background: color-mix(in srgb, var(--surface-muted) 82%, var(--bg-color));
-  box-shadow: var(--shadow-md);
+  background: var(--moe-surface-sunken);
 }
 
-/**
- * @brief 在可用时采用动态视口高度 (Use dynamic viewport height when available).
- * @note 自定义属性让不支持 dvh 的 runtime 保留 vh 回退 (The custom property preserves the vh fallback in runtimes without dvh).
- */
 @supports (height: 100dvh) {
   .pdf-reader {
     --reader-viewport-height: 100dvh;
@@ -39,10 +26,8 @@
   gap: 0.75rem;
   min-height: var(--reader-bar-height);
   padding: 0.62rem 0.78rem;
-  border-bottom: 1px solid var(--border-subtle);
-  background: color-mix(in srgb, var(--surface-strong) 92%, transparent);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--moe-line);
+  background: var(--moe-background);
 }
 
 .pdf-reader__back,
@@ -54,23 +39,32 @@
   align-items: center;
   justify-content: center;
   gap: 0.38rem;
+  width: 2.35rem;
   min-height: 2.35rem;
-  padding: 0.42rem 0.68rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-small);
-  color: var(--text-color);
-  background: var(--surface-elevated);
+  flex: none;
+  padding: 0.42rem;
+  border: 1px solid transparent;
+  border-radius: var(--moe-radius-sm);
+  color: var(--moe-text);
+  background: none;
   font: inherit;
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 0.8125rem;
+  font-weight: var(--moe-font-weight-medium);
   line-height: 1;
   text-decoration: none;
   cursor: pointer;
   transition:
-    color var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard),
-    border-color var(--motion-fast) var(--ease-standard),
-    transform var(--motion-fast) var(--ease-standard);
+    color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+    background-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+    border-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+    scale var(--moe-bounce);
+}
+
+.pdf-reader__bar :is(a, button):not(:disabled):active,
+.pdf-reader__find button:active {
+  background: var(--moe-pressed);
+  scale: calc(1 - 2 * (1 - var(--moe-press)));
+  transition-duration: 60ms;
 }
 
 .pdf-reader__controls button:focus-visible,
@@ -78,8 +72,13 @@
 .pdf-reader__back:focus-visible,
 .pdf-reader__find button:focus-visible,
 .pdf-reader__outline button:focus-visible {
-  outline: 3px solid var(--focus-ring);
+  outline: 2px solid var(--moe-focus);
   outline-offset: 2px;
+}
+
+.pdf-reader__controls button[aria-expanded="true"] {
+  color: var(--moe-accent-strong);
+  background: var(--moe-accent-wash);
 }
 
 .pdf-reader__controls button:disabled {
@@ -107,15 +106,15 @@
   width: 1px;
   height: 1.65rem;
   margin-inline: 0.1rem;
-  background: var(--border-subtle);
+  background: var(--moe-line);
 }
 
 .pdf-reader__page {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  color: var(--text-soft);
-  font-family: var(--font-mono);
+  color: var(--moe-text-soft);
+  font-family: var(--moe-font-family-mono);
   font-size: 0.75rem;
 }
 
@@ -123,10 +122,10 @@
   width: 3.2rem;
   min-height: 2.2rem;
   padding: 0.3rem 0.2rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-small);
-  color: var(--text-color);
-  background: var(--surface-strong);
+  border: 1px solid var(--moe-line);
+  border-radius: var(--moe-radius-sm);
+  color: var(--moe-text);
+  background: var(--moe-surface-strong);
   font: inherit;
   text-align: center;
   appearance: textfield;
@@ -139,8 +138,8 @@
 
 .pdf-reader__zoom {
   min-width: 3.6rem;
-  color: var(--text-soft);
-  font-family: var(--font-mono);
+  color: var(--moe-text-soft);
+  font-family: var(--moe-font-family-mono);
   font-size: 0.7rem;
   text-align: center;
 }
@@ -154,8 +153,8 @@
   gap: 0.42rem;
   min-height: 3.25rem;
   padding: 0.45rem 0.78rem;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--surface-muted);
+  border-bottom: 1px solid var(--moe-line);
+  background: var(--moe-surface-sunken);
 }
 
 .pdf-reader__find[hidden],
@@ -172,16 +171,16 @@
   width: 100%;
   min-height: 2.35rem;
   padding: 0.42rem 0.72rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-small);
-  color: var(--text-color);
-  background: var(--surface-strong);
+  border: 1px solid var(--moe-line);
+  border-radius: var(--moe-radius-sm);
+  color: var(--moe-text);
+  background: var(--moe-surface-strong);
   font: inherit;
 }
 
 .pdf-reader__find output {
   min-width: 5.7rem;
-  color: var(--text-soft);
+  color: var(--moe-text-soft);
   font-size: 0.75rem;
   text-align: center;
 }
@@ -199,15 +198,13 @@
   position: absolute;
   inset: 0;
   overflow: auto;
-  background:
-    radial-gradient(circle at 50% 0%, var(--accent-wash), transparent 34rem),
-    color-mix(in srgb, var(--bg-accent) 32%, var(--surface-muted));
-  scrollbar-color: var(--border-color) transparent;
+  background: var(--moe-surface-sunken);
+  scrollbar-color: var(--moe-line-strong) transparent;
   overscroll-behavior: contain;
 }
 
 .pdf-reader__stage:focus-visible {
-  outline: 3px solid var(--focus-ring);
+  outline: 2px solid var(--moe-focus);
   outline-offset: -3px;
 }
 
@@ -218,12 +215,7 @@
 .pdf-reader .pdfViewer .page {
   margin: 0 auto 1.25rem;
   border: 0;
-  border-radius: 0.2rem;
-  box-shadow: 0 14px 38px rgba(56, 30, 18, 0.22);
-}
-
-:root[data-theme="dark"] .pdf-reader .pdfViewer .page {
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.48);
+  box-shadow: var(--moe-shadow-lg);
 }
 
 .pdf-reader__outline {
@@ -231,9 +223,9 @@
   width: min(21rem, 42%);
   height: 100%;
   overflow: auto;
-  border-right: 1px solid var(--border-subtle);
-  background: color-mix(in srgb, var(--surface-strong) 96%, transparent);
-  box-shadow: 12px 0 28px var(--shadow-color);
+  border-right: 1px solid var(--moe-line);
+  background: color-mix(in srgb, var(--moe-surface-strong) 96%, transparent);
+  box-shadow: var(--moe-shadow-lg);
   overscroll-behavior: contain;
 }
 
@@ -243,10 +235,10 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.8rem 0.9rem;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--surface-strong);
+  justify-content: flex-end;
+  padding: 0.4rem;
+  border-bottom: 1px solid var(--moe-line);
+  background: var(--moe-surface-strong);
 }
 
 .pdf-reader__outline nav {
@@ -263,8 +255,8 @@
   width: 100%;
   padding: 0.42rem 0.52rem;
   border: 0;
-  border-radius: var(--radius-small);
-  color: var(--text-color);
+  border-radius: var(--moe-radius-sm);
+  color: var(--moe-text);
   background: transparent;
   font: inherit;
   font-size: 0.8rem;
@@ -272,14 +264,13 @@
   text-align: left;
   cursor: pointer;
   transition:
-    color var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard),
-    transform var(--motion-fast) var(--ease-standard);
+    color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+    background-color var(--moe-motion-fast) var(--moe-motion-ease-standard);
 }
 
 .pdf-reader__outline > p {
   padding: 1rem;
-  color: var(--text-soft);
+  color: var(--moe-text-soft);
   font-size: 0.82rem;
 }
 
@@ -293,52 +284,49 @@
   justify-content: center;
   gap: 0.72rem;
   padding: 2rem;
-  color: var(--text-soft);
-  background: color-mix(in srgb, var(--surface-muted) 94%, transparent);
+  color: var(--moe-text-soft);
+  background: color-mix(in srgb, var(--moe-surface-sunken) 94%, transparent);
   text-align: center;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
 }
 
 .pdf-reader__status strong {
-  color: var(--heading-color);
+  color: var(--moe-heading);
   font-size: 1.05rem;
 }
 
 .pdf-reader__status progress {
   width: min(18rem, 76%);
-  accent-color: var(--accent-color);
+  accent-color: var(--moe-accent);
 }
 
 .pdf-reader__status > button {
   min-height: 2.4rem;
   padding: 0.45rem 0.9rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-small);
-  color: var(--on-accent);
-  background: var(--interactive-color);
+  border: 1px solid var(--moe-line-strong);
+  border-radius: var(--moe-radius-sm);
+  color: var(--moe-on-action);
+  background: var(--moe-action);
   font: inherit;
-  font-weight: 700;
+  font-weight: var(--moe-font-weight-medium);
   cursor: pointer;
   transition:
-    color var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard),
-    border-color var(--motion-fast) var(--ease-standard),
-    transform var(--motion-fast) var(--ease-standard);
+    color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+    background-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+    border-color var(--moe-motion-fast) var(--moe-motion-ease-standard);
 }
 
 .pdf-reader__spinner {
   width: 2.15rem;
   aspect-ratio: 1;
-  border: 3px solid var(--border-subtle);
-  border-top-color: var(--accent-color);
+  border: 3px solid var(--moe-line);
+  border-top-color: var(--moe-accent);
   border-radius: 50%;
   animation: pdf-reader-spin 0.8s linear infinite;
 }
 
 .pdf-reader--error .pdf-reader__spinner {
   animation: none;
-  border-color: var(--accent-berry);
+  border-color: var(--moe-danger);
 }
 
 .pdf-reader__noscript {
@@ -346,10 +334,9 @@
   inset: auto 1rem 1rem;
   z-index: 8;
   padding: 0.8rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-small);
-  background: var(--surface-strong);
-  box-shadow: var(--shadow-md);
+  border: 1px solid var(--moe-line-strong);
+  border-radius: var(--moe-radius-sm);
+  background: var(--moe-surface-strong);
 }
 
 .sr-only {
@@ -370,55 +357,24 @@
   }
 }
 
-/**
- * @brief 仅为精确悬停设备启用悬停装饰 (Enable hover decoration only for precise hover devices).
- * @note 避免触屏浏览器的粘滞悬停状态 (Avoid sticky hover states in touch browsers).
- */
 @media (hover: hover) and (pointer: fine) {
   .pdf-reader__back:hover,
   .pdf-reader__controls button:hover:not(:disabled),
   .pdf-reader__controls a:hover,
   .pdf-reader__find button:hover,
   .pdf-reader__outline-heading button:hover,
-  .pdf-reader__status > button:hover {
-    color: var(--on-accent);
-    background: var(--interactive-color);
-    transform: translateY(-1px);
-  }
-
   .pdf-reader__outline nav button:hover {
-    color: var(--accent-text-hover);
-    background: var(--accent-wash);
-    transform: translateY(-1px);
+    background: var(--moe-hover);
   }
-}
 
-/** @brief 为阅读器内所有操作控件统一轻压反馈 (Unify press feedback for every reader action control). */
-:where(
-  .pdf-reader__back,
-  .pdf-reader__controls button,
-  .pdf-reader__controls a,
-  .pdf-reader__find button,
-  .pdf-reader__outline-heading button,
-  .pdf-reader__outline nav button,
-  .pdf-reader__status > button
-):active:not(:disabled) {
-  transform: translateY(1px) scale(0.98);
-  transition-duration: 90ms;
+  .pdf-reader__status > button:hover {
+    background: var(--moe-action-hover);
+  }
 }
 
 @media (max-width: 960px) {
-  .pdf-reader__button-label,
-  .pdf-reader__back-label,
   .pdf-reader__divider {
     display: none;
-  }
-
-  .pdf-reader__controls button,
-  .pdf-reader__controls a,
-  .pdf-reader__back {
-    width: 2.35rem;
-    padding-inline: 0.42rem;
   }
 }
 
@@ -448,7 +404,6 @@
     scrollbar-width: none;
   }
 
-  /** @brief 将移动阅读器边缘控件的焦点环收进滚动轨道 (Inset mobile reader edge-control focus rings within the scroll rail). */
   .pdf-reader__controls :is(a, button):focus-visible,
   .pdf-reader__back:focus-visible {
     outline-offset: -3px;
@@ -488,10 +443,6 @@
   }
 }
 
-/**
- * @brief 在短视口与移动端横屏中压缩固定界面 (Compact fixed chrome in short viewports and mobile landscape).
- * @note 主舞台和目录继续占用剩余空间并独立滚动 (The stage and outline keep the remaining space and scroll independently).
- */
 @media (max-height: 520px) {
   .pdf-reader {
     min-height: 0;
@@ -527,55 +478,11 @@
   }
 }
 
-/** @brief 为触屏阅读器提供稳定的触控目标 (Provide stable touch targets for the reader). */
 @media (pointer: coarse) {
   .pdf-reader__back,
   .pdf-reader__controls button,
   .pdf-reader__controls a {
     min-width: 2.75rem;
     min-height: 2.75rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pdf-reader__spinner {
-    animation: none;
-  }
-
-  .pdf-reader__back,
-  .pdf-reader__controls button,
-  .pdf-reader__controls a,
-  .pdf-reader__find button,
-  .pdf-reader__outline-heading button,
-  .pdf-reader__outline nav button,
-  .pdf-reader__status > button {
-    transform: none;
-    transition: none;
-  }
-
-  /** @brief 减少动态时逐项取消阅读器控件状态位移 (Remove each reader-control state displacement under reduced motion). */
-  .pdf-reader__back:hover,
-  .pdf-reader__back:focus-visible,
-  .pdf-reader__back:active,
-  .pdf-reader__controls button:hover:not(:disabled),
-  .pdf-reader__controls button:focus-visible,
-  .pdf-reader__controls button:active:not(:disabled),
-  .pdf-reader__controls a:hover,
-  .pdf-reader__controls a:focus-visible,
-  .pdf-reader__controls a:active,
-  .pdf-reader__find button:hover,
-  .pdf-reader__find button:focus-visible,
-  .pdf-reader__find button:active,
-  .pdf-reader__outline-heading button:hover,
-  .pdf-reader__outline-heading button:focus-visible,
-  .pdf-reader__outline-heading button:active,
-  .pdf-reader__outline nav button:hover,
-  .pdf-reader__outline nav button:focus-visible,
-  .pdf-reader__outline nav button:active,
-  .pdf-reader__status > button:hover,
-  .pdf-reader__status > button:focus-visible,
-  .pdf-reader__status > button:active {
-    transform: none;
-    transition: none;
   }
 }

@@ -1,0 +1,11 @@
+---
+import { edgeMask } from "../../lib/pixel/dither";
+
+interface Props {
+  /** Which edge of the brand surface dissolves into the page. */
+  side: "top" | "bottom";
+}
+const { side } = Astro.props;
+const ROWS = 20;
+---
+<div class="dither-edge" data-side={side} style={`--dither:${edgeMask(ROWS)};--dither-rows:${ROWS}`} aria-hidden="true"></div>

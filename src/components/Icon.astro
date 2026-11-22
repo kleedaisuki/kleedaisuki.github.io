@@ -1,0 +1,32 @@
+---
+/** Geometry from moeSegFault Style v0.2.0 (`iconGlyphs`); only the glyphs this site uses. */
+const glyphs = {
+  "arrow-right": "M3 8h10M9 4l4 4-4 4",
+  "arrow-left": "M13 8H3M7 4 3 8l4 4",
+  "arrow-up-right": "m5 11 6-6M6 5h5v5",
+  "arrow-up": "M8 13V3M4 7l4-4 4 4",
+  "arrow-down": "M8 3v10M4 9l4 4 4-4",
+  check: "M3 8.5 6.5 12 13 4.5",
+  "chevron-left": "m10 4-4 4 4 4",
+  "chevron-right": "m6 4 4 4-4 4",
+  copy: "M6 6h7.5v7.5H6zM10 6V2.5H2.5V10H6",
+  "fit-width": "M2.5 8h11M5 5.5 2.5 8 5 10.5M11 5.5 13.5 8 11 10.5",
+  list: "M6 4h8M6 8h8M6 12h8M2.5 4v.05M2.5 8v.05M2.5 12v.05",
+  minus: "M3 8h10",
+  plus: "M8 3v10M3 8h10",
+  search: "M7 11.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm3.2-1.3L14 14",
+  x: "m4 4 8 8m0-8-8 8",
+  download: "M8 2.5v8M4.5 7 8 10.5 11.5 7M2.5 13.5h11",
+  file: "M3.5 1.75h5.25l3.75 3.75v8.75h-9zM8.75 1.75V5.5h3.75",
+  moon: "M13.75 9.6A6 6 0 0 1 6.4 2.25a6 6 0 1 0 7.35 7.35Z",
+  sun: "M8 10.75a2.75 2.75 0 1 0 0-5.5 2.75 2.75 0 0 0 0 5.5ZM8 1.25v1.5m0 10.5v1.5M1.25 8h1.5m10.5 0h1.5M3.2 3.2l1.1 1.1m7.4 7.4 1.1 1.1m0-9.6-1.1 1.1m-7.4 7.4-1.1 1.1",
+} as const;
+
+interface Props {
+  name: keyof typeof glyphs;
+  size?: number;
+  class?: string;
+}
+const { name, size = 16, class: className } = Astro.props;
+---
+<svg class:list={["moe-icon", `moe-icon--${name}`, className]} viewBox="0 0 16 16" width={size} height={size} fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d={glyphs[name]} pathLength="1" /></svg>

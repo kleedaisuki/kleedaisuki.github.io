@@ -1,0 +1,17 @@
+---
+import { PLATE, plateOf } from "../../lib/pixel/plate";
+import { strokeRun, tonePaths } from "../../lib/pixel/raster";
+
+interface Props {
+  /** Any stable text; the same seed always draws the same figure. */
+  seed: string;
+  class?: string;
+}
+const { seed, class: className } = Astro.props;
+const paths = tonePaths(PLATE, PLATE, plateOf(seed));
+---
+<svg class:list={["plate", className]} viewBox={`0 0 ${PLATE} ${PLATE}`} aria-hidden="true" focusable="false">
+  <g transform="translate(0.07 0.5)" fill="none" {...strokeRun}>
+    {paths.map(({ tone, d }) => <path class={`plate__${tone}`} d={d} />)}
+  </g>
+</svg>

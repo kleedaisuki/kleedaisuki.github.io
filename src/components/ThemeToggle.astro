@@ -1,0 +1,87 @@
+---
+import type { Locale } from "@i18n/t";
+import Icon from "./Icon.astro";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const copy =
+  locale === "zh"
+    ? {
+        label: "夜间主题",
+        light: "已切换至日间主题。",
+        dark: "已切换至夜间主题。",
+      }
+    : {
+        label: "Dark theme",
+        light: "Theme changed to light.",
+        dark: "Theme changed to dark.",
+      };
+---
+
+<button class="theme-toggle" type="button" data-theme-toggle data-light={copy.light} data-dark={copy.dark} aria-label={copy.label} title={copy.label} aria-pressed="false">
+  <Icon name="moon" class="theme-toggle__moon" />
+  <Icon name="sun" class="theme-toggle__sun" />
+</button>
+<span class="moe-visually-hidden" data-theme-status aria-live="polite"></span>
+
+<script>
+  import { dissolve } from "../lib/pixel/dissolve";
+
+  type Theme = "light" | "dark";
+  const STORAGE_KEY = "site-theme";
+  const root = document.documentElement;
+  const system = matchMedia("(prefers-color-scheme: dark)");
+  const toggle = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
+  const status = document.querySelector<HTMLElement>("[data-theme-status]");
+  const themeColor = document.querySelector<HTMLMetaElement>("#theme-color");
+
+  const asTheme = (value: string | null | undefined): Theme | undefined =>
+    value === "light" || value === "dark" ? value : undefined;
+
+  function stored(): Theme | undefined {
+    try {
+      return asTheme(localStorage.getItem(STORAGE_KEY));
+    } catch {
+      return undefined;
+    }
+  }
+
+  function store(theme: Theme): void {
+    try {
+      localStorage.setItem(STORAGE_KEY, theme);
+    } catch {
+      // The choice still holds for this page.
+    }
+  }
+
+  function apply(theme: Theme): void {
+    root.dataset.theme = theme;
+    root.dataset.moeTheme = theme;
+    toggle?.setAttribute("aria-pressed", String(theme === "dark"));
+    if (themeColor) themeColor.content = theme === "dark" ? "#160b0c" : "#fffdf9";
+  }
+
+  // Held in memory too, so a choice survives a system change even where storage is blocked.
+  let chosen = stored();
+
+  function follow(): void {
+    apply(chosen ?? (system.matches ? "dark" : "light"));
+  }
+
+  follow();
+  system.addEventListener("change", follow);
+  addEventListener("storage", (event) => {
+    if (event.key !== STORAGE_KEY && event.key !== null) return;
+    chosen = asTheme(event.newValue);
+    follow();
+  });
+  toggle?.addEventListener("click", () => {
+    const next: Theme = root.dataset.theme === "dark" ? "light" : "dark";
+    chosen = next;
+    store(next);
+    if (status) status.textContent = toggle.dataset[next] ?? "";
+    dissolve(() => apply(next));
+  });
+</script>

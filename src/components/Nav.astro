@@ -1,322 +1,50 @@
 ---
 import { asLocale, type Locale, t } from "@i18n/t";
 
-/** @brief 导航组件属性 (navigation component properties)。 */
 interface Props {
-  /** @brief 导航界面语言 (navigation interface locale)。 */
   locale?: Locale;
 }
-
-/** @brief 当前页面的界面语言 (current interface locale)。 */
 const locale = Astro.props.locale ?? asLocale(Astro.currentLocale);
-
-/** @brief 当前路径的规范化表示 (normalized current pathname)。 */
 const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
-
-/** @brief 当前页面是否属于本地化作品集 (whether this page belongs to localized Articrafts)。 */
-const isArticrafts = /^\/(?:zh|en)\/articrafts(?:\/|$)/.test(currentPath);
-
-/** @brief 站内链接的服务端回退语言 (SSR fallback locale for localized site links)。 */
-const linkLocale: Locale = locale;
-
-/** @brief Atelier 字标的首页地址 (home URL used by the Atelier wordmark)。 */
-const homePath = `/${linkLocale}/`;
-
-/** @brief Atelier 的栏目导航链接 (section navigation links for Atelier)。 */
+const homePath = `/${locale}/`;
 const links = [
-  {
-    href: `/${linkLocale}/blog/`,
-    label: t("blog", locale),
-    section: "blog",
-    index: "01",
-  },
-  {
-    href: `/${linkLocale}/articrafts/`,
-    label: t("atelier", locale),
-    section: "articrafts",
-    index: "02",
-  },
+  { href: `/${locale}/blog/`, label: t("blog", locale) },
+  { href: `/${locale}/articrafts/`, label: t("atelier", locale) },
   {
     href: "https://me.moesegfault.dev",
     label: locale === "zh" ? "关于 ↗" : "About ↗",
-    section: "external",
     rel: "me external",
-    index: "03",
   },
 ];
 
-/**
- * @brief 判断导航链接是否对应当前页面 (check whether a navigation link is current)。
- * @param href 待比较的站内路径 (site path to compare)。
- * @param section 链接所属的一级栏目 (top-level section represented by the link)。
- * @return 当前链接是否为当前页面 (whether the link is for the current page)。
- */
-const isCurrentPage = (href: string, section: string) => {
-  const normalizedHref = href.replace(/\/+$/, "") || "/";
-  if (section === "articrafts") return isArticrafts;
-  if (section === "blog") {
-    return (
-      currentPath === normalizedHref ||
-      currentPath.startsWith(`${normalizedHref}/`)
-    );
-  }
-  return currentPath === normalizedHref;
-};
-
-/** @brief 主题切换按钮的本地化文案 (localized theme-toggle copy)。 */
-const themeCopy =
-  locale === "en"
-    ? {
-        navigation: "Primary navigation",
-        brandNote: "Writing and making",
-        toggle: "Toggle light and dark theme",
-        light: "Light",
-        switchToDark: "Switch to dark theme",
-      }
-    : {
-        navigation: "主导航",
-        brandNote: "写作与制作",
-        toggle: "切换日间与夜间主题",
-        light: "日间",
-        switchToDark: "切换至夜间主题",
-      };
+/** A section stays current on every page beneath it. */
+const isWithin = (href: string) => `${currentPath}/`.startsWith(href);
 ---
 
-<nav class="site-nav" aria-label={themeCopy.navigation}>
-  <div class="site-brand">
-    <a
-      class="site-wordmark"
-      href={homePath}
-      aria-current={isCurrentPage(homePath, "home") ? "page" : undefined}
-    >
-      <span class="site-wordmark__copy"><strong>Atelier</strong></span>
-    </a>
-    <small class="site-wordmark__note" aria-hidden="true">
-      {themeCopy.brandNote}
-    </small>
-  </div>
-  <div class="site-nav__tools">
-    <div class="site-nav__links">
-      {
-        links.map(({ href, label, section, rel, index }) => (
-          <a
-            href={href}
-            rel={rel}
-            data-index={index}
-            aria-current={isCurrentPage(href, section) ? "page" : undefined}
-          >
-            <span>{label}</span>
-          </a>
-        ))
-      }
-    </div>
-    <button
-      class="theme-toggle"
-      type="button"
-      data-theme-toggle
-      aria-label={themeCopy.toggle}
-      aria-pressed="false"
-      title={themeCopy.switchToDark}
-    >
-      <svg
-        class="theme-toggle__icon"
-        aria-hidden="true"
-        focusable="false"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.8"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path
-          data-theme-icon="sun"
-          style="display: none"
-          d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36-1.42 1.42M7.05 16.95l-1.41 1.41m12.72 0-1.42-1.41M7.05 7.05 5.64 5.64M15.5 12a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
-        />
-        <path
-          data-theme-icon="moon"
-          d="M20.5 14.1A8.5 8.5 0 0 1 9.9 3.5 8.5 8.5 0 1 0 20.5 14.1Z"
-        />
-      </svg>
-      <span class="theme-toggle__label" data-theme-label>{themeCopy.light}</span>
-      <span
-        class="theme-toggle__status"
-        data-theme-status
-        aria-live="polite"
-        aria-atomic="true"
-      ></span>
-    </button>
+<nav class="site-nav" aria-label={locale === "zh" ? "主导航" : "Primary navigation"}>
+  <a class="site-brand moe-brand-mark" href={homePath} aria-current={`${currentPath}/` === homePath ? "page" : undefined}>
+    <span class="moe-brand-mark__symbol" aria-hidden="true">
+      <svg viewBox="0 0 64 64" fill="currentColor"><path d="M18 13h9v14.4L40.2 13H51L35.7 30.2 52 51H40.6L28.3 35.3 27 36.7V51h-9V13Z" /><path class="moe-brand-mark__spark" d="m49.5 7 1.8 4.7L56 13.5l-4.7 1.8L49.5 20l-1.8-4.7-4.7-1.8 4.7-1.8L49.5 7Z" /></svg>
+    </span>
+    <span class="moe-brand-mark__name">Atelier</span>
+  </a>
+  <div class="site-nav__links slider">
+    {
+      links.map(({ href, label, rel }) => (
+        <a href={href} rel={rel} aria-current={isWithin(href) ? "page" : undefined}>{label}</a>
+      ))
+    }
   </div>
 </nav>
 
 <script is:inline>
   (() => {
-    /** @brief 最近一次站点语言的存储键 (storage key for the most recent site locale)。 */
-    const localeStorageKey = "prefLocale";
-    /** @brief 当前页面的语言分区 (locale segment of the current page)。 */
-    const pageLocale = location.pathname.match(/^\/(zh|en)(?:\/|$)/)?.[1];
-
+    const locale = location.pathname.match(/^\/(zh|en)(?:\/|$)/)?.[1];
+    if (!locale) return;
     try {
-      if (pageLocale === "zh" || pageLocale === "en") {
-        localStorage.setItem(localeStorageKey, pageLocale);
-      }
+      localStorage.setItem("prefLocale", locale);
     } catch {
-      // 存储不可用时保留服务端渲染的中文返回路径 (keep the SSR Chinese return path when storage is unavailable)。
-    }
-
-    /** @brief 主题偏好的本地存储键 (localStorage key for theme preference)。 */
-    const storageKey = "site-theme";
-    /** @brief 文档根节点 (document root element)。 */
-    const root = document.documentElement;
-    /** @brief 原生主题切换按钮 (native theme-toggle button)。 */
-    const toggle = document.querySelector("[data-theme-toggle]");
-
-    if (!(toggle instanceof HTMLButtonElement)) {
-      return;
-    }
-
-    /** @brief 当前界面的语言是否为英语 (whether the interface language is English)。 */
-    const isEnglish = root.lang.toLowerCase().startsWith("en");
-    /** @brief 根据语言提供主题状态和提示语 (localized theme state and action copy)。 */
-    const copy = isEnglish
-      ? {
-          light: "Light",
-          dark: "Dark",
-          toLight: "Switch to light theme",
-          toDark: "Switch to dark theme",
-          changedToLight: "Theme changed to light.",
-          changedToDark: "Theme changed to dark.",
-        }
-      : {
-          light: "日间",
-          dark: "夜间",
-          toLight: "切换至日间主题",
-          toDark: "切换至夜间主题",
-          changedToLight: "已切换至日间主题。",
-          changedToDark: "已切换至夜间主题。",
-        };
-    /** @brief 系统明暗偏好媒体查询 (system color-scheme media query)。 */
-    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
-    /** @brief 主题显示文字节点 (visible theme-label element)。 */
-    const label = toggle.querySelector("[data-theme-label]");
-    /** @brief 屏幕阅读器状态节点 (screen-reader live-status element)。 */
-    const status = toggle.querySelector("[data-theme-status]");
-    /** @brief 浏览器工具栏颜色元数据 (browser theme-color metadata)。 */
-    const themeColor = document.querySelector('meta[name="theme-color"]');
-
-    /**
-     * @brief 校验主题值 (validate a theme value)。
-     * @param theme 待校验的主题值 (theme value to validate)。
-     * @return 是否为受支持的主题 (whether it is a supported theme)。
-     */
-    const isTheme = (theme) => theme === "light" || theme === "dark";
-
-    /**
-     * @brief 读取用户明确保存的主题 (read the user's explicit saved theme)。
-     * @return 已保存主题；不可用时返回 null (saved theme, or null when unavailable)。
-     */
-    const readStoredTheme = () => {
-      try {
-        const storedTheme = localStorage.getItem(storageKey);
-        return isTheme(storedTheme) ? storedTheme : null;
-      } catch {
-        return null;
-      }
-    };
-
-    /**
-     * @brief 写入用户主题偏好 (persist the user's theme preference)。
-     * @param theme 要保存的主题 (theme to persist)。
-     * @return 无返回值 (no return value)。
-     */
-    const writeStoredTheme = (theme) => {
-      try {
-        localStorage.setItem(storageKey, theme);
-      } catch {
-        // 隐私模式或受限存储下保留本页切换能力 (keep this-page switching when storage is unavailable)。
-      }
-    };
-
-    /**
-     * @brief 将页面和控件同步到给定主题 (synchronize page and control to a theme)。
-     * @param theme 目标主题 (target theme)。
-     * @param announce 是否在辅助技术中播报切换结果 (whether to announce the result to assistive technology)。
-     * @return 无返回值 (no return value)。
-     */
-    const applyTheme = (theme, announce = false) => {
-      const isDark = theme === "dark";
-      const actionIcon = isDark ? "sun" : "moon";
-
-      root.dataset.theme = theme;
-      root.style.colorScheme = theme;
-      toggle.dataset.theme = theme;
-      toggle.setAttribute("aria-pressed", String(isDark));
-      toggle.setAttribute("title", isDark ? copy.toLight : copy.toDark);
-
-      if (label) {
-        label.textContent = isDark ? copy.dark : copy.light;
-      }
-
-      if (status) {
-        status.textContent = announce
-          ? isDark
-            ? copy.changedToDark
-            : copy.changedToLight
-          : "";
-      }
-
-      for (const icon of toggle.querySelectorAll("[data-theme-icon]")) {
-        if (icon instanceof SVGElement) {
-          icon.style.display =
-            icon.getAttribute("data-theme-icon") === actionIcon ? "" : "none";
-        }
-      }
-
-      if (themeColor instanceof HTMLMetaElement) {
-        const browserThemeColor = getComputedStyle(root)
-          .getPropertyValue("--browser-theme-color")
-          .trim();
-        if (browserThemeColor) {
-          themeColor.content = browserThemeColor;
-        }
-      }
-    };
-
-    /** @brief 用户是否已有明确的主题选择 (whether the user has an explicit theme choice)。 */
-    let hasExplicitTheme = Boolean(readStoredTheme());
-    applyTheme(root.dataset.theme === "dark" ? "dark" : "light");
-
-    toggle.addEventListener("click", () => {
-      const nextTheme = root.dataset.theme === "dark" ? "light" : "dark";
-      hasExplicitTheme = true;
-      writeStoredTheme(nextTheme);
-      applyTheme(nextTheme, true);
-    });
-
-    window.addEventListener("storage", (event) => {
-      if (event.key !== storageKey && event.key !== null) {
-        return;
-      }
-
-      const storedTheme = isTheme(event.newValue) ? event.newValue : null;
-      hasExplicitTheme = Boolean(storedTheme);
-      applyTheme(storedTheme ?? (systemTheme.matches ? "dark" : "light"));
-    });
-
-    /**
-     * @brief 跟随未手动覆盖时的系统主题变化 (follow system changes without a manual override)。
-     * @param event 系统色彩偏好变化事件 (system color-scheme change event)。
-     * @return 无返回值 (no return value)。
-     */
-    const followSystemTheme = (event) => {
-      if (!hasExplicitTheme) {
-        applyTheme(event.matches ? "dark" : "light");
-      }
-    };
-
-    if (typeof systemTheme.addEventListener === "function") {
-      systemTheme.addEventListener("change", followSystemTheme);
+      // Without storage the root path falls back to the browser language.
     }
   })();
 </script>

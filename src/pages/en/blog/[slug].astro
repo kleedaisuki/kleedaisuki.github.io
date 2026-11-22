@@ -1,108 +1,22 @@
 ---
-import Base from "@layouts/BaseLayout.astro";
-import "@styles/blog.css";
-import { type CollectionEntry, getCollection, render } from "astro:content";
-import { t } from "@i18n/t";
-import {
-  createBlogPostingJsonLd,
-  getAbsoluteUrl,
-  getPostPath,
-} from "../../../lib/seo";
+import { type CollectionEntry, getCollection } from "astro:content";
+import PostPage from "@components/blog/PostPage.astro";
 
 export async function getStaticPaths() {
-  const all = await getCollection(
+  const posts = await getCollection(
     "blog",
-    (p) => p.data.locale === "en" && !p.data.draft,
+    ({ data }) => data.locale === "en" && !data.draft,
   );
-  return all.map((p) => ({ params: { slug: p.data.slug } }));
+  return posts.map((entry) => ({
+    params: { slug: entry.data.slug },
+    props: { entry },
+  }));
 }
 
-const { slug } = Astro.params as { slug?: string };
-if (!slug) throw new Error("Missing slug");
-
-const entry = (await getCollection("blog")).find(
-  (p): p is CollectionEntry<"blog"> =>
-    p.data.locale === "en" && !p.data.draft && p.data.slug === slug,
-);
-if (!entry) throw new Error(`[en] Post not found: ${slug}`);
-
-const { Content } = await render(entry);
-const lang = "en";
-const archivePath = `/${lang}/blog/`;
-const articlePath = getPostPath(lang, entry.data.slug);
-const articleUrl = getAbsoluteUrl(articlePath);
-const archiveUrl = getAbsoluteUrl(archivePath);
-const formattedDate = new Intl.DateTimeFormat("en-US", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-}).format(entry.data.date);
-const formattedUpdatedDate = entry.data.updated
-  ? new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }).format(entry.data.updated)
-  : undefined;
-const structuredData = createBlogPostingJsonLd({
-  url: articleUrl,
-  archiveUrl,
-  locale: lang,
-  title: entry.data.title,
-  description: entry.data.description,
-  publishedAt: entry.data.date,
-  modifiedAt: entry.data.updated,
-  tags: entry.data.tags,
-  homeName: t("home", lang),
-  archiveName: t("blog", lang),
-});
+interface Props {
+  entry: CollectionEntry<"blog">;
+}
+const { entry } = Astro.props;
 ---
 
-<Base
-  pageTitle={`${entry.data.title} | kleedaisuki`}
-  description={entry.data.description}
-  pageType="article"
-  publishedTime={entry.data.date.toISOString()}
-  modifiedTime={entry.data.updated?.toISOString()}
-  tags={entry.data.tags}
-  structuredData={structuredData}
->
-  <div class="post-body">
-    <nav class="post-breadcrumb" aria-label="Breadcrumb">
-      <ol>
-        <li><a href={`/${lang}/`}>{t("home", lang)}</a></li>
-        <li><a href={archivePath}>{t("blog", lang)}</a></li>
-        <li aria-current="page">{entry.data.title}</li>
-      </ol>
-    </nav>
-    <header class="post-header">
-      <h1 id="post-title">{entry.data.title}</h1>
-      <p class="post-summary">{entry.data.description}</p>
-      <p class="post-byline">
-        <time datetime={entry.data.date.toISOString()}>Published {formattedDate}</time>
-        <span aria-hidden="true"> · </span>
-        <span>By <a href="https://me.moesegfault.dev" rel="me external">kleedaisuki</a></span>
-        {
-          formattedUpdatedDate && entry.data.updated && (
-            <>
-              <span aria-hidden="true"> · </span>
-              <time datetime={entry.data.updated.toISOString()}>
-                Updated {formattedUpdatedDate}
-              </time>
-            </>
-          )
-        }
-      </p>
-      {
-        entry.data.tags && entry.data.tags.length > 0 && (
-          <ul class="post-taxonomy" aria-label="Article tags">
-            {entry.data.tags.map((tag) => (
-              <li>{tag}</li>
-            ))}
-          </ul>
-        )
-      }
-    </header>
-    <article class="prose" aria-labelledby="post-title"><Content /></article>
-  </div>
-</Base>
+<PostPage locale="en" entry={entry} />

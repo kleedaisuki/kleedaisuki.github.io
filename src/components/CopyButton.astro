@@ -1,0 +1,27 @@
+---
+import { ATELIER_COPY, type AtelierLocale } from "@i18n/atelier";
+import Icon from "./Icon.astro";
+
+interface Props {
+  locale: AtelierLocale;
+  /** What is copied, for the accessible name. */
+  subject?: string;
+  /** The text itself, or a selector for the element that holds it. */
+  text?: string;
+  from?: string;
+}
+const { locale, subject, text, from } = Astro.props;
+const copy = ATELIER_COPY[locale];
+const label = [copy.copy, subject].filter(Boolean).join(" ");
+---
+
+<button class="copy-button moe-button moe-button--ghost moe-button--sm" data-icon-only type="button" hidden data-copy={text} data-copy-from={from} data-copied={copy.copied} data-failed={copy.copyUnavailable} aria-label={label} title={label}>
+  <Icon name="copy" size={14} />
+  <Icon name="check" size={14} />
+  <Icon name="x" size={14} />
+  <span class="moe-visually-hidden" role="status"></span>
+</button>
+
+<script>
+  import "../lib/copy";
+</script>

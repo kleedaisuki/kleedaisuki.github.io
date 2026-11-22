@@ -51,11 +51,13 @@ export default defineConfig({
   ],
   markdown: {
     shikiConfig: {
-      themes: { light: "github-light", dark: "github-dark" },
+      // One theme made of CSS variables: light and dark are decided by tokens, not by overriding inline colors.
+      theme: "css-variables",
       langAlias: { prompt: "markdown" },
     },
     remarkPlugins: [remarkMath],
-    rehypePlugins: [rehypeKatex],
+    // Native MathML needs no stylesheet or fonts, and every supported engine implements it.
+    rehypePlugins: [[rehypeKatex, { output: "mathml" }]],
   },
   vite: {
     build: {

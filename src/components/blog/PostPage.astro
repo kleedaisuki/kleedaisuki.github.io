@@ -1,0 +1,111 @@
+---
+import { type CollectionEntry, getCollection, render } from "astro:content";
+import Icon from "@components/Icon.astro";
+import Phrases from "@components/Phrases.astro";
+import Plate from "@components/pixel/Plate.astro";
+import { type Locale, t } from "@i18n/t";
+import Base from "@layouts/BaseLayout.astro";
+import "@styles/blog.css";
+import { formatDate, isoDay } from "../../lib/dates";
+import {
+  createBlogPostingJsonLd,
+  getAbsoluteUrl,
+  getPostPath,
+} from "../../lib/seo";
+import { getRecentStudioPosts } from "../../lib/studio-index";
+
+interface Props {
+  locale: Locale;
+  entry: CollectionEntry<"blog">;
+}
+const { locale, entry } = Astro.props;
+const { title, description, date, updated, tags, slug } = entry.data;
+const { Content } = await render(entry);
+const copy =
+  locale === "zh"
+    ? {
+        published: "发布",
+        updated: "更新",
+        tags: "文章标签",
+        newer: "下一篇",
+        older: "上一篇",
+        more: "相邻文章",
+      }
+    : {
+        published: "Published",
+        updated: "Updated",
+        tags: "Article tags",
+        newer: "Newer",
+        older: "Older",
+        more: "Adjacent articles",
+      };
+
+const archivePath = `/${locale}/blog/`;
+const posts = getRecentStudioPosts(
+  await getCollection("blog"),
+  locale,
+  Number.POSITIVE_INFINITY,
+);
+const index = posts.findIndex((post) => post.data.slug === slug);
+const neighbors = [
+  { label: copy.older, icon: "arrow-left" as const, post: posts[index + 1] },
+  { label: copy.newer, icon: "arrow-right" as const, post: posts[index - 1] },
+];
+const structuredData = createBlogPostingJsonLd({
+  url: getAbsoluteUrl(getPostPath(locale, slug)),
+  archiveUrl: getAbsoluteUrl(archivePath),
+  locale,
+  title,
+  description,
+  publishedAt: date,
+  modifiedAt: updated,
+  tags,
+  homeName: t("home", locale),
+  archiveName: t("blog", locale),
+});
+---
+
+<Base
+  pageTitle={`${title} | kleedaisuki`}
+  description={description}
+  pageType="article"
+  publishedTime={date.toISOString()}
+  modifiedTime={updated?.toISOString()}
+  tags={tags}
+  structuredData={structuredData}
+>
+  <div class="page post">
+    <header class="post-header pad">
+      <h1 id="post-title"><Phrases text={title} /></h1>
+    </header>
+
+    <div class="post-columns">
+      <aside class="post-rail">
+        <div class="post-rail__inner pad">
+          <Plate seed={slug.replace(/-(?:zh|en)$/, "")} />
+          <p class="post-dates">
+            <time datetime={date.toISOString()} aria-label={`${copy.published} ${formatDate(date, locale)}`}>{isoDay(date)}</time>
+            {updated && <time datetime={updated.toISOString()} aria-label={`${copy.updated} ${formatDate(updated, locale)}`}>{isoDay(updated)}</time>}
+          </p>
+          {tags && tags.length > 0 && <ul class="tag-list" aria-label={copy.tags}>{tags.map((tag) => <li>{tag}</li>)}</ul>}
+        </div>
+      </aside>
+      <article class="prose moe-prose pad" aria-labelledby="post-title"><Content /></article>
+    </div>
+
+    <nav class="post-neighbors" aria-label={copy.more}>
+      {
+        neighbors.map(({ label, icon, post }) =>
+          post ? (
+            <a class="post-neighbor pad" href={getPostPath(locale, post.data.slug)}>
+              <Icon name={icon} size={16} /><span class="moe-visually-hidden">{label}</span>
+              <strong><Phrases text={post.data.title} /></strong>
+            </a>
+          ) : (
+            <span />
+          ),
+        )
+      }
+    </nav>
+  </div>
+</Base>

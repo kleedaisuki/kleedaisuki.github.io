@@ -1,0 +1,65 @@
+---
+import { getCollection } from "astro:content";
+import Phrases from "@components/Phrases.astro";
+import PixelNumber from "@components/pixel/PixelNumber.astro";
+import Plate from "@components/pixel/Plate.astro";
+import type { Locale } from "@i18n/t";
+import { useTranslations } from "@i18n/utils";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import "@styles/blog.css";
+import { isoDay } from "../../lib/dates";
+import { createBlogJsonLd, getAbsoluteUrl, getPostPath } from "../../lib/seo";
+import { getRecentStudioPosts } from "../../lib/studio-index";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const description = t("blog.description");
+const structuredData = createBlogJsonLd({
+  url: getAbsoluteUrl(`/${locale}/blog/`),
+  locale,
+  name: t("blog.title"),
+  description,
+});
+const posts = getRecentStudioPosts(
+  await getCollection("blog"),
+  locale,
+  Number.POSITIVE_INFINITY,
+);
+const years = Object.entries(
+  Object.groupBy(posts, ({ data }) => data.date.getUTCFullYear()),
+)
+  .map(([year, entries = []]) => ({ year: Number(year), entries }))
+  .sort((left, right) => right.year - left.year);
+---
+
+<BaseLayout pageTitle={`${t("blog.title")} | kleedaisuki`} description={description} structuredData={structuredData}>
+  <div class="page">
+    <header class="page-intro">
+      <h1>{t("blog.title")}</h1>
+      <Plate seed="blog" />
+    </header>
+    {
+      years.map(({ year, entries }) => (
+        <section class="archive-year" aria-labelledby={`year-${year}`}>
+          <h2 class="archive-year__label" id={`year-${year}`}>
+            <PixelNumber value={year} />
+          </h2>
+          <ol class="archive-list">
+            {entries.map(({ data }) => (
+              <li class="row-link">
+                <time datetime={data.date.toISOString()}>{isoDay(data.date).slice(5)}</time>
+                <div>
+                  <h3><a href={getPostPath(locale, data.slug)}><Phrases text={data.title} /></a></h3>
+                  <p>{data.description}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>

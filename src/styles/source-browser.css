@@ -2,64 +2,55 @@
   --source-tree-width: 17rem;
 }
 
-.source-browser__breadcrumb {
-  margin: 0 0 1rem;
-  color: var(--text-soft);
-  font-size: 0.9rem;
-}
-
-.source-browser__breadcrumb ol {
+.source-browser__intro {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.source-browser__breadcrumb li:not(:last-child)::after {
-  content: "/";
-  margin-left: 0.35rem;
-  color: var(--border-color);
-}
-
-.source-browser__intro {
-  margin-bottom: 1.25rem;
+  align-items: baseline;
+  gap: var(--moe-space-2) var(--moe-space-4);
+  padding-block: var(--moe-space-6);
+  border-block-end: 1px solid var(--moe-line);
+  color: var(--moe-text-soft);
 }
 
 .source-browser__intro h1 {
-  margin-bottom: 0.3rem;
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
 }
-
-.source-browser__intro p {
-  color: var(--text-soft);
+.source-browser__intro h1 > a {
+  color: inherit;
+  text-decoration: none;
+}
+.source-browser__intro h1 > a:hover {
+  color: var(--moe-accent-strong);
 }
 
 .source-browser__workspace {
   display: grid;
   grid-template-columns: minmax(13rem, var(--source-tree-width)) minmax(0, 1fr);
-  gap: 1rem;
-  align-items: start;
 }
 
-.source-tree-shell,
+.source-tree-shell {
+  min-width: 0;
+  border-inline-end: 1px solid var(--moe-line);
+}
+
 .source-viewer {
   min-width: 0;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-medium);
-  background: var(--surface-color);
-  box-shadow: var(--shadow-sm);
 }
 
 .source-tree-shell > summary {
   padding: 0.8rem 1rem;
   cursor: pointer;
-  color: var(--heading-color);
-  font-weight: 800;
+  color: var(--moe-heading);
+  font-weight: var(--moe-font-weight-medium);
 }
 
 .source-tree-panel {
-  max-height: min(72vh, 48rem);
+  position: sticky;
+  top: var(--site-header);
+  max-height: calc(100vh - var(--site-header));
   padding: 0.7rem;
   overflow: auto;
 }
@@ -68,36 +59,35 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  font-family: var(--font-mono);
+  font-family: var(--moe-font-family-mono);
   font-size: 0.82rem;
 }
 
 .source-tree .source-tree {
   margin-left: 0.72rem;
   padding-left: 0.55rem;
-  border-left: 1px solid var(--border-subtle);
+  border-left: 1px solid var(--moe-line);
 }
 
 .source-tree summary,
 .source-tree a {
   display: flex;
   gap: 0.42rem;
-  align-items: baseline;
+  align-items: center;
   min-width: 0;
   padding: 0.36rem 0.48rem;
   border: 1px solid transparent;
-  border-radius: var(--radius-small);
+  border-radius: var(--moe-radius-sm);
   transition:
-    color var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard),
-    border-color var(--motion-fast) var(--ease-standard),
-    transform var(--motion-fast) var(--ease-standard);
+    color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+    background-color var(--moe-motion-fast) var(--moe-motion-ease-standard),
+    border-color var(--moe-motion-fast) var(--moe-motion-ease-standard);
 }
 
 .source-tree summary {
   cursor: pointer;
-  color: var(--text-soft);
-  font-weight: 700;
+  color: var(--moe-text-soft);
+  font-weight: var(--moe-font-weight-medium);
   list-style: none;
 }
 
@@ -106,7 +96,7 @@
 }
 
 .source-tree__chevron {
-  transition: transform var(--motion-fast) var(--ease-standard);
+  transition: transform var(--moe-motion-fast) var(--moe-motion-ease-standard);
 }
 
 .source-tree details[open] > summary > .source-tree__chevron {
@@ -114,48 +104,50 @@
 }
 
 .source-tree a {
-  color: var(--text-color);
+  color: var(--moe-text);
   text-decoration: none;
   overflow-wrap: anywhere;
 }
 
 .source-tree a[aria-current="page"] {
-  color: var(--on-accent);
-  background: var(--interactive-color);
+  color: var(--moe-heading);
+  background: var(--moe-hover);
+  box-shadow: inset 3px 0 var(--moe-accent);
 }
 
-/** @brief 为源码树的链接与展开项提供一致的键盘焦点 (Provide consistent keyboard focus for source-tree links and disclosure rows). */
 .source-tree :is(a, summary):focus-visible {
-  outline: 3px solid var(--focus-ring);
+  outline: 2px solid var(--moe-focus);
   outline-offset: 2px;
-}
-
-.source-viewer {
-  overflow: hidden;
 }
 
 .source-viewer__header {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  align-items: flex-start;
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-subtle);
+  align-items: center;
+  padding: var(--moe-space-4) var(--gutter);
+  border-bottom: 1px solid var(--moe-line);
 }
 
 .source-viewer__header h2 {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--moe-font-family-mono);
   font-size: clamp(1rem, 2.3vw, 1.3rem);
   overflow-wrap: anywhere;
 }
 
-.source-viewer__eyebrow {
-  margin: 0 0 0.28rem;
-  color: var(--text-soft);
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  text-transform: uppercase;
+.source-viewer__header > div:first-child {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--moe-space-3);
+}
+
+.source-viewer__size {
+  color: var(--moe-text-soft);
+  font-family: var(--moe-font-family-mono);
+  font-size: var(--moe-font-size-xs);
 }
 
 .source-viewer__actions {
@@ -165,42 +157,10 @@
   gap: 0.45rem;
 }
 
-.source-viewer__actions a,
-.source-viewer__actions button,
-.source-viewer__download {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.25rem;
-  padding: 0.38rem 0.68rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-small);
-  background: var(--surface-strong);
-  color: var(--accent-text);
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 800;
-  line-height: 1.2;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    color var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard),
-    border-color var(--motion-fast) var(--ease-standard),
-    transform var(--motion-fast) var(--ease-standard);
-}
-
-/** @brief 为源码操作按钮提供清晰且即时的键盘焦点 (Provide clear and immediate keyboard focus for source actions). */
-.source-viewer__actions :is(a, button):focus-visible,
-.source-viewer__download:focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
 .source-viewer__code {
   overflow: auto;
   max-height: min(78vh, 60rem);
-  background: var(--shiki-light-bg, var(--surface-strong));
+  background: var(--astro-code-background);
 }
 
 .source-viewer__code pre {
@@ -217,10 +177,8 @@
   display: block;
 }
 
+/* Lines stay inline: the source's own newlines separate them, on screen and in what gets copied. */
 .source-viewer__code .line {
-  display: block;
-  min-height: 1.55em;
-  padding-right: 1rem;
   counter-increment: source-line;
 }
 
@@ -232,56 +190,15 @@
   width: 4.2rem;
   margin-right: 1rem;
   padding-right: 0.8rem;
-  color: var(--text-soft);
-  background: var(--shiki-light-bg, var(--surface-strong));
+  color: var(--moe-text-soft);
+  background: var(--astro-code-background);
   text-align: right;
   user-select: none;
   opacity: 0.68;
 }
 
-.source-viewer__code .shiki,
-.source-viewer__code .shiki span {
-  color: var(--shiki-light);
-  background-color: var(--shiki-light-bg);
-}
-
 .source-viewer__unavailable {
   padding: clamp(1.2rem, 5vw, 3rem);
-}
-
-.source-viewer__unavailable dl {
-  display: grid;
-  gap: 0.55rem;
-  margin: 1.2rem 0;
-}
-
-.source-viewer__unavailable dl > div {
-  display: grid;
-  grid-template-columns: 5rem minmax(0, 1fr);
-  gap: 0.7rem;
-}
-
-.source-viewer__unavailable dt {
-  color: var(--text-soft);
-  font-weight: 700;
-}
-
-.source-viewer__unavailable dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
-:root[data-theme="dark"] .source-viewer__code,
-:root[data-theme="dark"] .source-viewer__code .line::before {
-  background: var(--shiki-dark-bg, var(--surface-strong));
-}
-
-:root[data-theme="dark"] .source-viewer__code .shiki,
-:root[data-theme="dark"] .source-viewer__code .shiki span {
-  /* biome-ignore lint/complexity/noImportantStyles: Shiki 的双主题变量需覆盖其行内浅色值 / Shiki dual-theme variables must override inline light values. */
-  color: var(--shiki-dark) !important;
-  /* biome-ignore lint/complexity/noImportantStyles: Shiki 的双主题变量需覆盖其行内浅色背景 / Shiki dual-theme variables must override inline light backgrounds. */
-  background-color: var(--shiki-dark-bg) !important;
 }
 
 @media (min-width: 761px) {
@@ -299,9 +216,14 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .source-tree-shell {
+    border-inline-end: 0;
+    border-block-end: 1px solid var(--moe-line);
+  }
+
   .source-tree-panel {
     max-height: 48vh;
-    border-top: 1px solid var(--border-subtle);
+    border-top: 1px solid var(--moe-line);
   }
 
   .source-viewer__header {
@@ -317,67 +239,6 @@
 @media (hover: hover) and (pointer: fine) {
   .source-tree a:hover,
   .source-tree summary:hover {
-    background: var(--accent-wash);
-    border-color: var(--border-subtle);
-    transform: translateY(-1px);
-  }
-
-  .source-viewer__actions a:hover,
-  .source-viewer__actions button:hover,
-  .source-viewer__download:hover {
-    color: var(--on-accent);
-    background: var(--interactive-color);
-    border-color: var(--interactive-color);
-    transform: translateY(-1px);
-  }
-}
-
-/** @brief 为源码树和操作控件提供九十毫秒轻压状态 (Provide a ninety-millisecond press state for source-tree and action controls). */
-:where(
-  .source-tree a,
-  .source-tree summary,
-  .source-viewer__actions a,
-  .source-viewer__actions button,
-  .source-viewer__download
-):active {
-  transform: translateY(1px) scale(0.98);
-  transition-duration: 90ms;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .source-tree__chevron {
-    transition: none;
-  }
-
-  /** @brief 减少动态时取消控件位移并保留即时状态色 (Remove control displacement while retaining immediate state colors under reduced motion). */
-  :where(
-    .source-tree a,
-    .source-tree summary,
-    .source-viewer__actions a,
-    .source-viewer__actions button,
-    .source-viewer__download
-  ) {
-    transform: none;
-    transition: none;
-  }
-
-  /** @brief 减少动态时逐项取消源码控件状态位移 (Remove each source-control state displacement under reduced motion). */
-  .source-tree a:hover,
-  .source-tree a:focus-visible,
-  .source-tree a:active,
-  .source-tree summary:hover,
-  .source-tree summary:focus-visible,
-  .source-tree summary:active,
-  .source-viewer__actions a:hover,
-  .source-viewer__actions a:focus-visible,
-  .source-viewer__actions a:active,
-  .source-viewer__actions button:hover,
-  .source-viewer__actions button:focus-visible,
-  .source-viewer__actions button:active,
-  .source-viewer__download:hover,
-  .source-viewer__download:focus-visible,
-  .source-viewer__download:active {
-    transform: none;
-    transition: none;
+    background: var(--moe-hover);
   }
 }

@@ -1,4 +1,5 @@
 ---
+import Icon from "@components/Icon.astro";
 import { ATELIER_COPY, type AtelierLocale } from "@i18n/atelier";
 /** @brief 源码目录树节点 (source tree node) / Node in the source directory tree. */
 export interface SourceTreeNode {
@@ -61,7 +62,7 @@ const containsActiveFile = (node: SourceTreeNode): boolean =>
                 <li class="source-tree__directory">
                   <details open={containsActiveFile(node)}>
                     <summary>
-                      <span class="source-tree__chevron" aria-hidden="true">▸</span>
+                      <Icon name="chevron-right" size={12} class="source-tree__chevron" />
                       {node.name}
                     </summary>
                     <Astro.self
@@ -79,7 +80,7 @@ const containsActiveFile = (node: SourceTreeNode): boolean =>
                     href={`${sourceBase}/${encodeSourcePath(node.path)}/`}
                     aria-current={activePath === node.path ? "page" : undefined}
                   >
-                    <span aria-hidden="true">◇</span>
+                    <Icon name="file" size={12} />
                     {node.name}
                   </a>
                 </li>
@@ -97,7 +98,7 @@ const containsActiveFile = (node: SourceTreeNode): boolean =>
             <li class="source-tree__directory">
               <details open={containsActiveFile(node)}>
                 <summary>
-                  <span class="source-tree__chevron" aria-hidden="true">▸</span>
+                  <Icon name="chevron-right" size={12} class="source-tree__chevron" />
                   {node.name}
                 </summary>
                 <Astro.self
@@ -115,7 +116,7 @@ const containsActiveFile = (node: SourceTreeNode): boolean =>
                 href={`${sourceBase}/${encodeSourcePath(node.path)}/`}
                 aria-current={activePath === node.path ? "page" : undefined}
               >
-                <span aria-hidden="true">◇</span>
+                <Icon name="file" size={12} />
                 {node.name}
               </a>
             </li>

@@ -19,6 +19,8 @@ test("subscription form is rendered in static HTML and submits a typed JSON requ
   await form.locator('button[type="submit"]').click();
   await expect(form.locator("[data-subscribe-status]")).toContainText("请求已收到");
   await expect(form.locator('input[name="email"]')).toHaveValue("");
+  await expect(form).toHaveAttribute("data-state", "sent");
+  await expect(form).not.toHaveAttribute("data-state", "sent");
 });
 
 /** @brief API 失败不清除地址，也不泄漏服务器内部细节 (failure behavior) / Keep the address on failure without exposing server details. */

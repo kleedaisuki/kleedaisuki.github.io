@@ -3,14 +3,14 @@ import SourceTree from "@components/atelier/SourceTree.astro";
 import SourceViewer from "@components/atelier/SourceViewer.astro";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import "@styles/source-browser.css";
+import { type CollectionEntry, getCollection } from "astro:content";
 import {
-  asAtelierLocale,
   ATELIER_COPY,
   ATELIER_LOCALES,
   type AtelierLocale,
+  asAtelierLocale,
 } from "@i18n/atelier";
-import { type CollectionEntry, getCollection } from "astro:content";
-import { codeToHtml } from "shiki";
+import { codeToHtml, createCssVariablesTheme } from "shiki";
 import {
   type AtelierSourceDirectory,
   type AtelierSourceFile,
@@ -25,6 +25,12 @@ import {
   getSourceRawUrl,
   scanSourceFiles,
 } from "../../../../../../lib/atelier";
+
+/** The same CSS variables that color code in posts. */
+const codeTheme = createCssVariablesTheme({
+  name: "css-variables",
+  variablePrefix: "--astro-code-",
+});
 
 /** @brief 构建期允许直接高亮的最大源码大小 (maximum directly highlighted source size) / Maximum source size highlighted at build time. */
 const MAX_PREVIEW_BYTES = 512 * 1024;
@@ -84,8 +90,7 @@ const canPreview = file.content !== undefined && file.size <= MAX_PREVIEW_BYTES;
 const highlightedHtml = canPreview
   ? await codeToHtml(file.content ?? "", {
       lang: file.language,
-      themes: { light: "github-light", dark: "github-dark" },
-      defaultColor: false,
+      theme: codeTheme,
     })
   : undefined;
 /** @brief 源码浏览器版本根路径 (versioned source browser root) / Root URL for source files in this release. */
@@ -118,18 +123,10 @@ const pageTitle = `${file.path} · ${workTitle} · Articrafts`;
   robots="noindex, follow"
   documentLocale={locale}
 >
-  <div class="source-browser">
-    <nav class="source-browser__breadcrumb" aria-label={copy.breadcrumb}>
-      <ol>
-        <li><a href={`/${locale}/articrafts/`}>{copy.atelier}</a></li>
-        <li><a href={detailUrl}>{workTitle}</a></li>
-        <li>{copy.source} · {version}</li>
-      </ol>
-    </nav>
-
-    <header class="source-browser__intro">
-      <h1>{copy.sourceBrowser}</h1>
-      <p>{workTitle} · {copy.release.toLocaleLowerCase()} {version}</p>
+  <div class="page source-browser">
+    <header class="source-browser__intro pad">
+      <h1><a href={detailUrl}>{workTitle}</a></h1>
+      <span class="mono">v{version}</span>
     </header>
 
     <div class="source-browser__workspace">
@@ -142,7 +139,6 @@ const pageTitle = `${file.path} · ${workTitle} · Articrafts`;
       <SourceViewer
         path={file.path}
         sizeLabel={formatFileSize(file.size)}
-        language={file.language}
         rawUrl={rawUrl}
         archiveUrl={archiveUrl}
         highlightedHtml={highlightedHtml}

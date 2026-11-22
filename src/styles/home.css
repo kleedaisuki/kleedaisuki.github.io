@@ -1,538 +1,359 @@
-/* @brief Atelier 门厅的编辑工坊视觉系统 / Editorial-workshop visual system for the Atelier foyer. */
-.studio-home {
-  --studio-rule: color-mix(in srgb, var(--border-color) 78%, transparent);
-  --studio-paper: color-mix(in srgb, var(--surface-elevated) 94%, transparent);
-  display: grid;
-  gap: clamp(2.2rem, 6vw, 4.8rem);
-}
+@import "./rows.css";
 
 .studio-hero {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 0.65fr);
-  gap: clamp(2rem, 6vw, 5rem);
-  overflow: hidden;
-  padding: clamp(2.2rem, 6vw, 4.6rem);
-  border: 1px solid var(--studio-rule);
-  border-radius: var(--radius-large);
-  background: linear-gradient(155deg, var(--studio-paper), var(--accent-wash));
-  box-shadow: var(--shadow-md);
-  animation: studio-enter 260ms var(--ease-emphasized) both;
-}
-
-.studio-hero::after {
-  position: absolute;
-  right: -4.5rem;
-  bottom: -7.5rem;
-  inline-size: 17rem;
-  block-size: 17rem;
-  border: 1px solid color-mix(in srgb, var(--accent-color) 34%, transparent);
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--accent-gold) 15%, transparent);
-  content: "";
-  pointer-events: none;
-}
-
-.studio-hero__copy,
-.studio-process {
-  position: relative;
-  z-index: 1;
-}
-
-.studio-kicker {
-  margin: 0 0 0.7rem;
-  color: var(--accent-strong);
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.studio-hero h1 {
-  margin: 0;
-  color: var(--heading-color);
-  font-size: clamp(3.4rem, 11vw, 7.4rem);
-  font-weight: 700;
-  letter-spacing: -0.065em;
-  line-height: 0.88;
-}
-
-.studio-hero__lead {
-  max-inline-size: 21ch;
-  margin: clamp(1.6rem, 4vw, 2.6rem) 0 0;
-  color: var(--heading-color);
-  font-size: clamp(1.4rem, 3.3vw, 2.2rem);
-  font-weight: 650;
-  line-height: 1.2;
-  text-wrap: balance;
-}
-
-.studio-hero__intro {
-  max-inline-size: 39rem;
-  margin: 1rem 0 0;
-  color: var(--text-soft);
-  font-size: clamp(1rem, 1.8vw, 1.1rem);
-  line-height: 1.8;
-  text-wrap: pretty;
-}
-
-.studio-process {
-  display: grid;
-  align-self: end;
-  margin: 0;
-  border-top: 1px solid var(--studio-rule);
-}
-
-.studio-process div {
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--studio-rule);
-}
-
-.studio-process dt {
-  color: var(--heading-color);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.studio-process dd {
-  margin: 0.38rem 0 0;
-  color: var(--text-soft);
-  font-size: 0.91rem;
-  line-height: 1.6;
-}
-
-.studio-doors,
-.studio-tracks {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(1rem, 3vw, 1.5rem);
-}
-
-/* @brief 将首屏入口作为单一动画组呈现 / Present the above-the-fold doors as one animation group. */
-.studio-doors {
-  animation: studio-enter 260ms 70ms var(--ease-emphasized) both;
-}
-
-.studio-door {
-  position: relative;
-  display: grid;
-  min-block-size: 22rem;
-  min-inline-size: 0;
-  align-content: end;
-  overflow: hidden;
-  padding: clamp(1.5rem, 4vw, 2.4rem);
-  border: 1px solid var(--studio-rule);
-  border-radius: var(--radius-large);
-  box-shadow: var(--shadow-sm);
-  color: inherit;
   isolation: isolate;
-  transition:
-    border-color var(--motion-fast) var(--ease-standard),
-    box-shadow var(--motion-base) var(--ease-standard),
-    transform var(--motion-base) var(--ease-emphasized);
+  overflow: clip;
+  touch-action: pan-y;
 }
-
-.studio-door::before {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(135deg, transparent 55%, var(--accent-wash)),
-    var(--studio-paper);
-  content: "";
-}
-
-.studio-door--articrafts::before {
-  background: linear-gradient(145deg, var(--studio-paper), var(--accent-wash));
-}
-
-.studio-door__number {
-  position: absolute;
-  top: 1.35rem;
-  right: 1.5rem;
-  color: color-mix(in srgb, var(--accent-strong) 72%, var(--text-soft));
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-}
-
-.studio-door__eyebrow {
-  color: var(--accent-strong);
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.studio-door h2 {
-  margin: 0.4rem 0 0;
-  color: var(--heading-color);
-  font-size: clamp(2.2rem, 5vw, 3.5rem);
-  line-height: 1;
-}
-
-.studio-door p {
-  max-inline-size: 31rem;
-  margin: 1rem 0 0;
-  color: var(--text-soft);
-  line-height: 1.7;
-}
-
-.studio-door__action {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  justify-self: start;
-  margin-block-start: 1.6rem;
-  padding: 0.5rem 0.72rem;
-  border: 1px solid color-mix(in srgb, var(--accent-color) 56%, transparent);
-  border-radius: var(--radius-small);
-  background: color-mix(in srgb, var(--accent-wash) 72%, transparent);
-  color: var(--accent-text);
-  font-weight: 700;
-  transition:
-    border-color var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard);
-}
-
-.studio-door__action > span {
-  transition: transform var(--motion-fast) var(--ease-emphasized);
-}
-
-.studio-section-heading {
+.studio-hero__copy {
   display: grid;
-  max-inline-size: 42rem;
-  margin-block-end: 1.6rem;
-}
-
-.studio-section-heading h2,
-.studio-materials h2 {
-  margin: 0;
-  color: var(--heading-color);
-  font-size: clamp(1.8rem, 4vw, 2.7rem);
-  line-height: 1.15;
-  text-wrap: balance;
-}
-
-.studio-section-heading > p:last-child,
-.studio-materials > div > p:last-child {
-  margin: 0.75rem 0 0;
-  color: var(--text-soft);
-}
-
-.studio-track {
-  min-inline-size: 0;
-  overflow: hidden;
-  border: 1px solid var(--studio-rule);
-  border-radius: var(--radius-medium);
-  background: var(--studio-paper);
-  box-shadow: var(--shadow-sm);
-  transition:
-    border-color var(--motion-fast) var(--ease-standard),
-    box-shadow var(--motion-base) var(--ease-standard),
-    transform var(--motion-base) var(--ease-emphasized);
-}
-
-.studio-track__heading {
-  display: flex;
+  grid-template-columns: auto minmax(0, 22rem);
   align-items: end;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1.25rem 1.35rem;
-  border-bottom: 1px solid var(--studio-rule);
+  gap: var(--moe-space-6) var(--moe-space-7);
+  padding-block-start: clamp(3rem, 8vw, 6.5rem);
 }
-
-.studio-track__heading p {
-  margin: 0 0 0.2rem;
-  color: var(--text-soft);
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.studio-hero h1 {
+  margin: 0 0 0 -0.05em;
+  font-size: clamp(5rem, 17vw, 15rem);
+  letter-spacing: -0.065em;
+  line-height: 0.8;
 }
-
-.studio-track__heading h3 {
-  margin: 0;
-  color: var(--heading-color);
-  font-size: 1.25rem;
+.studio-hero__lead {
+  font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+  line-height: 1.55;
+  text-wrap-style: balance;
 }
-
-.studio-track__heading > a {
+.studio-hero__lead:lang(zh) {
+  max-width: 12em;
+}
+/* The grid is taller than its resting flames, so a stoked fire has room to leap behind the title. */
+.studio-hero > .hearth {
+  z-index: -1;
+  width: max(100%, 52rem);
+  aspect-ratio: 160 / 52;
+  margin-block-start: clamp(-9rem, -9vw, -2rem);
+  margin-inline-start: min(0px, 100% - 52rem);
+}
+.sparks,
+.hearth-axis {
+  position: absolute;
+  inset: 0;
+}
+.sparks {
+  z-index: 1;
+}
+/* Two cells of the hearth, with a larger invisible target. */
+.spark {
+  position: absolute;
+  width: 1.25%;
+  aspect-ratio: 1;
+  transition: scale var(--moe-bounce);
+}
+.spark[data-kind="work"] {
+  width: 1.5625%;
+}
+.spark::after {
+  position: absolute;
+  inset: -0.35rem;
+  content: "";
+}
+.spark[data-active] {
+  z-index: 1;
+  scale: 1.8;
+}
+/* The same two shapes mark the sections they come from, so the fire needs no legend. */
+:is(.spark, .mark)[data-kind="post"] {
+  background: var(--mark-post);
+}
+:is(.spark, .mark)[data-kind="work"] {
+  --leaf: linear-gradient(var(--mark-work) 0 0);
+  background:
+    var(--leaf) 0 0 / 40% 40%,
+    var(--leaf) 100% 0 / 40% 40%,
+    var(--leaf) 0 100% / 40% 40%,
+    var(--leaf) 100% 100% / 40% 40%,
+    var(--leaf) 50% 50% / 20% 20%;
+  background-repeat: no-repeat;
+}
+.studio-home {
+  --mark-post: var(--moe-color-honey-500);
+  --mark-work: var(--moe-success);
+}
+.sparks {
+  --mark-post: var(--moe-color-honey-200);
+  --mark-work: var(--moe-color-clover-300);
+}
+.mark {
+  width: 0.5em;
+  aspect-ratio: 1;
   flex: none;
-  padding: 0.42rem 0.65rem;
-  border-radius: var(--radius-small);
-  background: var(--accent-wash);
-  color: var(--accent-text);
-  font-size: 0.88rem;
-  font-weight: 700;
+  transition: scale var(--moe-bounce);
+}
+.studio-door:has([data-active]) .mark {
+  scale: 1.25;
+}
+.spark-label {
+  position: absolute;
+  z-index: 2;
+  display: none;
+  max-width: min(100%, 34rem);
+  overflow: hidden;
+  margin: 0;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--moe-radius-sm);
+  color: var(--moe-color-leather-800);
+  background: var(--moe-color-snow-50);
+  box-shadow: var(--moe-shadow-md);
+  font-size: var(--moe-font-size-sm);
+  pointer-events: none;
+  text-overflow: ellipsis;
+  translate: calc(-1 * var(--shift)) calc(-100% - 0.75rem);
+  white-space: nowrap;
+}
+.spark-label[data-active] {
+  display: block;
+  animation: label-rise var(--moe-spring);
+}
+.spark-label > time {
+  margin-inline-end: 0.75em;
+  font-size: var(--moe-font-size-xs);
+  opacity: 0.72;
+}
+@keyframes label-rise {
+  from {
+    opacity: 0;
+    translate: calc(-1 * var(--shift)) calc(-100% - 0.25rem);
+  }
+}
+@media (pointer: coarse) {
+  .spark {
+    pointer-events: none;
+  }
+}
+.hearth-axis {
+  inset-block: auto 0;
+  height: 0;
+}
+.studio-hero {
+  padding-block-end: 2.5rem;
+}
+.hearth-axis > span {
+  position: absolute;
+  inset-block-start: 0.5rem;
+  color: var(--moe-text-soft);
+  font-family: var(--moe-font-family-mono);
+  font-size: var(--moe-font-size-2xs);
+  white-space: nowrap;
+  translate: -50%;
+}
+.hearth-axis > span::before {
+  position: absolute;
+  inset-block-end: calc(100% + 0.125rem);
+  inset-inline-start: 50%;
+  width: 1px;
+  height: 0.25rem;
+  background: currentColor;
+  content: "";
+}
+.studio-doors {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  border-block-end: 1px solid var(--moe-line);
+}
+/* Shared rows keep both lists level whatever the length of the text above. */
+.studio-door {
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  grid-template-columns: minmax(0, 1fr);
+  padding-block: clamp(2.5rem, 5vw, 4rem);
+}
+.studio-door + .studio-door {
+  border-inline-start: 1px solid var(--moe-line);
+}
+.studio-door__head {
+  margin-block-end: var(--moe-space-5);
+}
+.studio-door__head h2 {
+  margin: 0;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  letter-spacing: -0.04em;
+}
+.studio-door__head a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  color: inherit;
   text-decoration: none;
-  transition:
-    background-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard),
-    transform var(--motion-fast) var(--ease-emphasized);
+}
+.studio-door__head .moe-icon {
+  color: var(--moe-accent);
+  transition: translate var(--moe-spring);
+}
+.studio-door__head a:hover .moe-icon {
+  translate: 0.3rem;
 }
 
 .studio-list {
-  margin: 0;
+  align-self: start;
+  margin: 0 calc(-1 * var(--moe-space-3));
   padding: 0;
   list-style: none;
 }
-
-.studio-list li + li {
-  border-top: 1px solid var(--studio-rule);
+.studio-list > li {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: var(--moe-space-4);
+  padding: var(--moe-space-4) var(--moe-space-3);
+  border-block-start: 1px solid var(--moe-line);
 }
-
-.studio-list a {
-  display: flex;
-  min-inline-size: 0;
-  flex-direction: column;
-  gap: 0.65rem;
-  padding: 1.25rem 1.35rem;
-  color: inherit;
-  text-decoration: none;
-  transition:
-    background-color var(--motion-fast) var(--ease-standard),
-    transform var(--motion-base) var(--ease-emphasized);
-}
-
-.studio-list__body {
-  min-inline-size: 0;
-}
-
-.studio-list h4 {
-  margin: 0;
-  overflow-wrap: anywhere;
-  color: var(--heading-color);
-  font-size: 1.06rem;
-  line-height: 1.4;
-  text-wrap: pretty;
-  transition: color var(--motion-fast) var(--ease-standard);
-}
-
-.studio-list__body p {
-  display: -webkit-box;
-  overflow: hidden;
-  margin: 0.42rem 0 0;
-  color: var(--text-soft);
-  font-size: 0.9rem;
-  line-height: 1.58;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
 .studio-list time {
-  color: var(--text-soft);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-variant-numeric: tabular-nums;
+  line-height: 1.5rem;
 }
-
-.studio-empty {
-  min-block-size: 8rem;
-  margin: 0;
-  padding: 1.5rem 1.35rem;
-  color: var(--text-soft);
-  font-style: italic;
+.studio-list--works > li {
+  grid-template-columns: 5rem minmax(0, 1fr);
+  align-items: center;
+}
+.studio-list--works time {
+  display: block;
+}
+.studio-list__plate {
+  overflow: hidden;
+  border: 1px solid var(--moe-line);
+  border-radius: var(--moe-radius-sm);
+  background: var(--moe-surface-strong);
+}
+.studio-list__plate > * {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
 }
 
 .studio-materials {
+  padding-block: var(--moe-space-6);
+}
+.studio-materials .tag-list {
+  font-size: var(--moe-font-size-sm);
+}
+
+.studio-closing {
+  position: relative;
+  isolation: isolate;
+  padding-block: calc(clamp(2.5rem, 5vw, 4rem) + 7rem) clamp(3rem, 6vw, 5rem);
+  /* Trim the top pixel, where a fractional edge would blend crimson into the gaps. */
+  clip-path: inset(1px 0 0);
+}
+.studio-subscribe {
   display: grid;
-  grid-template-columns: minmax(14rem, 0.75fr) minmax(0, 1.25fr);
-  gap: clamp(1.5rem, 5vw, 4rem);
-  align-items: center;
-  padding: clamp(1.5rem, 4vw, 2.5rem);
-  border: 1px solid var(--studio-rule);
-  border-radius: var(--radius-medium);
-  background: color-mix(in srgb, var(--studio-paper) 72%, transparent);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: end;
+  gap: var(--moe-space-6) var(--moe-space-7);
 }
-
-.studio-materials ul {
-  display: flex;
-  min-inline-size: 0;
-  flex-wrap: wrap;
-  gap: 0.65rem;
+.studio-subscribe h2 {
   margin: 0;
-  padding: 0;
-  list-style: none;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.04em;
 }
-
-.studio-materials > ul > li {
-  max-inline-size: 100%;
-  overflow-wrap: anywhere;
-  padding: 0.45rem 0.75rem;
-  border: 1px solid var(--studio-rule);
-  border-radius: 999px;
-  background: var(--studio-paper);
-  color: var(--text-color);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
+.studio-subscribe form {
+  position: relative;
 }
-
-@media (hover: hover) and (pointer: fine) {
-  .studio-door:hover {
-    border-color: var(--accent-color);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-0.125rem);
-  }
-
-  .studio-door:hover .studio-door__action {
-    border-color: var(--accent-color);
-    background: var(--accent-wash);
-  }
-
-  .studio-door:hover .studio-door__action > span,
-  .studio-track__heading > a:hover {
-    transform: translateX(0.18rem);
-  }
-
-  .studio-track:hover,
-  .studio-track:focus-within {
-    border-color: color-mix(
-      in srgb,
-      var(--accent-color) 72%,
-      var(--studio-rule)
-    );
-    box-shadow: var(--shadow-md);
-    transform: translateY(-0.125rem);
-  }
-
-  .studio-list a:hover {
-    background: var(--accent-wash);
-    transform: translateY(-0.125rem);
-  }
-
-  .studio-list a:hover h4 {
-    color: var(--accent-strong);
+.studio-subscribe__controls {
+  display: flex;
+  gap: var(--moe-space-2);
+}
+.studio-subscribe__status {
+  position: absolute;
+  inset-block-start: calc(100% + 0.375rem);
+  font-size: var(--moe-font-size-sm);
+}
+.studio-subscribe__status:not(:empty) {
+  animation: moe-enter-rise var(--moe-spring);
+}
+.studio-subscribe button {
+  position: relative;
+}
+.studio-subscribe button > * {
+  transition: scale var(--moe-bounce);
+}
+/* Label, spinner, and check share one cell, so the button never changes size. */
+.studio-subscribe button > .moe-icon {
+  position: absolute;
+  display: none;
+}
+.studio-subscribe button:not([data-loading]) > .moe-spinner {
+  display: none;
+}
+.studio-subscribe > [data-state="sent"] button > span {
+  visibility: hidden;
+}
+.studio-subscribe > [data-state="sent"] button > .moe-icon {
+  display: block;
+}
+.studio-subscribe > [data-state="failed"] .studio-subscribe__controls {
+  animation: refuse var(--moe-bounce);
+}
+@keyframes refuse {
+  from {
+    translate: -0.625rem;
   }
 }
 
-.studio-door:active,
-.studio-list a:active {
-  transform: scale(0.99);
-}
-
-.studio-door:focus-visible,
-.studio-track:focus-within {
-  border-color: var(--accent-color);
-  box-shadow: var(--shadow-md);
-  outline: 3px solid var(--focus-ring);
-  outline-offset: -3px;
-  transform: translateY(-0.125rem);
-}
-
-.studio-door:focus-visible .studio-door__action {
-  border-color: var(--accent-color);
-  background: var(--accent-wash);
-}
-
-.studio-door:focus-visible .studio-door__action > span {
-  transform: translateX(0.18rem);
-}
-
-.studio-list a:focus-visible {
-  background: var(--accent-wash);
-  transform: translateY(-0.125rem);
-}
-
-.studio-list a:focus-visible h4 {
-  color: var(--accent-strong);
-}
-
-.studio-track__heading > a:focus-visible {
-  background: var(--accent-wash);
-  transform: translateX(0.18rem);
-}
-
-.studio-door:focus-visible,
-.studio-list a:focus-visible,
-.studio-track__heading a:focus-visible {
-  outline-offset: -0.25rem;
-}
-
-@media (max-width: 760px) {
-  .studio-hero,
+@media (max-width: 60rem) {
+  .studio-hero__copy {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .studio-doors,
-  .studio-tracks,
-  .studio-materials {
-    grid-template-columns: 1fr;
+  .studio-subscribe {
+    grid-template-columns: minmax(0, 1fr);
   }
-
-  .studio-hero {
-    padding: 2rem 1.3rem;
+  .studio-doors {
+    grid-template-rows: none;
   }
-
-  .studio-door {
-    min-block-size: 18rem;
-  }
-
-  .studio-materials {
-    padding-inline: 1.3rem;
+  .studio-door + .studio-door {
+    border-block-start: 1px solid var(--moe-line);
+    border-inline-start: 0;
   }
 }
-
-@media (max-width: 420px) {
-  .studio-home {
-    gap: 2.5rem;
-  }
-
+@media (max-width: 46rem) {
   .studio-hero h1 {
-    font-size: clamp(3rem, 20vw, 4.5rem);
+    font-size: 25vw;
   }
-
-  .studio-track__heading {
-    align-items: start;
+  .studio-list:not(.studio-list--works) > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .studio-subscribe__controls {
     flex-direction: column;
   }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .studio-hero,
-  .studio-doors {
-    animation: none;
-  }
-
-  .studio-door,
-  .studio-door__action,
-  .studio-door__action > span,
-  .studio-track,
-  .studio-track__heading > a,
-  .studio-list a,
-  .studio-list h4 {
-    transition: none;
-  }
-
-  /** @brief 减少动态时逐项取消工作室交互位移 (Remove each studio interaction displacement under reduced motion). */
-  .studio-door:hover,
-  .studio-track:hover,
-  .studio-track:focus-within,
-  .studio-list a:hover,
-  .studio-list a:focus-visible,
-  .studio-door:focus-visible,
-  .studio-door:active,
-  .studio-list a:active,
-  .studio-door:hover .studio-door__action > span,
-  .studio-door:focus-visible .studio-door__action > span,
-  .studio-track__heading > a:hover,
-  .studio-track__heading > a:focus-visible,
-  .studio-track__heading > a:active {
-    transform: none;
-    transition: none;
+  .studio-subscribe__status {
+    position: static;
   }
 }
 
-/* @brief 提供克制的首屏进入动画 / Provide a restrained above-the-fold entrance animation. */
-@keyframes studio-enter {
+@media (prefers-reduced-motion: no-preference) {
+  .studio-hero h1 {
+    animation: title-rise 720ms var(--moe-motion-ease-spring) backwards;
+  }
+  .studio-hero__lead {
+    animation: moe-enter-rise 520ms var(--moe-motion-ease-emphasized) 160ms
+      backwards;
+  }
+  .spark {
+    animation: spark-fly 640ms var(--moe-motion-ease-spring) 420ms backwards;
+  }
+}
+@keyframes title-rise {
   from {
     opacity: 0;
-    transform: translateY(0.375rem);
+    translate: 0 18%;
   }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
+}
+@keyframes spark-fly {
+  from {
+    opacity: 0;
+    translate: 0 4rem;
   }
 }

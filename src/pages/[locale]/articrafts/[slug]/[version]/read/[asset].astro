@@ -1,18 +1,18 @@
 ---
 import { getCollection } from "astro:content";
 import PdfReader from "@components/atelier/PdfReader.astro";
-import BaseLayout from "@layouts/BaseLayout.astro";
 import {
   ATELIER_COPY,
   ATELIER_LOCALES,
   type AtelierLocale,
 } from "@i18n/atelier";
+import BaseLayout from "@layouts/BaseLayout.astro";
 import {
+  enrichAtelierFile,
   getAtelierPath,
   getAtelierReleasePath,
-  enrichAtelierFile,
-  getFileCapability,
   getAtelierText,
+  getFileCapability,
   getLatestRelease,
   getReleaseFileUrl,
 } from "../../../../../../lib/atelier";
@@ -88,11 +88,15 @@ const copy = ATELIER_COPY[locale];
   documentLocale={locale}
   layoutMode="reader"
 >
-  <PdfReader
-    pdfUrl={pdfUrl}
-    downloadName={downloadName}
-    title={title}
-    backUrl={backUrl}
-    locale={locale}
-  />
+  <div class="page">
+    <div class="bleed">
+      <PdfReader
+        pdfUrl={pdfUrl}
+        downloadName={downloadName}
+        title={title}
+        backUrl={backUrl}
+        locale={locale}
+      />
+    </div>
+  </div>
 </BaseLayout>

@@ -53,6 +53,9 @@ Seven sequential Node-fetch repeat GETs of `/zh/` after the first sample ranged 
 
 ## Judgment and next decision
 
+> **Update, 2026-11-22.** The visual redesign removed the Noto Sans SC declarations described above; `/zh/` now
+> blocks on 17.6 KB of compressed CSS instead of 103.0 KB. Measurements and rationale: `visual-design.md`.
+
 **No production change is justified by this audit alone.** The positive evidence is strong for SSG/crawler compatibility, actual `404` behavior, and immutable hashed asset caching. The concrete performance *candidate* is the large render-blocking font-declaration stylesheet, not the Rust API or the lazy PDF reader. Arbitrarily delaying fonts or extracting CSS could alter text metrics and the preserved layout; raising HTML `max-age` could make newly published pages stale. Neither is a low-risk fix without real browser measurements.
 
 If performance becomes a release concern, run a controlled desktop/mobile browser trace or field RUM measurement, recording LCP element, loaded font subsets, CSS request/parse cost, TTFB, CLS, and cache state. Compare the existing build against an isolated font-declaration reduction or noncritical-style split with the same page/content/theme, including repeat navigation and Chinese glyph coverage. [Google's field measurement guidance](https://web.dev/articles/vitals-field-measurement-best-practices) cautions that measurement code itself must not perturb load and interaction behavior. Only adopt a change if it improves the target workload without visual or compatibility regression.

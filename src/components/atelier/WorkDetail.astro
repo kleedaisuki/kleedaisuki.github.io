@@ -1,18 +1,19 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import Icon from "@components/Icon.astro";
+import Phrases from "@components/Phrases.astro";
+import Plate from "@components/pixel/Plate.astro";
 import { ATELIER_COPY, type AtelierLocale } from "@i18n/atelier";
 import {
-  DEFAULT_ATELIER_COVER,
   getAtelierPath,
   getAtelierText,
   getLatestRelease,
 } from "../../lib/atelier";
+import { isoDay } from "../../lib/dates";
 import FileList from "./FileList.astro";
 
-/** @brief Atelier 条目的发布版本 / Release type inferred from an Atelier entry. */
 type AtelierRelease = CollectionEntry<"atelier">["data"]["releases"][number];
 
-/** @brief 作品详情属性 / Work-detail properties. */
 interface Props {
   locale: AtelierLocale;
   entry: CollectionEntry<"atelier">;
@@ -20,170 +21,101 @@ interface Props {
   sourcePath?: string;
   sourceArchivePath?: string;
 }
-
-const { locale, entry, release, sourcePath, sourceArchivePath } =
-  Astro.props as Props;
-/** @brief 当前详情页文案 / Current localized detail-page copy. */
+const { locale, entry, release, sourcePath, sourceArchivePath } = Astro.props;
+const {
+  slug,
+  cover,
+  published,
+  tags,
+  license,
+  repository,
+  relatedPost,
+  releases,
+} = entry.data;
 const copy = ATELIER_COPY[locale];
-/** @brief 当前语言的作品标题 / Localized work title. */
 const title = getAtelierText(entry.data.title, locale);
-/** @brief 当前语言的作品摘要 / Localized work summary. */
 const summary = getAtelierText(entry.data.summary, locale);
-/** @brief 当前语言的作品正文 / Work prose in the current locale. */
 const about = entry.data.about?.[locale];
-/** @brief 作品封面或统一默认封面 / Work cover or the shared default cover. */
-const coverUrl = entry.data.cover ?? DEFAULT_ATELIER_COVER;
-/** @brief 作品的最新发布版本 / Latest release of the work. */
-const latestRelease = getLatestRelease(entry.data.releases);
-/** @brief 当前是否展示最新版本 / Whether the selected release is current. */
-const isLatest = Boolean(
-  release && latestRelease && release.version === latestRelease.version,
-);
-/** @brief 作品详情的稳定地址 / Stable work-detail URL. */
-const workPath = getAtelierPath(locale, entry.data.slug);
-/** @brief 作品事件日期格式器 / Work timeline date formatter. */
-const dateFormatter = new Intl.DateTimeFormat(
-  locale === "zh" ? "zh-CN" : "en",
-  {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  },
-);
-/** @brief 按发布日期倒序的版本历史 / Release history ordered newest first. */
-const releaseHistory = [...entry.data.releases].sort(
+const latestRelease = getLatestRelease(releases);
+const isLatest =
+  release !== undefined && release.version === latestRelease?.version;
+const workPath = getAtelierPath(locale, slug);
+const history = releases.toSorted(
   (left, right) => right.date.getTime() - left.date.getTime(),
 );
 ---
 
-<div class="atelier-detail">
-  <nav class="atelier-breadcrumb" aria-label={copy.breadcrumb}>
-    <ol>
-      <li><a href={`/${locale}/articrafts/`}>{copy.atelier}</a></li>
-      <li aria-current="page">{title}</li>
-    </ol>
-  </nav>
-
+<div class="page atelier-detail">
   <header class="atelier-detail__hero">
-    <div class="atelier-detail__cover">
-      <img src={coverUrl} alt="" decoding="async" />
-    </div>
-    <div class="atelier-detail__intro">
-      <p class="atelier-eyebrow">{copy.artifact} / {entry.data.slug}</p>
-      <h1 id="work-title">{title}</h1>
+    <div class="atelier-detail__intro pad">
+      <h1 id="work-title"><Phrases text={title} /></h1>
       <p class="atelier-detail__summary">{summary}</p>
-      <dl class="atelier-detail__facts">
-        <div>
-          <dt>{copy.published}</dt>
-          <dd><time datetime={entry.data.published.toISOString()}>{dateFormatter.format(entry.data.published)}</time></dd>
-        </div>
-        {entry.data.updated && (
-          <div>
-            <dt>{copy.updated}</dt>
-            <dd><time datetime={entry.data.updated.toISOString()}>{dateFormatter.format(entry.data.updated)}</time></dd>
-          </div>
-        )}
-        {latestRelease && (
-          <div>
-            <dt>{copy.latestRelease}</dt>
-            <dd>v{latestRelease.version}</dd>
-          </div>
-        )}
-      </dl>
-      {entry.data.tags.length > 0 && (
-        <ul class="atelier-tags" aria-label={copy.workTags}>
-          {entry.data.tags.map((tag) => <li>{tag}</li>)}
-        </ul>
-      )}
+      {tags.length > 0 && <ul class="tag-list" aria-label={copy.workTags}>{tags.map((tag) => <li>{tag}</li>)}</ul>}
+    </div>
+    <div class="atelier-detail__plate" style={`view-transition-name:plate-${slug}`}>
+      {cover ? <img src={cover} alt="" decoding="async" /> : <Plate seed={slug} />}
     </div>
   </header>
 
   <div class="atelier-detail__layout">
     <div class="atelier-detail__main">
-      <section class="atelier-panel atelier-description" aria-labelledby="about-this-work">
-        <p class="atelier-section-index">01 / {copy.made}</p>
-        <h2 id="about-this-work">{copy.aboutWork}</h2>
-        <div class="atelier-prose">
-          {about ? about.map((paragraph) => <p>{paragraph}</p>) : <slot />}
-        </div>
-      </section>
-
-      <section class="atelier-panel" aria-labelledby="files-heading">
-        <div class="atelier-section-heading">
-          <div>
-            <p class="atelier-section-index">02 / {copy.materials}</p>
-            <h2 id="files-heading">
-              {release ? `${locale === "zh" ? "版本" : "Version"} ${release.version}` : copy.noRelease}
-            </h2>
-          </div>
-          {release && !isLatest && <a href={workPath}>{copy.viewLatest}</a>}
-        </div>
-        {release?.notes && <p class="atelier-release-note">{getAtelierText(release.notes, locale)}</p>}
+      <section class="atelier-section pad" aria-labelledby="files-heading">
+        <h2 class="moe-visually-hidden" id="files-heading">{release ? `${copy.materials} v${release.version}` : copy.noRelease}</h2>
+        {release && !isLatest && <p class="atelier-notice"><span class="mono">v{release.version}</span><a href={workPath}>{copy.viewLatest}</a></p>}
         {release && sourcePath && (
-          <p class="atelier-source-actions">
-            <a class="atelier-button atelier-button--primary" href={sourcePath}>{copy.browseSource}</a>
-            {sourceArchivePath && <a class="atelier-button" href={sourceArchivePath} download>{copy.downloadSourceZip}</a>}
+          <p class="atelier-actions">
+            <a class="moe-button moe-button--secondary" href={sourcePath}>{copy.browseSource}</a>
+            {sourceArchivePath && <a class="moe-button moe-button--ghost" href={sourceArchivePath} download><Icon name="download" />{copy.downloadSourceZip}</a>}
           </p>
         )}
         {release && release.files.length > 0 ? (
-          <FileList locale={locale} slug={entry.data.slug} version={release.version} files={release.files} />
+          <FileList locale={locale} slug={slug} version={release.version} files={release.files} />
         ) : (
-          <p class="atelier-inline-empty">{copy.noFiles}</p>
+          <p class="atelier-note">{copy.noFiles}</p>
         )}
+      </section>
+
+      <section class="atelier-section pad" aria-labelledby="about-this-work">
+        <h2 class="moe-visually-hidden" id="about-this-work">{copy.aboutWork}</h2>
+        <div class="prose moe-prose">
+          {about ? about.map((paragraph) => <p>{paragraph}</p>) : <slot />}
+        </div>
       </section>
     </div>
 
     <aside class="atelier-detail__aside" aria-label={copy.workInformation}>
-      <section class="atelier-panel atelier-panel--compact">
-        <p class="atelier-section-index">03 / {copy.versions}</p>
-        <h2>{copy.versionHistory}</h2>
-        {entry.data.releases.length > 0 ? (
+      <section class="pad" aria-labelledby="version-history">
+        <h2 class="moe-visually-hidden" id="version-history">{copy.versionHistory}</h2>
+        {history.length > 0 ? (
           <ol class="version-list">
-            {releaseHistory.map((item) => {
+            {history.map((item) => {
               const selected = release?.version === item.version;
-              const versionUrl = `${workPath}${encodeURIComponent(item.version)}/`;
               return (
-                <li class:list={{ "version-list__item--current": selected }}>
+                <li data-selected={selected || undefined}>
                   <div>
                     {selected ? (
                       <strong aria-current="page">v{item.version}</strong>
                     ) : (
-                      <a href={versionUrl}>v{item.version}</a>
+                      <a href={`${workPath}${encodeURIComponent(item.version)}/`}>v{item.version}</a>
                     )}
-                    {item.version === latestRelease?.version && <span class="version-badge">{copy.latest}</span>}
+                    <time datetime={item.date.toISOString()}>{isoDay(item.date)}</time>
                   </div>
-                  <time datetime={item.date.toISOString()}>{dateFormatter.format(item.date)}</time>
                   {item.notes && <p>{getAtelierText(item.notes, locale)}</p>}
                 </li>
               );
             })}
           </ol>
         ) : (
-          <p class="atelier-inline-empty">{copy.noReleases}</p>
+          <time datetime={published.toISOString()}>{isoDay(published)}</time>
         )}
       </section>
-
-      <section class="atelier-panel atelier-panel--compact">
-        <h2>{copy.linksAndLicense}</h2>
-        <dl class="atelier-link-list">
-          <div>
-            <dt>{copy.license}</dt>
-            <dd>{entry.data.license ?? copy.licenseNotSpecified}</dd>
-          </div>
-          {entry.data.repository && (
-            <div>
-              <dt>{copy.repository}</dt>
-              <dd><a href={entry.data.repository}>{copy.viewRepository}</a></dd>
-            </div>
-          )}
-          {entry.data.relatedPost && (
-            <div>
-              <dt>{copy.fromBlog}</dt>
-              <dd><a href={entry.data.relatedPost}>{copy.readRelatedPost}</a></dd>
-            </div>
-          )}
-        </dl>
-      </section>
+      {(license || repository || relatedPost) && (
+        <ul class="atelier-links pad">
+          {repository && <li><a href={repository}>{copy.repository}<Icon name="arrow-up-right" /></a></li>}
+          {relatedPost && <li><a href={relatedPost}>{copy.fromBlog}<Icon name="arrow-right" /></a></li>}
+          {license && <li>{license}</li>}
+        </ul>
+      )}
     </aside>
   </div>
 </div>
